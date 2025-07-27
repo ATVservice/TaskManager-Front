@@ -12,6 +12,7 @@ const Association = () => {
         const data = await fetchAllAssociations();
         setAssociations(data);
       } catch (error) {
+        alert(error.response?.data?.message || 'שגיאה בשליפת העמותות');
         console.error('Error fetching associations:', error);
       }
     };
@@ -37,14 +38,7 @@ const Association = () => {
   return (
     <div>
       <h2>רשימת עמותות</h2>
-      {openAssociatedEmployees && (
-          <div>
-               <button onClick={closeAssociatedEmployees}>X</button>
-               {associatedEmployees.map((employees) => (
-                <p>{employees.userName}</p>
-          ))}
-          </div>
-        )}
+      
       <table border="1">
         <thead>
           <tr>
@@ -66,6 +60,15 @@ const Association = () => {
           ))}
         </tbody>
       </table>
+      {openAssociatedEmployees && (
+          <div>
+               <button onClick={closeAssociatedEmployees}>X</button>
+               {associatedEmployees.map((employees) => (
+                <p>{employees.userName}</p>
+          ))}
+          {associatedEmployees.length === 0 && <p>אין עובדים משוייכים לעמותה זו</p>}
+          </div>
+        )}
     </div>
   );
 };

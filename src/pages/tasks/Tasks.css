@@ -1,0 +1,128 @@
+.page-container {
+    display: flex;
+    flex-direction: row-reverse; /* כי עברית */
+    gap: 24px;
+    padding: 20px 40px;
+    background-color: #f8f9fa;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #1a1a1a;
+  }
+  
+  /* טבלה */
+  .table-container {
+    flex: 1;
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    direction: rtl;
+  }
+  
+  thead th {
+    background-color: #e9ecef;
+    color: #042486;
+    font-weight: 600;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #d1d5db;
+  }
+  
+  tbody td {
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+  
+  tbody button,   .add-task-button
+  {
+    background-color: #042486;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  tbody button:hover ,  .add-task-button:hover
+  {
+    background-color: #2540b0;
+  }
+  .add-task-button{
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  /* פופאפ צדדי */
+  .side-popup {
+    width: 250px;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+    direction: rtl;
+  }
+  
+  /* כפתור סגירה */
+  .close-btn {
+    background-color: transparent;
+    border: none;
+    color: #042486;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 12px;
+  }
+  .popup-overlay {
+    margin-top: 10%;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* רקע כהה חצי שקוף */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  .popup-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+  }

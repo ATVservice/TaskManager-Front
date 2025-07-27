@@ -17,7 +17,10 @@ const NavBar = () => {
           </div>
         )}
       </div>
+
       <div className='nav-links'>
+      <NavLink to="/tasks">משימות</NavLink>
+
         {user.role === 'מנהל' && (
           <NavLink to="/association">עמותות</NavLink>
         )}
@@ -33,6 +36,7 @@ const NavBar = () => {
           )}
         </div>
       </div>
+
       <div className='leftButton'>
         <button className="logout-btn" onClick={logout}>התנתק</button>
       </div>

@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/login/Login';
+import Tasks from '../pages/tasks/Tasks';
 import Association from '../pages/association/Association';
 import PersonalTasksPage from '../pages/PersonalTasks';
 import { AuthContext } from '../context/AuthContext';
@@ -22,6 +23,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/createTask" element={<CreateTask />} />
+      <Route path='/tasks' element={<Tasks />} />
 
       {user.role === 'מנהל' && (
         <>

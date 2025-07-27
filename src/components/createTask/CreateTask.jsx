@@ -7,7 +7,7 @@ import { createTask } from '../../services/taskService';
 
 import "./CreateTask.css";
 
-function CreateTask() {
+const CreateTask = ({ onClose, onTaskCreated}) => {
 
     const [associations, setAssociations] = useState([]);
     const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
@@ -99,42 +99,82 @@ function CreateTask() {
     };
 
 
-    const handleSubmit =async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             await createTask(form);
             alert("משימה נוצרה בהצלחה!");
+            onTaskCreated();
+            onClose();
         } catch (error) {
-            alert("שגיאה!");
+            alert(error.response?.data?.message || 'שגיאה ביצירת המשימה');
             console.error('Error adding task:', error);
         }
-       
+
         console.log("form", form);
     };
 
     return (
-        <div>
-            <h2>צור משימה</h2>
+        <div className="create-task-container">
+            <h4>צור משימה</h4>
             <form onSubmit={handleSubmit}>
+                <div className="form-row">
 
-                <div>
-                    <input name="title" value={form.title} onChange={handleChange} required />
-                    <label>כותרת</label>
+                    <div className="form-group">
+                        <label>כותרת</label>
+
+                        <input name="title" value={form.title} onChange={handleChange} required />
+                    </div>
+
+                    <div className="form-group">
+                        <label>פרטים</label>
+
+                        <input name="details" value={form.details} onChange={handleChange} />
+                    </div>
+                    <div className="form-group">
+                        <label>פרויקט</label>
+                        <input
+                            id="project"
+                            name="project"
+                            value={form.project}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    
                 </div>
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>אחראיים</label>
+                        <MultiSelect
+                            className="select-multiple"
+                            required
+                            options={allUsers}
+                            selected={form.assignees}
+                            onChange={(newSelected) =>
+                                setForm((prev) => ({ ...prev, assignees: newSelected }))
+                            }
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label>עמותה</label>
+                        <select name="organization" value={form.organization} onChange={handleChange} required>
+                            <option value="">בחר</option>
+                            {associations.map((association) => (
+                                <option key={association._id} value={association._id}>{association.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label>תאריך יעד</label>
 
-                <div>
-                    <label>אחראיים</label>
-                    <MultiSelect
-                        required
-                        options={allUsers}
-                        selected={form.assignees}
-                        onChange={(newSelected) =>
-                            setForm((prev) => ({ ...prev, assignees: newSelected }))
-                        }
-                    />
+                        <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
+                            min={new Date().toISOString().split("T")[0]} required />
+                    </div>
+                
                 </div>
+                <div className="form-row">
 
-                    <div>
+                    <div className="form-group">
                         <label>אחראי ראשי</label>
                         <select name="mainAssignee" value={form.mainAssignee} onChange={handleChange} required>
                             <option value="">בחר</option>
@@ -143,220 +183,201 @@ function CreateTask() {
                             ))}
                         </select>
                     </div>
-                
-                <div>
-                    <label>עמותה</label>
-                    <select name="organization" value={form.organization} onChange={handleChange} required>
-                        <option value="">בחר</option>
-                        {associations.map((association) => (
-                            <option key={association._id} value={association._id}>{association.name}</option>
-                        ))}
-                    </select>
-                </div>
 
-                <div>
-                    <label>רמת חשיבות</label>
-                    <select name="importance" value={form.importance} onChange={handleChange} required>
-                        <option value="">בחר</option>
-                        {allImportanceOptions.map((opt) => (
-                            <option key={opt} value={opt}>{opt} </option>
-                        ))}
-                    </select>
-                </div>
-
-                {form.importance === "מיידי" &&
-                    <div>
-                        <label>תת חשיבות</label>
-                        <select name="subImportance" value={form.subImportance} onChange={handleChange} required>
+                    <div className="form-group">
+                        <label>רמת חשיבות</label>
+                        <select name="importance" value={form.importance} onChange={handleChange} required>
                             <option value="">בחר</option>
-                            {allSubImportanceOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
+                            {allImportanceOptions.map((opt) => (
+                                <option key={opt} value={opt}>{opt} </option>
                             ))}
                         </select>
                     </div>
-                }
+                    {form.dueDate &&
+                        <div className="form-group">
+                            <label>תאריך סופי</label>
 
-                <div>
-                    <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
-                        min={new Date().toISOString().split("T")[0]} required />
-                    <label>תאריך יעד</label>
+                            <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
+                                min={form.dueDate} required />
+                        </div>}
+
+
                 </div>
-                {form.dueDate &&
-                    <div>
-                        <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
-                            min={form.dueDate} required />
-                        <label>תאריך סופי</label>
-                    </div>}
+                <div className="form-row">
 
 
-                <div>
-                    <label htmlFor="project">פרויקט</label>
-                    <input
-                        id="project"
-                        name="project"
-                        value={form.project}
-                        onChange={handleChange}
-                    />
-                </div>
+                    <div className="form-group">
+                        <label htmlFor="isRecurring">משימה קבועה?</label>
+                        <input
+                            id="isRecurring"
+                            type="checkbox"
+                            name="isRecurring"
+                            checked={form.isRecurring}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="form-group"></div>
 
-                <div>
-                    <input name="details" value={form.details} onChange={handleChange} />
-                    <label>פרטים</label>
-                </div>
-
-                <div>
-                    <label htmlFor="isRecurring">מחזורית?</label>
-                    <input
-                        id="isRecurring"
-                        type="checkbox"
-                        name="isRecurring"
-                        checked={form.isRecurring}
-                        onChange={handleChange}
-                    />
-                </div>
-
-
-                {form.isRecurring && (
-                    <div>
-                        <div>
-                            <label htmlFor="frequencyType">סוג תדירות</label>
-                            <select name="frequencyType" value={form.frequencyType} onChange={handleChange} required>
+                    {form.importance === "מיידי" &&
+                        <div className="form-group">
+                            <label>תת דירוג</label>
+                            <select name="subImportance" value={form.subImportance} onChange={handleChange} required>
                                 <option value="">בחר</option>
-                                {frequencyTypeOptions.map((opt) => (
+                                {allSubImportanceOptions.map((opt) => (
                                     <option key={opt} value={opt}>{opt}</option>
                                 ))}
                             </select>
                         </div>
-                        {form.frequencyType &&
-                            <div>
-                                <label htmlFor="frequencyDetails">פרטי תדירות</label>
-                                {form.frequencyType === "יומי" && (
-                                    <label>
-                                        כולל ימי שישי?
-                                        <input
-                                            type="checkbox"
-                                            checked={form.frequencyDetails.includingFriday || false}
-                                            onChange={(e) =>
-                                                setForm(prev => ({
-                                                    ...prev,
-                                                    frequencyDetails: {
-                                                        ...prev.frequencyDetails,
-                                                        includingFriday: e.target.checked
-                                                    }
-                                                }))
-                                            }
-                                        />
-                                    </label>
+                    }
 
-                                )}
-                                {form.frequencyType === "יומי פרטני" && (
-                                    <div>
-                                        <label>בחר ימים:</label>
-                                        {weekDays.map((day) => (
-                                            <label key={day.value} style={{ marginInlineEnd: '8px' }}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={form.frequencyDetails.days.includes(day.value)}
-                                                    onChange={(e) => {
-                                                        const checked = e.target.checked;
-                                                        setForm((prev) => {
-                                                            const prevDays = prev.frequencyDetails.days || [];
-                                                            const newDays = checked
-                                                                ? [...prevDays, day.value]
-                                                                : prevDays.filter((v) => v !== day.value);
-                                                            return {
-                                                                ...prev,
-                                                                frequencyDetails: {
-                                                                    ...prev.frequencyDetails,
-                                                                    days: newDays,
-                                                                },
-                                                            };
-                                                        });
-                                                    }}
-                                                />
-                                                {day.label}
-                                            </label>
-                                        ))}
-                                    </div>
-                                )}
-                                {form.frequencyType === 'חודשי' && (
-                                    <div>
 
-                                        <label>בחר יום:</label>
-                                        <select
-                                            value={form.frequencyDetails.dayOfMonth}
-                                            onChange={(e) =>
-                                                setForm((prev) => ({
-                                                    ...prev,
-                                                    frequencyDetails: {
-                                                        ...prev.frequencyDetails,
-                                                        dayOfMonth: Number(e.target.value),
-                                                    },
-                                                }))
-                                            }
-                                        >
-                                            <option value="">--בחר יום--</option>
-                                            {Array.from({ length: 31 }, (_, i) => i + 1).map((dayOfMonth) => (
-                                                <option key={dayOfMonth} value={dayOfMonth}>
-                                                    {dayOfMonth.toString().padStart(2, "0")}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                                {form.frequencyType === 'שנתי' && (
-                                    <div>
-                                        <label>בחר חודש:</label>
-                                        <select
-                                            value={form.frequencyDetails}
-                                            onChange={(e) =>
-                                                setForm((prev) => ({
-                                                    ...prev,
-                                                    frequencyDetails: {
-                                                        ...prev.frequencyDetails,
-                                                        month: Number(e.target.value),
-                                                    },
-                                                }))
-                                            }
-                                        >
-                                            <option value="">--בחר חודש--</option>
-                                            {months.map((month) => (
-                                                <option key={month.value} value={month.value}>
-                                                    {month.label}
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                        <label>בחר יום:</label>
-                                        <select
-                                            value={form.frequencyDetails.day}
-                                            onChange={(e) =>
-                                                setForm((prev) => ({
-                                                    ...prev,
-                                                    frequencyDetails: {
-                                                        ...prev.frequencyDetails,
-                                                        day: Number(e.target.value),
-                                                    },
-                                                }))
-                                            }
-                                        >
-                                            <option value="">--בחר יום--</option>
-                                            {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                                <option key={day} value={day}>
-                                                    {day.toString().padStart(2, "0")}
-                                                </option>
-                                            ))}
-                                        </select>
-
-                                    </div>
-                                )}
+                </div>
+                <div className="form-row">
+                    {form.isRecurring && (
+                        <div>
+                            <div className="form-group">
+                                <label htmlFor="frequencyType">סוג תדירות</label>
+                                <select name="frequencyType" value={form.frequencyType} onChange={handleChange} required>
+                                    <option value="">בחר</option>
+                                    {frequencyTypeOptions.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
+                                    ))}
+                                </select>
                             </div>
-                        }
+                            {form.frequencyType &&
+                                <div className="form-group">
+                                    <label htmlFor="frequencyDetails">פרטי תדירות</label>
+                                    {form.frequencyType === "יומי" && (
+                                        <label>
+                                            כולל ימי שישי?
+                                            <input
+                                                type="checkbox"
+                                                checked={form.frequencyDetails.includingFriday || false}
+                                                onChange={(e) =>
+                                                    setForm(prev => ({
+                                                        ...prev,
+                                                        frequencyDetails: {
+                                                            ...prev.frequencyDetails,
+                                                            includingFriday: e.target.checked
+                                                        }
+                                                    }))
+                                                }
+                                            />
+                                        </label>
+
+                                    )}
+                                    {form.frequencyType === "יומי פרטני" && (
+                                        <div className="form-group">
+                                            <label>בחר ימים:</label>
+                                            {weekDays.map((day) => (
+                                                <label key={day.value} style={{ marginInlineEnd: '8px' }}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={form.frequencyDetails.days.includes(day.value)}
+                                                        onChange={(e) => {
+                                                            const checked = e.target.checked;
+                                                            setForm((prev) => {
+                                                                const prevDays = prev.frequencyDetails.days || [];
+                                                                const newDays = checked
+                                                                    ? [...prevDays, day.value]
+                                                                    : prevDays.filter((v) => v !== day.value);
+                                                                return {
+                                                                    ...prev,
+                                                                    frequencyDetails: {
+                                                                        ...prev.frequencyDetails,
+                                                                        days: newDays,
+                                                                    },
+                                                                };
+                                                            });
+                                                        }}
+                                                    />
+                                                    {day.label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {form.frequencyType === 'חודשי' && (
+                                        <div className="form-group">
+
+                                            <label>בחר יום:</label>
+                                            <select
+                                                value={form.frequencyDetails.dayOfMonth}
+                                                onChange={(e) =>
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        frequencyDetails: {
+                                                            ...prev.frequencyDetails,
+                                                            dayOfMonth: Number(e.target.value),
+                                                        },
+                                                    }))
+                                                }
+                                            >
+                                                <option value="">--בחר יום--</option>
+                                                {Array.from({ length: 31 }, (_, i) => i + 1).map((dayOfMonth) => (
+                                                    <option key={dayOfMonth} value={dayOfMonth}>
+                                                        {dayOfMonth.toString().padStart(2, "0")}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    {form.frequencyType === 'שנתי' && (
+                                        <div className="form-group">
+                                            <label>בחר חודש:</label>
+                                            <select
+                                                value={form.frequencyDetails}
+                                                onChange={(e) =>
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        frequencyDetails: {
+                                                            ...prev.frequencyDetails,
+                                                            month: Number(e.target.value),
+                                                        },
+                                                    }))
+                                                }
+                                            >
+                                                <option value="">--בחר חודש--</option>
+                                                {months.map((month) => (
+                                                    <option key={month.value} value={month.value}>
+                                                        {month.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            <label>בחר יום:</label>
+                                            <select
+                                                value={form.frequencyDetails.day}
+                                                onChange={(e) =>
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        frequencyDetails: {
+                                                            ...prev.frequencyDetails,
+                                                            day: Number(e.target.value),
+                                                        },
+                                                    }))
+                                                }
+                                            >
+                                                <option value="">--בחר יום--</option>
+                                                {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                                                    <option key={day} value={day}>
+                                                        {day.toString().padStart(2, "0")}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                        </div>
+                                    )}
+                                </div>
+                            }
+                        </div>
+                    )}
+                    <div className="form-group"></div>
+
+                    <div className="form-group">
+                        <button type="submit">שמור</button>
                     </div>
-                )}
 
-
-                <button type="submit">שמור</button>
+                </div>
             </form>
         </div>
     );
