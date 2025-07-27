@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAllAssociations, fetchGetAssociatedEmployees } from '../services/associationService';
+import { fetchAllAssociations, fetchGetAssociatedEmployees } from '../../services/associationService';
 
 const Association = () => {
   const [associations, setAssociations] = useState([]);
