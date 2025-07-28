@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import './NavBar.css';
+import { Bell } from 'lucide-react';
 
 const NavBar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -19,7 +20,7 @@ const NavBar = () => {
       </div>
 
       <div className='nav-links'>
-      <NavLink to="/tasks">משימות</NavLink>
+        <NavLink to="/tasks">משימות</NavLink>
 
         {user.role === 'מנהל' && (
           <NavLink to="/association">עמותות</NavLink>
@@ -28,17 +29,15 @@ const NavBar = () => {
           <NavLink to="/register">הוספת משתמש</NavLink>
         )}
 
-        <div>
-          {user.role === 'עובד' && (
-            <NavLink to="/mytasks">
-              המשימות שלי
-            </NavLink>
-          )}
-        </div>
+
       </div>
 
       <div className='leftButton'>
-        <button className="logout-btn" onClick={logout}>התנתק</button>
+        <div>
+          <button className="logout-btn" onClick={logout}>התנתק</button>
+        </div>
+        <div className='bell'>  <Bell /></div>
+      
       </div>
     </nav>
   );

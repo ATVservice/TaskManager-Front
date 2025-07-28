@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '../pages/login/Login';
 import Tasks from '../pages/tasks/Tasks';
 import Association from '../pages/association/Association';
-import PersonalTasksPage from '../pages/PersonalTasks';
 import { AuthContext } from '../context/AuthContext';
 import Register from '../pages/register/Register'
 import CreateTask from '../components/createTask/CreateTask';
@@ -35,7 +34,6 @@ const AppRoutes = () => {
 
       {user.role === 'עובד' && (
         <>
-          <Route path="/mytasks" element={<PersonalTasksPage />} />
           <Route path="*" element={<Navigate to="/mytasks" />} />
         </>
       )}

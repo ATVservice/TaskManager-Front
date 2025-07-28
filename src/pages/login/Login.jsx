@@ -26,7 +26,7 @@ const Login = () => {
       if (userData.role === 'admin') {
         navigate('/association');
       } else {
-        navigate('/mytasks');
+        navigate('/tasks');
       }
 
     } catch (error) {

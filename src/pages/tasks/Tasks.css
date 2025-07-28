@@ -1,6 +1,182 @@
+body {
+  direction: rtl;
+}
+
+/* עיצוב כללי של הדף */
 .page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* padding: 20px; */
+  background-color: #f8f9fa;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #1a1a1a;
+  max-width: 1200px;
+  margin: auto;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+.ag-theme-alpine .ag-cell, 
+.ag-theme-alpine .ag-header-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+
+
+/* שורת שליטה מסודרת */
+.controls-container {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-input {
+  padding: 10px 16px;
+  font-size: 14px;
+  border-radius: 20px;
+  border: 1.5px solid #ccc;
+  outline: none;
+  width: 250px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease;
+  direction: rtl;
+}
+
+.search-input:focus {
+  border-color: #042486;
+}
+
+.add-task-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #042486;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.add-task-button:hover {
+  background-color: #2540b0;
+}
+
+/* פופאפ צדדי */
+.side-popup {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100vh;
+  background-color: #ffffff;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  padding: 20px;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: transform 0.3s ease-in-out;
+  transform: translateX(0); /* גלוי */
+  direction: rtl;
+}
+
+.side-popup.hidden {
+  transform: translateX(100%); /* מוסתר */
+}
+
+
+.close-btn {
+  background-color: transparent;
+  border: none;
+  color: #042486;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+.popup-overlay {
+  margin-top: 5%;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* עיצוב AG Grid */
+.ag-theme-alpine {
+  width: 100% !important;
+  height: 100%;
+  min-height: 500px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+
+
+/* גלילה יפה לטבלה */
+.ag-body-viewport::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.ag-body-viewport::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.ag-header-cell-label {
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .search-input {
+    width: 100%;
+  }
+  .controls-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+/* .page-container {
     display: flex;
-    flex-direction: row-reverse; /* כי עברית */
+    flex-direction: row-reverse;
     gap: 24px;
     padding: 20px 40px;
     background-color: #f8f9fa;
@@ -8,7 +184,6 @@
     color: #1a1a1a;
   }
   
-  /* טבלה */
   .table-container {
     flex: 1;
     overflow-x: auto;
@@ -67,7 +242,6 @@
     margin-bottom: 10px;
   }
   
-  /* פופאפ צדדי */
   .side-popup {
     width: 250px;
     background-color: #ffffff;
@@ -81,7 +255,6 @@
     direction: rtl;
   }
   
-  /* כפתור סגירה */
   .close-btn {
     background-color: transparent;
     border: none;
@@ -98,7 +271,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* רקע כהה חצי שקוף */
+    background-color: rgba(0, 0, 0, 0.6); 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -125,4 +298,4 @@
     font-size: 20px;
     cursor: pointer;
     color: #333;
-  }
+  } */
