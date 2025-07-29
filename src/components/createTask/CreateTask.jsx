@@ -7,7 +7,7 @@ import { createTask } from '../../services/taskService';
 
 import "./CreateTask.css";
 
-const CreateTask = ({ onClose, onTaskCreated}) => {
+const CreateTask = ({ onClose, onTaskCreated }) => {
 
     const [associations, setAssociations] = useState([]);
     const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
@@ -51,7 +51,9 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
         isRecurring: false,
         frequencyType: "",
         frequencyDetails: {
-            days: []
+            days: [],
+            month: "",
+            day:""
         },
     });
     const [allUsers, setAllUsers] = useState([]);
@@ -102,7 +104,14 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await createTask(form);
+
+            const preparedForm = {
+                ...form,
+                assignees: form.assignees.map((u) => u._id), 
+            };
+            console.log("preparedForm", preparedForm);
+
+            await createTask(preparedForm);
             alert("משימה נוצרה בהצלחה!");
             onTaskCreated();
             onClose();
@@ -111,7 +120,6 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
             console.error('Error adding task:', error);
         }
 
-        console.log("form", form);
     };
 
     return (
@@ -140,7 +148,7 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
                             onChange={handleChange}
                         />
                     </div>
-                    
+
                 </div>
                 <div className="form-row">
                     <div className="form-group">
@@ -170,7 +178,7 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
                         <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
                             min={new Date().toISOString().split("T")[0]} required />
                     </div>
-                
+
                 </div>
                 <div className="form-row">
 
@@ -179,7 +187,7 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
                         <select name="mainAssignee" value={form.mainAssignee} onChange={handleChange} required>
                             <option value="">בחר</option>
                             {form.assignees.map((user) => (
-                                <option key={user} value={user}>{user}</option>
+                                <option key={user._id} value={user._id}>{user.userName}</option>
                             ))}
                         </select>
                     </div>
@@ -325,7 +333,7 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
                                         <div className="form-group">
                                             <label>בחר חודש:</label>
                                             <select
-                                                value={form.frequencyDetails}
+                                                value={form.frequencyDetails.month}
                                                 onChange={(e) =>
                                                     setForm((prev) => ({
                                                         ...prev,
@@ -343,6 +351,7 @@ const CreateTask = ({ onClose, onTaskCreated}) => {
                                                     </option>
                                                 ))}
                                             </select>
+                                            
 
                                             <label>בחר יום:</label>
                                             <select

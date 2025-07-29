@@ -1,15 +1,8 @@
 import axios from 'axios';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-export const fetchAllAssociations = async () => {
-    const userStr = localStorage.getItem('user');
+export const fetchAllAssociations = async (token) => {
 
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        token = user.token;
-    }
-    console.log("token", token);
 
     const res = await axios.get(`${API_URL}/api/associations/getAllAssociations`, {
         method: 'GET',
@@ -20,17 +13,8 @@ export const fetchAllAssociations = async () => {
 
     return res.data;
 };
-export const fetchGetAssociatedEmployees = async (associationId) => {
-    const userStr = localStorage.getItem('user');
+export const fetchGetAssociatedEmployees = async (associationId ,token) => {
 
-    let _id = null;
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        _id = user.id;
-        token = user.token
-    }
-    console.log("associationId", associationId);
 
     const res = await axios.get(`${API_URL}/api/associations/getAssociated/${associationId}`, {
         headers: {

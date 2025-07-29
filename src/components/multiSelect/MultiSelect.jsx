@@ -5,12 +5,10 @@ export default function MultiSelect({ placeholder = "בחר", options = [], sele
   const [open, setOpen] = useState(false);
 
   const toggleOption = (option) => {
-    let newSelected;
-    if (selected.includes(option)) {
-      newSelected = selected.filter((opt) => opt !== option);
-    } else {
-      newSelected = [...selected, option];
-    }
+    const exists = selected.some((opt) => opt._id === option._id);
+    const newSelected = exists
+      ? selected.filter((opt) => opt._id !== option._id)
+      : [...selected, option];
     onChange(newSelected);
   };
 
@@ -19,8 +17,8 @@ export default function MultiSelect({ placeholder = "בחר", options = [], sele
       <div className="active-area" onClick={() => setOpen(!open)}>
         {selected.length > 0 ? (
           selected.map((opt) => (
-            <span key={opt} className="selected-tag">
-              {opt}
+            <span key={opt._id} className="selected-tag">
+              {opt.userName}
               <button
                 type="button"
                 onClick={(e) => {
@@ -37,13 +35,14 @@ export default function MultiSelect({ placeholder = "בחר", options = [], sele
         )}
         <div className="arrow" />
       </div>
+
       {open && (
         <ul className="options">
           {options
-            .filter((opt) => !selected.includes(opt))
+            .filter((opt) => !selected.some((s) => s._id === opt._id))
             .map((opt) => (
-              <li key={opt} onClick={() => toggleOption(opt)}>
-                {opt}
+              <li key={opt._id} onClick={() => toggleOption(opt)}>
+                {opt.userName}
               </li>
             ))}
         </ul>

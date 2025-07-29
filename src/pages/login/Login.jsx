@@ -14,15 +14,14 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const data = await loginUser(username, password); // קריאה לשרת
+      const data = await loginUser(username, password); 
       const userData = {
         ...data.user,
         token: data.token
       };
 
-      login(userData); // שמירה ב-context + localStorage (כמו שהגדרת ב-AuthContext)
+      login(userData); 
 
-      // ניתוב לפי role
       if (userData.role === 'admin') {
         navigate('/association');
       } else {

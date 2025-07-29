@@ -5,6 +5,7 @@ import { registerUser } from '../../services/authService';
 import './Register.css';
 
 const Register = () => {
+  const { user } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -17,9 +18,10 @@ const Register = () => {
 
   const handleRegister = async (e) => {
     e.preventDefault();
- 
+    const token = user?.token;
+
     try {
-      await registerUser(username, firstName, lastName, password, email, role);
+      await registerUser(username, firstName, lastName, password, email, role, token);
       alert("עובד נוסף בהצלחה!")
 
     } catch (error) {

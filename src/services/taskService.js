@@ -1,6 +1,8 @@
 import axios from 'axios';
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 export const createTask = async (form) => {
+  console.log("form", form);
   const userStr = localStorage.getItem('user');
 
   let token = null;
@@ -17,14 +19,7 @@ export const createTask = async (form) => {
     });
   return response.data;
 };
-export const getTasks = async () => {
-  const userStr = localStorage.getItem('user');
-
-  let token = null;
-  if (userStr) {
-    const user = JSON.parse(userStr);
-    token = user.token;
-  }
+export const getTasks = async (token) => {
   const response = await axios.get(`${API_URL}/api/tasks/getTasks`,
     {
       headers: {

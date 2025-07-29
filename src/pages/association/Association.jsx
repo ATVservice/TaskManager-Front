@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAllAssociations, fetchGetAssociatedEmployees } from '../../services/associationService';
-
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext.jsx';
 const Association = () => {
+  const { user } = useContext(AuthContext);
   const [associations, setAssociations] = useState([]);
-  const [associatedEmployees,setAssociatedEmployees]= useState([])
+  const [associatedEmployees, setAssociatedEmployees] = useState([])
   const [openAssociatedEmployees, setOpenAssociatedEmployees] = useState(false);
 
   useEffect(() => {
     const getAssociations = async () => {
+
+      const token = user?.token;
       try {
-        const data = await fetchAllAssociations();
+        const data = await fetchAllAssociations(token);
         setAssociations(data);
       } catch (error) {
         alert(error.response?.data?.message || 'שגיאה בשליפת העמותות');
@@ -19,12 +23,14 @@ const Association = () => {
 
     getAssociations();
   }, []);
-  
+
   const getAssociatedEmployees = async (associationId) => {
+    const token = user?.token;
+
     try {
-      const dataE = await fetchGetAssociatedEmployees(associationId);
+      const dataE = await fetchGetAssociatedEmployees(associationId, token);
       setAssociatedEmployees(dataE);
-      console.log("employees",associatedEmployees);
+      console.log("employees", associatedEmployees);
       setOpenAssociatedEmployees(true);
     } catch (error) {
       console.error('Error fetching associations:', error);
@@ -38,7 +44,7 @@ const Association = () => {
   return (
     <div>
       <h2>רשימת עמותות</h2>
-      
+
       <table border="1">
         <thead>
           <tr>
@@ -61,14 +67,14 @@ const Association = () => {
         </tbody>
       </table>
       {openAssociatedEmployees && (
-          <div>
-               <button onClick={closeAssociatedEmployees}>X</button>
-               {associatedEmployees.map((employees) => (
-                <p>{employees.userName}</p>
+        <div>
+          <button onClick={closeAssociatedEmployees}>X</button>
+          {associatedEmployees.map((employees) => (
+            <p>{employees.userName}</p>
           ))}
           {associatedEmployees.length === 0 && <p>אין עובדים משוייכים לעמותה זו</p>}
-          </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };

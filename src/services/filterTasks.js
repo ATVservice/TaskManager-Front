@@ -11,6 +11,7 @@ export const fetchTodayTasks = async (isRecurring) => {
         const user = JSON.parse(userStr);
         token = user.token;
     }
+
       const res = await axios.get(`${API_URL}/api/tasks/getTodayTasks`, {
         params: {
           isRecurringInstance: isRecurring, 
@@ -25,14 +26,8 @@ export const fetchTodayTasks = async (isRecurring) => {
       return res.data;
   };
 // משימות קבועות
-export const fetchRecurringTasks = async () => {
-    const userStr = localStorage.getItem('user');
+export const fetchRecurringTasks = async (token) => {
 
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        token = user.token;
-    }
       const res = await axios.get(`${API_URL}/api/taskFilters/recurringTasks`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -44,14 +39,9 @@ export const fetchRecurringTasks = async () => {
       return res.data;
   };
   // משימות שהושלמו
-export const fetchCompleteds = async () => {
-    const userStr = localStorage.getItem('user');
+export const fetchCompleteds = async (token) => {
 
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        token = user.token;
-    }
+    
       const res = await axios.get(`${API_URL}/api/taskFilters/completed`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -63,14 +53,8 @@ export const fetchCompleteds = async () => {
       return res.data;
   };
   // משימות שבוטלו
-export const fetchCancelled = async () => {
-    const userStr = localStorage.getItem('user');
-
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        token = user.token;
-    }
+export const fetchCancelled = async (token) =>{
+ 
       const res = await axios.get(`${API_URL}/api/taskFilters/cancelled`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -82,14 +66,8 @@ export const fetchCancelled = async () => {
       return res.data;
   };
   // משימות מגירה
-export const fetchDrawer = async () => {
-    const userStr = localStorage.getItem('user');
-
-    let token = null;
-    if (userStr) {
-        const user = JSON.parse(userStr);
-        token = user.token;
-    }
+export const fetchDrawer = async (token) => {
+ 
       const res = await axios.get(`${API_URL}/api/taskFilters/drawer`, {
             headers: {
                 Authorization: `Bearer ${token}`,
