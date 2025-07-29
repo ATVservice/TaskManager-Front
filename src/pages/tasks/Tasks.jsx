@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getMoreDetails, getTasks } from '../../services/taskService';
+import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasks'
 import { Copy, Pencil, Trash, History, Plus, Search } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
 import { duplicateTask } from '../../services/taskService';
@@ -17,20 +18,55 @@ const Tasks = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
+    const [activeTab, setActiveTab] = useState('today');
 
-    const fetchTasks = async () => {
+
+    const fetchTasks = useCallback(async () => {
         try {
-            const data = await getTasks();
+            let data = [];
+
+            switch (activeTab) {
+                case 'today':
+                    data = await fetchTodayTasks();
+                    break;
+                case 'today-single':
+                    data = await fetchTodayTasks(false);
+                    break;
+                case 'today-recurring':
+                    data = await fetchTodayTasks(true);
+                    break;
+                case 'future':
+                    data = await getTasks();
+                    break;
+                case 'recurring':
+                    data = await fetchRecurringTasks();
+                    break;
+                case 'completed':
+                    data = await fetchCompleteds();
+                    break;
+                case 'cancelled':
+                    data = await fetchCancelled();
+                    break;
+                case 'drawer':
+                    data = await fetchDrawer();
+                    break;
+                default:
+                    data = [];
+            }
+
             setAllTasks(data);
         } catch (error) {
             alert(error.response?.data?.message || 'שגיאה בשליפת המשימות');
             console.error('Error getting tasks:', error);
         }
-    };
+    }, [activeTab]);
+
 
     useEffect(() => {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return;
         fetchTasks();
-    }, []);
+    }, [activeTab]);
 
     const MoreDetails = async (_id) => {
         try {
@@ -91,8 +127,8 @@ const Tasks = () => {
         },
         { headerName: 'סטטוס', field: 'status' },
         {
-            headerName: 'פרטים', field: 'details', cellRenderer: (params) => (
-                <button onClick={() => MoreDetails(params.data._id)}>צפה בפרטים</button>
+            headerName: 'פרטים', field: 'details', maxWidth: 100, cellRenderer: (params) => (
+                <button className='details' onClick={() => MoreDetails(params.data._id)}>לפרטים</button>
             )
         },
         {
@@ -118,20 +154,40 @@ const Tasks = () => {
     return (
         <div className="page-container">
             <div className="controls-container">
-                <div> <Search /></div>
+                {/* <div> <Search /></div> */}
                 <div>
-                <input
-                    type="text"
-                    placeholder="חיפוש"
-                    value={filters.keyword}
-                    onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
-                    className="search-input"
-                />
+                    <input
+                        type="text"
+                        placeholder="חיפוש"
+                        value={filters.keyword}
+                        onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                        className="search-input"
+                    />
                 </div>
-
                 <button className="add-task-button" onClick={() => setShowCreatePopup(true)}>
                     <Plus size={20} color="#fafafa" /> הוסף משימה
                 </button>
+                <div className="tabs-container">
+                {[
+                    { key: 'today', label: 'משימות להיום' },
+                    { key: 'today-single', label: 'שוטפות' },
+                    { key: 'today-recurring', label: 'קבועות' },
+                    { key: 'future', label: 'משימות עתידיות' },
+                    { key: 'recurring', label: 'קבועות' },
+                    { key: 'completed', label: 'בוצעו' },
+                    { key: 'cancelled', label: 'בוטלו' },
+                    { key: 'drawer', label: 'מגירה' },
+                ].map(tab => (
+                    <button
+                        key={tab.key}
+                        className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
+                        onClick={() => setActiveTab(tab.key)}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
+ 
             </div>
 
             {/* הפופאפ */}
@@ -163,6 +219,8 @@ const Tasks = () => {
                     {details.project && <p>פרויקט: {details.project}</p>}
                 </div>
             )}
+
+
 
 
             {/* הטבלה */}
