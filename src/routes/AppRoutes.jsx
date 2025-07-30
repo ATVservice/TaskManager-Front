@@ -6,6 +6,7 @@ import Association from '../pages/association/Association';
 import { AuthContext } from '../context/AuthContext';
 import Register from '../pages/register/Register'
 import CreateTask from '../components/createTask/CreateTask';
+import RecyclingBin from '../pages/recyclingBin/RecyclingBin';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
@@ -23,6 +24,8 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/createTask" element={<CreateTask />} />
       <Route path='/tasks' element={<Tasks />} />
+      <Route path='/recyclingBin' element={<RecyclingBin />} />
+
 
       {user.role === 'מנהל' && (
         <>
@@ -34,7 +37,7 @@ const AppRoutes = () => {
 
       {user.role === 'עובד' && (
         <>
-          <Route path="*" element={<Navigate to="/mytasks" />} />
+          <Route path="*" element={<Navigate to="/tasks" />} />
         </>
       )}
     </Routes>

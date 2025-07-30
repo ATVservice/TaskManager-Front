@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import MultiSelect from "../multiSelect/MultiSelect";
 import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
@@ -6,8 +6,10 @@ import { createTask } from '../../services/taskService';
 
 
 import "./CreateTask.css";
+import { AuthContext } from "../../context/AuthContext";
 
 const CreateTask = ({ onClose, onTaskCreated }) => {
+    const { user } = useContext(AuthContext);
 
     const [associations, setAssociations] = useState([]);
     const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
@@ -58,9 +60,11 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
     });
     const [allUsers, setAllUsers] = useState([]);
     useEffect(() => {
+        const token = user?.token;
+
         async function fetchUsers() {
             try {
-                const users = await getUserNames();
+                const users = await getUserNames(token);
                 console.log("!!!!!", users);
                 setAllUsers(users);
                 console.log("allUsers", users);
@@ -78,9 +82,10 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         fetchUsers();
     }, []);
     useEffect(() => {
+        const token = user?.token;
         const getAssociations = async () => {
             try {
-                const data = await fetchAllAssociations();
+                const data = await fetchAllAssociations(token);
                 setAssociations(data);
             } catch (error) {
                 console.error('Error fetching associations:', error);
@@ -102,6 +107,8 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
 
     const handleSubmit = async (e) => {
+        const token = user?.token;
+
         e.preventDefault();
         try {
 
@@ -111,7 +118,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             };
             console.log("preparedForm", preparedForm);
 
-            await createTask(preparedForm);
+            await createTask(preparedForm, token);
             alert("משימה נוצרה בהצלחה!");
             onTaskCreated();
             onClose();

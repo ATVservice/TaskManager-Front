@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { getMoreDetails, getTasks } from '../../services/taskService';
-import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasks';
+import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
 import { FilterContext } from '../../context/FilterContext';
@@ -133,21 +134,28 @@ const Tasks = () => {
 
         fetchFiltersData();
     }, []);
-
     useEffect(() => {
-        if (gridRef.current?.api && filters) {
+        if (gridRef.current?.api && allTasks.length > 0) {
             setTimeout(() => {
                 gridRef.current.api.onFilterChanged();
             }, 0);
         }
-
-    }, [filters]);
-
-    useEffect(() => {
-        if (gridRef.current?.api && allTasks.length > 0) {
-            gridRef.current.api.onFilterChanged();
-        }
     }, [filters, allTasks]);
+
+    // useEffect(() => {
+    //     if (gridRef.current?.api && filters) {
+    //         setTimeout(() => {
+    //             gridRef.current.api.onFilterChanged();
+    //         }, 0);
+    //     }
+
+    // }, [filters]);
+
+    // useEffect(() => {
+    //     if (gridRef.current?.api && allTasks.length > 0) {
+    //         gridRef.current.api.onFilterChanged();
+    //     }
+    // }, [filters, allTasks]);
 
 
 
@@ -188,18 +196,36 @@ const Tasks = () => {
         alert(`היסטוריית המשימה ${taskId} תתממשק בהמשך!`);
     };
 
+
     const toDelete = async (taskId) => {
-        const token = user?.token;
-        const password = "bat1234!";
-        try {
-            await fetchDeleteTask(token, password, taskId);
-            alert("המשימה נמחקה בהצלחה");
-            refreshTasks();
-            // await fetchTasks(activeTab);
-        } catch (error) {
-            alert(error.response?.data?.message);
-        }
+      const token = user?.token;
+    
+      const { value: password, isConfirmed } = await Swal.fire({
+        title: 'אימות סיסמה למחיקת משימה',
+        input: 'password',
+        inputLabel: 'הכנס/י סיסמה',
+        inputPlaceholder: 'סיסמה נדרשת למחיקה',
+        confirmButtonText: 'אשר',
+        cancelButtonText: 'ביטול',
+        showCancelButton: true,
+        inputValidator: (value) => {
+          if (!value) {
+            return 'חייבים להזין סיסמה';
+          }
+        },
+      });
+    
+      if (!isConfirmed) return; 
+    
+      try {
+        await fetchDeleteTask(token, password, taskId);
+        alert("המשימה נמחקה בהצלחה");
+        refreshTasks();
+      } catch (error) {
+        alert(error.response?.data?.message || 'שגיאה במחיקה');
+      }
     };
+    
 
     const toEdit = (taskId) => {
         alert(`עריכת המשימה ${taskId} תתממשק בהמשך!`);
@@ -510,12 +536,8 @@ const Tasks = () => {
                     />
                 )}
 
-
-
             </div>
-
-
-
+            
 
             <div className="ag-theme-alpine">
                 <AgGridReact
