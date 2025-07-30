@@ -13,6 +13,7 @@ import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
 import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
+import { fetchDeleteTask } from '../../services/deleteTaskService.js';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 // ✨ פונקציה לחיפוש חכם
@@ -57,12 +58,12 @@ const Tasks = () => {
 
     const gridRef = useRef();
 
-    const fetchTasks = useCallback(async () => {
+    const fetchTasks = useCallback(async (tab) => {
 
         const token = user?.token;
         try {
             let data = [];
-            switch (activeTab) {
+            switch (tab) {
                 case 'today':
                     data = await fetchTodayTasks();
                     break;
@@ -97,13 +98,19 @@ const Tasks = () => {
             alert(error.response?.data?.message || 'שגיאה בשליפת המשימות');
             console.error('Error getting tasks:', error);
         }
-    }, [activeTab]);
+    }, [user]);
+    const [version, setVersion] = useState(0);
+
+    const refreshTasks = () => setVersion(v => v + 1);
+    useEffect(() => {
+        fetchTasks(activeTab);
+    }, [activeTab, version]);
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (!userStr) return;
-        fetchTasks();
-    }, [activeTab]);
+        fetchTasks(activeTab);
+    }, [activeTab, fetchTasks]);
 
 
     useEffect(() => {
@@ -157,11 +164,12 @@ const Tasks = () => {
     };
 
     const toDuplicateTask = async (taskId) => {
+        const token = user?.token;
         try {
-            await duplicateTask(taskId);
+            await duplicateTask(taskId, token);
             alert("משימה שוכפלה בהצלחה!");
-            const updatedTasks = await getTasks();
-            setAllTasks(enrichTasksWithSearchText(updatedTasks));
+            refreshTasks();
+            // await fetchTasks(activeTab);
         } catch (error) {
             alert(error.response?.data?.message);
         }
@@ -180,8 +188,17 @@ const Tasks = () => {
         alert(`היסטוריית המשימה ${taskId} תתממשק בהמשך!`);
     };
 
-    const toDelete = (taskId) => {
-        alert(`מחיקת משימה ${taskId} תתממשק בהמשך!`);
+    const toDelete = async (taskId) => {
+        const token = user?.token;
+        const password = "bat1234!";
+        try {
+            await fetchDeleteTask(token, password, taskId);
+            alert("המשימה נמחקה בהצלחה");
+            refreshTasks();
+            // await fetchTasks(activeTab);
+        } catch (error) {
+            alert(error.response?.data?.message);
+        }
     };
 
     const toEdit = (taskId) => {
@@ -233,7 +250,7 @@ const Tasks = () => {
     const [columnDefs] = useState([
         {
             headerName: "", field: "duplicate", maxWidth: 50,
-            cellRenderer: (params) => <Copy size={20} color="#042486" onClick={() => toDuplicateTask(params.data.taskId)} />
+            cellRenderer: (params) => <Copy size={20} color="#042486" onClick={() => toDuplicateTask(params.data._id)} />
         },
         { headerName: "מס'", field: 'taskId', maxWidth: 100 },
         { headerName: 'כותרת', field: 'title' },
@@ -254,15 +271,15 @@ const Tasks = () => {
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <History size={20} color="#042486" onClick={() => toHistory(params.data.taskId)} />
-        },
-        {
-            headerName: "", field: "edit", maxWidth: 50,
-            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toEdit(params.data.taskId)} />
+            cellRenderer: (params) => <History size={20} color="#042486" onClick={() => toHistory(params.data._id)} />
         },
         {
             headerName: "", field: "delete", maxWidth: 50,
-            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toDelete(params.data.taskId)} />
+            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toDelete(params.data._id)} />
+        },
+        {
+            headerName: "", field: "edit", maxWidth: 50,
+            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data._id)} />
         },
     ]);
 
@@ -314,7 +331,8 @@ const Tasks = () => {
                 <div className="popup-overlay">
                     <div className="popup-content">
                         <button onClick={handleClosePopup} className="close-btn">X</button>
-                        <CreateTask onClose={handleClosePopup} onTaskCreated={fetchTasks} />
+                        <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
+
                     </div>
                 </div>
             )}

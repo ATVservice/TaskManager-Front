@@ -48,14 +48,8 @@ export const getMoreDetails = async (_id) => {
   console.log("details", response.data);
   return response.data;
 };
-export const duplicateTask = async (taskId) => {
-  const userStr = localStorage.getItem('user');
+export const duplicateTask = async (taskId, token) => {
 
-  let token = null;
-  if (userStr) {
-    const user = JSON.parse(userStr);
-    token = user.token;
-  }
   const response = await axios.post(`${API_URL}/api/tasks/duplicateTask `, { taskId },
     {
       headers: {
