@@ -126,11 +126,22 @@ const Tasks = () => {
 
         fetchFiltersData();
     }, []);
+
     useEffect(() => {
-        if (gridRef.current?.api) {
-            gridRef.current.api.onFilterChanged(); 
+        if (gridRef.current?.api && filters) {
+            setTimeout(() => {
+                gridRef.current.api.onFilterChanged();
+            }, 0);
         }
+
     }, [filters]);
+
+    useEffect(() => {
+        if (gridRef.current?.api && allTasks.length > 0) {
+            gridRef.current.api.onFilterChanged();
+        }
+    }, [filters, allTasks]);
+
 
 
 
@@ -178,7 +189,7 @@ const Tasks = () => {
     };
 
     const isExternalFilterPresent = () => {
-        return Object.values(filters).some(val => val); 
+        return Object.values(filters).some(val => val);
     };
 
     const doesExternalFilterPass = (node) => {
@@ -501,7 +512,7 @@ const Tasks = () => {
                     animateRows={true}
                     isExternalFilterPresent={isExternalFilterPresent}
                     doesExternalFilterPass={doesExternalFilterPass}
-                    
+
                 />
             </div>
         </div>
