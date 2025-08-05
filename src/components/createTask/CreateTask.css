@@ -21,7 +21,7 @@
     padding: 0;
     direction: rtl; /* יישור לימין עבור עברית */
   }
-  
+ 
   .create-task-container {
     max-width: 1200px;
     margin: 40px auto;

@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import Register from '../pages/register/Register'
 import CreateTask from '../components/createTask/CreateTask';
 import RecyclingBin from '../pages/recyclingBin/RecyclingBin';
+import History from '../pages/history/History';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
@@ -25,6 +26,8 @@ const AppRoutes = () => {
       <Route path="/createTask" element={<CreateTask />} />
       <Route path='/tasks' element={<Tasks />} />
       <Route path='/recyclingBin' element={<RecyclingBin />} />
+      <Route path="/history/:taskId" element={<History />} />
+
 
 
       {user.role === 'מנהל' && (

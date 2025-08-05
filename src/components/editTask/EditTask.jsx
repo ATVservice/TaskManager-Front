@@ -2,19 +2,19 @@ import React, { useContext, useEffect, useState } from "react";
 import MultiSelect from "../multiSelect/MultiSelect";
 import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
-import { createTask } from '../../services/taskService';
-
-
-import "./CreateTask.css";
+import { updateTask } from '../../services/updateService';
 import { AuthContext } from "../../context/AuthContext";
-
-const CreateTask = ({ onClose, onTaskCreated }) => {
+import "../createTask/CreateTask.css";
+const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
+    console.log("לפני", taskToEdit)
     const { user } = useContext(AuthContext);
-
+    const [allUsers, setAllUsers] = useState([]);
     const [associations, setAssociations] = useState([]);
+
     const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
     const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
     const frequencyTypeOptions = ["שנתי", "חודשי", "יומי פרטני", "יומי"];
+
     const weekDays = [
         { label: "ראשון", value: 0 },
         { label: "שני", value: 1 },
@@ -39,65 +39,34 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
 
     ];
-    const [form, setForm] = useState({
-        title: "",
-        details: "",
-        dueDate: "",
-        finalDeadline: "",
-        importance: "",
-        subImportance: "",
-        assignees: [],
-        mainAssignee: "",
-        organization: "",
-        project: "",
-        isRecurring: false,
-        frequencyType: "",
-        frequencyDetails: {
-            days: [],
-            month: "",
-            day:""
-        },
-    });
-    const [allUsers, setAllUsers] = useState([]);
+
+    const [form, setForm] = useState(null);
+
+    // שליפת נתונים
     useEffect(() => {
         const token = user?.token;
+        getUserNames(token).then(setAllUsers).catch(console.error);
+        fetchAllAssociations(token).then(setAssociations).catch(console.error);
+    }, []);
 
-        async function fetchUsers() {
-            try {
-                const users = await getUserNames(token);
-                console.log("!!!!!", users);
-                setAllUsers(users);
-                console.log("allUsers", users);
-            } catch (err) {
-                console.error("שגיאה בשליפת משתמשים:", err);
-                if (err.response?.status === 401) {
-                    alert("הגישה נדחתה. אנא התחבר שוב.");
-                } else {
-                    console.error("שגיאה בלתי צפויה:", err);
-                    alert("אירעה שגיאה בשליפת המשתמשים.");
-                }
-            }
+    // מילוי הטופס לפי המשימה לעריכה
+    useEffect(() => {
+        if (taskToEdit && allUsers.length > 0) {
+            const formatDate = (dateStr) => dateStr?.split("T")[0];
+            setForm({
+                ...taskToEdit,
+                dueDate: formatDate(taskToEdit.dueDate),
+                finalDeadline: formatDate(taskToEdit.finalDeadline),
+                assignees: allUsers.filter((u) => taskToEdit.assignees.includes(u._id)),
+                mainAssignee: allUsers.find((u) => u._id === taskToEdit.mainAssignee?._id),
+                organization: taskToEdit.organization,
+                frequencyDetails: taskToEdit.frequencyDetails || {},
+            });
         }
-
-        fetchUsers();
-    }, []);
-    useEffect(() => {
-        const token = user?.token;
-        const getAssociations = async () => {
-            try {
-                const data = await fetchAllAssociations(token);
-                setAssociations(data);
-            } catch (error) {
-                console.error('Error fetching associations:', error);
-            }
-        };
-
-        getAssociations();
-    }, []);
+    }, [taskToEdit, allUsers]);
 
 
     const handleChange = (e) => {
-
         const { name, value, type, checked } = e.target;
         setForm((prev) => ({
             ...prev,
@@ -105,40 +74,37 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         }));
     };
 
-
     const handleSubmit = async (e) => {
-        const token = user?.token;
-
         e.preventDefault();
+        const token = user?.token;
         try {
-
             const preparedForm = {
                 ...form,
-                assignees: form.assignees.map((u) => u._id), 
+                assignees: form.assignees.map(u => u._id),
             };
-            console.log("preparedForm", preparedForm);
-
-            await createTask(preparedForm, token);
-            alert("משימה נוצרה בהצלחה!");
-            onTaskCreated();
+            console.log("אחרי", preparedForm)
+            await updateTask(taskToEdit._id, preparedForm, token);
+            alert("המשימה עודכנה בהצלחה!");
+            onTaskUpdated();
             onClose();
         } catch (error) {
-            alert(error.response?.data?.message || 'שגיאה ביצירת המשימה');
-            console.error('Error adding task:', error);
+            alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
+            console.error("Update error:", error);
         }
-
     };
+
+    if (!form) return <div>טוען...</div>;
 
     return (
         <div className="create-task-container">
-            <h4>צור משימה</h4>
+            <h4>עריכת משימה</h4>
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
 
                     <div className="form-group">
                         <label>כותרת</label>
 
-                        <input name="title" value={form.title} onChange={handleChange} required />
+                        <input name="title" value={form.title} onChange={handleChange} />
                     </div>
 
                     <div className="form-group">
@@ -162,7 +128,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         <label>אחראיים</label>
                         <MultiSelect
                             className="select-multiple"
-                            required
                             options={allUsers}
                             selected={form.assignees}
                             onChange={(newSelected) =>
@@ -172,10 +137,19 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                     </div>
                     <div className="form-group">
                         <label>עמותה</label>
-                        <select name="organization" value={form.organization} onChange={handleChange} required>
-                            <option value="">בחר</option>
+                        <select name="organization" value={form.organization?._id || ""}
+                            onChange={(e) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    organization: associations.find((a) => a._id === e.target.value)
+                                }))
+                            }
+
+                        >
                             {associations.map((association) => (
-                                <option key={association._id} value={association._id}>{association.name}</option>
+                                <option key={association._id} value={association._id}>
+                                    {association.name}
+                                </option>
                             ))}
                         </select>
                     </div>
@@ -183,7 +157,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         <label>תאריך יעד</label>
 
                         <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]} required />
+                            min={new Date().toISOString().split("T")[0]} />
                     </div>
 
                 </div>
@@ -191,29 +165,48 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
                     <div className="form-group">
                         <label>אחראי ראשי</label>
-                        <select name="mainAssignee" value={form.mainAssignee} onChange={handleChange} required>
-                            <option value="">בחר</option>
+                        <select
+                            name="mainAssignee"
+                            value={form.mainAssignee?._id || ""}
+                            onChange={(e) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    mainAssignee: allUsers.find((u) => u._id === e.target.value)
+                                }))
+                            }
+
+                        >
                             {form.assignees.map((user) => (
-                                <option key={user._id} value={user._id}>{user.userName}</option>
+                                <option key={user._id} value={user._id}>
+                                    {user.userName}
+                                </option>
                             ))}
                         </select>
+
                     </div>
 
                     <div className="form-group">
                         <label>רמת חשיבות</label>
-                        <select name="importance" value={form.importance} onChange={handleChange} required>
-                            <option value="">בחר</option>
+                        <select
+                            name="importance"
+                            value={form.importance || ""}
+                            onChange={handleChange}
+
+                        >
                             {allImportanceOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt} </option>
+                                <option key={opt} value={opt}>
+                                    {opt}
+                                </option>
                             ))}
                         </select>
+
                     </div>
                     {form.dueDate &&
                         <div className="form-group">
                             <label>תאריך סופי</label>
 
                             <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
-                                min={form.dueDate} required />
+                                min={form.dueDate} />
                         </div>}
 
 
@@ -221,7 +214,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 <div className="form-row">
 
 
-                    <div className="form-group">
+                    {/* <div className="form-group">
                         <label htmlFor="isRecurring">משימה קבועה?</label>
                         <input
                             id="isRecurring"
@@ -230,18 +223,25 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             checked={form.isRecurring}
                             onChange={handleChange}
                         />
-                    </div>
+                    </div> */}
                     <div className="form-group"></div>
 
                     {form.importance === "מיידי" &&
                         <div className="form-group">
                             <label>תת דירוג</label>
-                            <select name="subImportance" value={form.subImportance} onChange={handleChange} required>
-                                <option value="">בחר</option>
-                                {allSubImportanceOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                            <select
+                                name="subImportance"
+                                value={form.subImportance || ""}
+                                onChange={handleChange}
+
+                            >
+                                {allImportanceOptions.map((opt) => (
+                                    <option key={opt} value={opt}>
+                                        {opt}
+                                    </option>
                                 ))}
                             </select>
+
                         </div>
                     }
 
@@ -252,7 +252,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         <div>
                             <div className="form-group">
                                 <label htmlFor="frequencyType">סוג תדירות</label>
-                                <select name="frequencyType" value={form.frequencyType} onChange={handleChange} required>
+                                <select name="frequencyType" value={form.frequencyType} onChange={handleChange} >
                                     <option value="">בחר</option>
                                     {frequencyTypeOptions.map((opt) => (
                                         <option key={opt} value={opt}>{opt}</option>
@@ -358,7 +358,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                                     </option>
                                                 ))}
                                             </select>
-                                            
+
 
                                             <label>בחר יום:</label>
                                             <select
@@ -390,13 +390,13 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                     <div className="form-group"></div>
 
                     <div className="form-group">
-                        <button type="submit">הוסף</button>
+                        <button type="submit">עדכן</button>
                     </div>
 
                 </div>
             </form>
         </div>
     );
-}
+};
 
-export default CreateTask;
+export default EditTask;

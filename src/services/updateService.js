@@ -12,3 +12,14 @@ export const updateTaskStatus = async (taskId, status, token,  statusNote = '') 
 
     return response.data;
 };
+export const updateTask = async (taskId, preparedForm, token) => {
+    console.log("preparedForm" ,preparedForm)
+    const response = await axios.put(`${API_URL}/api/update/updateTask/${taskId}`, {preparedForm},{
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+    });
+
+    return response.data;
+};
