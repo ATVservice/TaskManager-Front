@@ -61,6 +61,8 @@ const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 
 
 const Tasks = () => {
     const navigate = useNavigate();
+    const suppressedChangeNodesRef = useRef(new Set());
+
 
     const { user } = useContext(AuthContext);
 
@@ -162,8 +164,25 @@ const Tasks = () => {
         }
     }, [filters, allTasks]);
 
+    const canCancelTask = (userObj, taskData) => {
+        if (!userObj || !taskData) return false;
+        // admin role
+        if (userObj.role === 'מנהל') return true;
 
+        const userId = userObj.id || userObj._id || userObj._id?.toString?.() || userObj.toString?.();
 
+        // creator (taskData.creator may be id or object)
+        if (taskData.creator && String(taskData.creator) === String(userId)) return true;
+        if (taskData.creator && taskData.creator._id && String(taskData.creator._id) === String(userId)) return true;
+
+        // mainAssignee (may be object or id)
+        if (taskData.mainAssignee) {
+            if (taskData.mainAssignee._id && String(taskData.mainAssignee._id) === String(userId)) return true;
+            if (String(taskData.mainAssignee) === String(userId)) return true;
+        }
+
+        return false;
+    };
 
 
     const MoreDetails = async (_id) => {
@@ -353,12 +372,6 @@ const Tasks = () => {
                 );
             }
         },
-        // {
-        //     headerName: 'סטטוס',
-        //     valueGetter: (params) => {
-        //         return params.data.personalDetails?.status || params.data.status;
-        //     }
-        // },
         {
             headerName: 'פרטים', field: 'details', maxWidth: 100,
             cellRenderer: (params) => (
@@ -379,11 +392,27 @@ const Tasks = () => {
         },
     ]);
     const onCellValueChanged = async (params) => {
+        if (suppressedChangeNodesRef.current.has(params.node.id)) {
+            suppressedChangeNodesRef.current.delete(params.node.id);
+            return;
+        }
         const token = user?.token;
+
 
         if (params.colDef.field === 'status') {
             const taskId = params.data._id;
             const newStatus = params.newValue;
+            const oldStatus = params.oldValue;
+
+            if (newStatus === 'בוטלה') {
+                const allowed = canCancelTask(user, params.data);
+                if (!allowed) {
+                    suppressedChangeNodesRef.current.add(params.node.id);
+                    params.node.setDataValue(params.colDef.field, oldStatus);
+                    alert('רק האחראי הראשי, מקים המשימה או המנהל יכולים לבטל משימה.');
+                    return;
+                }
+            }
 
             try {
                 const { value: statusNote, isConfirmed } = await Swal.fire({
@@ -406,10 +435,11 @@ const Tasks = () => {
             }
             catch (error) {
                 console.log("!", error.response?.data?.message || error.message || 'שגיאה לא ידועה')
-                //    alert(error.response?.data?.message || error.message || 'שגיאה לא ידועה');
+                alert(error.response?.data?.message || error.message || 'שגיאה לא ידועה');
 
-                // אפשר להחזיר את הערך הישן
-                //params.node.setDataValue(params.colDef.field, params.oldValue);
+                // החזרת הערך הישן אם קרתה שגיאה בשרת
+                suppressedChangeNodesRef.current.add(params.node.id);
+                params.node.setDataValue(params.colDef.field, oldStatus);
             }
         }
     };
@@ -476,7 +506,7 @@ const Tasks = () => {
                         <EditTask
                             taskToEdit={selectedTask}
                             onClose={() => setShowEditModal(false)}
-                            onTaskUpdated={fetchTasks}
+                            onTaskUpdated={refreshTasks} // <-- השינוי כאן
                         />
                     </div>
                 </div>

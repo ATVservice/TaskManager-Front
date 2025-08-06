@@ -5,398 +5,285 @@ import { fetchAllAssociations } from '../../services/associationService';
 import { updateTask } from '../../services/updateService';
 import { AuthContext } from "../../context/AuthContext";
 import "../createTask/CreateTask.css";
+
 const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
-    console.log("לפני", taskToEdit)
-    const { user } = useContext(AuthContext);
-    const [allUsers, setAllUsers] = useState([]);
-    const [associations, setAssociations] = useState([]);
+  const { user } = useContext(AuthContext);
 
-    const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
-    const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
-    const frequencyTypeOptions = ["שנתי", "חודשי", "יומי פרטני", "יומי"];
+  const [allUsers, setAllUsers] = useState([]);
+  const [associations, setAssociations] = useState([]);
+  const [form, setForm] = useState(null);
 
-    const weekDays = [
-        { label: "ראשון", value: 0 },
-        { label: "שני", value: 1 },
-        { label: "שלישי", value: 2 },
-        { label: "רביעי", value: 3 },
-        { label: "חמישי", value: 4 },
-        { label: "שישי", value: 5 },
-    ];
-    const months = [
-        { label: "ינואר", value: 1 },
-        { label: "פברואר", value: 2 },
-        { label: "מרץ", value: 3 },
-        { label: "אפריל", value: 4 },
-        { label: "מאי", value: 5 },
-        { label: "יוני", value: 6 },
-        { label: "יולי", value: 7 },
-        { label: "אוגוסט", value: 8 },
-        { label: "ספטמבר", value: 9 },
-        { label: "אוקטובר", value: 10 },
-        { label: "נובמבר", value: 11 },
-        { label: "דצמבר", value: 12 },
+  const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
+  const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
+  const allStatus = ['בתהליך', 'בטיפול', 'הושלם', 'מושהה', 'בוטלה'];
 
+  useEffect(() => {
+    const token = user?.token;
+    getUserNames(token).then(setAllUsers).catch(console.error);
+    fetchAllAssociations(token).then(setAssociations).catch(console.error);
+  }, [user?.token]);
 
-    ];
+  const formatDate = (d) => {
+    if (!d) return "";
+    if (typeof d === "string") return d.split("T")[0];
+    try { return new Date(d).toISOString().split("T")[0]; } catch { return ""; }
+  };
 
-    const [form, setForm] = useState(null);
+  const normalizeAssignees = (rawAssignees = []) => {
+    return rawAssignees
+      .map(a => {
+        if (!a) return null;
+        const id = typeof a === "string" ? a : (a._id || a.id);
+        const found = allUsers.find(u => u._id === id);
+        return found || (typeof a === "object" ? a : { _id: id, userName: id });
+      })
+      .filter(Boolean);
+  };
 
-    // שליפת נתונים
-    useEffect(() => {
-        const token = user?.token;
-        getUserNames(token).then(setAllUsers).catch(console.error);
-        fetchAllAssociations(token).then(setAssociations).catch(console.error);
-    }, []);
+  useEffect(() => {
+    if (!taskToEdit || allUsers.length === 0) return;
 
-    // מילוי הטופס לפי המשימה לעריכה
-    useEffect(() => {
-        if (taskToEdit && allUsers.length > 0) {
-            const formatDate = (dateStr) => dateStr?.split("T")[0];
-            setForm({
-                ...taskToEdit,
-                dueDate: formatDate(taskToEdit.dueDate),
-                finalDeadline: formatDate(taskToEdit.finalDeadline),
-                assignees: allUsers.filter((u) => taskToEdit.assignees.includes(u._id)),
-                mainAssignee: allUsers.find((u) => u._id === taskToEdit.mainAssignee?._id),
-                organization: taskToEdit.organization,
-                frequencyDetails: taskToEdit.frequencyDetails || {},
-            });
+    const normalizedAssignees = normalizeAssignees(taskToEdit.assignees || []);
+    const mainAssigneeObj = (() => {
+      const m = taskToEdit.mainAssignee;
+      if (!m) return null;
+      const id = typeof m === "string" ? m : (m._id || m.id);
+      return allUsers.find(u => u._id === id) || (typeof m === "object" ? m : { _id: id, userName: id });
+    })();
+
+    setForm({
+      title: taskToEdit.title || "",
+      details: taskToEdit.details || "",
+      project: taskToEdit.project || "",
+      dueDate: formatDate(taskToEdit.dueDate),
+      finalDeadline: formatDate(taskToEdit.finalDeadline),
+      importance: taskToEdit.importance || "",
+      subImportance: taskToEdit.subImportance ?? undefined,
+      assignees: normalizedAssignees,
+      mainAssignee: mainAssigneeObj,
+      organization: taskToEdit.organization || null,
+      status: taskToEdit.status || "",
+      isRecurring: !!taskToEdit.isRecurring,
+      frequencyType: taskToEdit.frequencyType || "",
+      frequencyDetails: taskToEdit.frequencyDetails || {},
+    });
+  }, [taskToEdit, allUsers]);
+
+  // אם importance שונה שלא "מיידי" - נמחק לחלוטין את שדה ה-subImportance מה-state
+  useEffect(() => {
+    if (!form) return;
+    if (form.importance !== "מיידי" && Object.prototype.hasOwnProperty.call(form, 'subImportance')) {
+      setForm(prev => {
+        const { subImportance, ...rest } = prev;
+        return { ...rest };
+      });
+    }
+  }, [form?.importance]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (type === "checkbox") {
+      setForm(prev => ({ ...prev, [name]: checked }));
+      return;
+    }
+
+    if (name === "importance") {
+      setForm(prev => {
+        if (value !== "מיידי") {
+          const { subImportance, ...rest } = prev;
+          return { ...rest, importance: value };
         }
-    }, [taskToEdit, allUsers]);
+        return { ...prev, importance: value };
+      });
+      return;
+    }
 
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = user?.token;
+    try {
+      // קופצים רק אם יש form
+      if (!form) throw new Error("אין טופס למלא");
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const token = user?.token;
-        try {
-            const preparedForm = {
-                ...form,
-                assignees: form.assignees.map(u => u._id),
-            };
-            console.log("אחרי", preparedForm)
-            await updateTask(taskToEdit._id, preparedForm, token);
-            alert("המשימה עודכנה בהצלחה!");
-            onTaskUpdated();
-            onClose();
-        } catch (error) {
-            alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
-            console.error("Update error:", error);
+      // יוצאים מ־form את subImportance כדי לא לכלול אותו שלא בצורך
+      const { subImportance, ...rest } = form;
+      const preparedForm = {
+        ...rest,
+        assignees: Array.isArray(form.assignees) ? form.assignees.map(a => a._id || a.id || a) : [],
+      };
+
+      // במקרה וחשיבות איננה "מיידי" - מוחקים בטוח את השדה מה־payload
+      if (form.importance !== "מיידי") {
+        if ('subImportance' in preparedForm) delete preparedForm.subImportance;
+      } else {
+        // אם כן "מיידי" - הוסיפי רק אם יש ערך אמיתי שלא מחרוזת ריקה
+        if (typeof subImportance === "string") {
+          if (subImportance.trim() !== "") {
+            preparedForm.subImportance = subImportance;
+          } else {
+            // אם ריק — וודאי שלא נשלח
+            if ('subImportance' in preparedForm) delete preparedForm.subImportance;
+          }
+        } else if (subImportance !== undefined) {
+          preparedForm.subImportance = subImportance;
         }
-    };
+      }
 
-    if (!form) return <div>טוען...</div>;
+      // --- DEBUG: בדקי בקונסול מה הולך להישלח ---
+      console.log("Prepared payload for updateTask:", JSON.stringify(preparedForm, null, 2));
 
-    return (
-        <div className="create-task-container">
-            <h4>עריכת משימה</h4>
-            <form onSubmit={handleSubmit}>
-                <div className="form-row">
+      // שליחה לשרת
+      await updateTask(taskToEdit._id, preparedForm, token);
 
-                    <div className="form-group">
-                        <label>כותרת</label>
+      alert("המשימה עודכנה בהצלחה!");
+      onTaskUpdated();
+      onClose();
+    } catch (error) {
+      console.error("Update error:", error);
+      alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
+    }
+  };
 
-                        <input name="title" value={form.title} onChange={handleChange} />
-                    </div>
+  if (!form) return <div>טוען...</div>;
 
-                    <div className="form-group">
-                        <label>פרטים</label>
+  return (
+    <div className="create-task-container">
+      <h4>עריכת משימה</h4>
+      <form onSubmit={handleSubmit}>
+        <div className="form-row">
+          <div className="form-group">
+            <label>כותרת</label>
+            <input name="title" value={form.title} onChange={handleChange} />
+          </div>
 
-                        <input name="details" value={form.details} onChange={handleChange} />
-                    </div>
-                    <div className="form-group">
-                        <label>פרויקט</label>
-                        <input
-                            id="project"
-                            name="project"
-                            value={form.project}
-                            onChange={handleChange}
-                        />
-                    </div>
+          <div className="form-group">
+            <label>פרטים</label>
+            <input name="details" value={form.details} onChange={handleChange} />
+          </div>
 
-                </div>
-                <div className="form-row">
-                    <div className="form-group">
-                        <label>אחראיים</label>
-                        <MultiSelect
-                            className="select-multiple"
-                            options={allUsers}
-                            selected={form.assignees}
-                            onChange={(newSelected) =>
-                                setForm((prev) => ({ ...prev, assignees: newSelected }))
-                            }
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>עמותה</label>
-                        <select name="organization" value={form.organization?._id || ""}
-                            onChange={(e) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    organization: associations.find((a) => a._id === e.target.value)
-                                }))
-                            }
-
-                        >
-                            {associations.map((association) => (
-                                <option key={association._id} value={association._id}>
-                                    {association.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label>תאריך יעד</label>
-
-                        <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]} />
-                    </div>
-
-                </div>
-                <div className="form-row">
-
-                    <div className="form-group">
-                        <label>אחראי ראשי</label>
-                        <select
-                            name="mainAssignee"
-                            value={form.mainAssignee?._id || ""}
-                            onChange={(e) =>
-                                setForm((prev) => ({
-                                    ...prev,
-                                    mainAssignee: allUsers.find((u) => u._id === e.target.value)
-                                }))
-                            }
-
-                        >
-                            {form.assignees.map((user) => (
-                                <option key={user._id} value={user._id}>
-                                    {user.userName}
-                                </option>
-                            ))}
-                        </select>
-
-                    </div>
-
-                    <div className="form-group">
-                        <label>רמת חשיבות</label>
-                        <select
-                            name="importance"
-                            value={form.importance || ""}
-                            onChange={handleChange}
-
-                        >
-                            {allImportanceOptions.map((opt) => (
-                                <option key={opt} value={opt}>
-                                    {opt}
-                                </option>
-                            ))}
-                        </select>
-
-                    </div>
-                    {form.dueDate &&
-                        <div className="form-group">
-                            <label>תאריך סופי</label>
-
-                            <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
-                                min={form.dueDate} />
-                        </div>}
-
-
-                </div>
-                <div className="form-row">
-
-
-                    {/* <div className="form-group">
-                        <label htmlFor="isRecurring">משימה קבועה?</label>
-                        <input
-                            id="isRecurring"
-                            type="checkbox"
-                            name="isRecurring"
-                            checked={form.isRecurring}
-                            onChange={handleChange}
-                        />
-                    </div> */}
-                    <div className="form-group"></div>
-
-                    {form.importance === "מיידי" &&
-                        <div className="form-group">
-                            <label>תת דירוג</label>
-                            <select
-                                name="subImportance"
-                                value={form.subImportance || ""}
-                                onChange={handleChange}
-
-                            >
-                                {allImportanceOptions.map((opt) => (
-                                    <option key={opt} value={opt}>
-                                        {opt}
-                                    </option>
-                                ))}
-                            </select>
-
-                        </div>
-                    }
-
-
-                </div>
-                <div className="form-row">
-                    {form.isRecurring && (
-                        <div>
-                            <div className="form-group">
-                                <label htmlFor="frequencyType">סוג תדירות</label>
-                                <select name="frequencyType" value={form.frequencyType} onChange={handleChange} >
-                                    <option value="">בחר</option>
-                                    {frequencyTypeOptions.map((opt) => (
-                                        <option key={opt} value={opt}>{opt}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            {form.frequencyType &&
-                                <div className="form-group">
-                                    <label htmlFor="frequencyDetails">פרטי תדירות</label>
-                                    {form.frequencyType === "יומי" && (
-                                        <label>
-                                            כולל ימי שישי?
-                                            <input
-                                                type="checkbox"
-                                                checked={form.frequencyDetails.includingFriday || false}
-                                                onChange={(e) =>
-                                                    setForm(prev => ({
-                                                        ...prev,
-                                                        frequencyDetails: {
-                                                            ...prev.frequencyDetails,
-                                                            includingFriday: e.target.checked
-                                                        }
-                                                    }))
-                                                }
-                                            />
-                                        </label>
-
-                                    )}
-                                    {form.frequencyType === "יומי פרטני" && (
-                                        <div className="form-group">
-                                            <label>בחר ימים:</label>
-                                            {weekDays.map((day) => (
-                                                <label key={day.value} style={{ marginInlineEnd: '8px' }}>
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={form.frequencyDetails.days.includes(day.value)}
-                                                        onChange={(e) => {
-                                                            const checked = e.target.checked;
-                                                            setForm((prev) => {
-                                                                const prevDays = prev.frequencyDetails.days || [];
-                                                                const newDays = checked
-                                                                    ? [...prevDays, day.value]
-                                                                    : prevDays.filter((v) => v !== day.value);
-                                                                return {
-                                                                    ...prev,
-                                                                    frequencyDetails: {
-                                                                        ...prev.frequencyDetails,
-                                                                        days: newDays,
-                                                                    },
-                                                                };
-                                                            });
-                                                        }}
-                                                    />
-                                                    {day.label}
-                                                </label>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {form.frequencyType === 'חודשי' && (
-                                        <div className="form-group">
-
-                                            <label>בחר יום:</label>
-                                            <select
-                                                value={form.frequencyDetails.dayOfMonth}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        frequencyDetails: {
-                                                            ...prev.frequencyDetails,
-                                                            dayOfMonth: Number(e.target.value),
-                                                        },
-                                                    }))
-                                                }
-                                            >
-                                                <option value="">--בחר יום--</option>
-                                                {Array.from({ length: 31 }, (_, i) => i + 1).map((dayOfMonth) => (
-                                                    <option key={dayOfMonth} value={dayOfMonth}>
-                                                        {dayOfMonth.toString().padStart(2, "0")}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
-                                    {form.frequencyType === 'שנתי' && (
-                                        <div className="form-group">
-                                            <label>בחר חודש:</label>
-                                            <select
-                                                value={form.frequencyDetails.month}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        frequencyDetails: {
-                                                            ...prev.frequencyDetails,
-                                                            month: Number(e.target.value),
-                                                        },
-                                                    }))
-                                                }
-                                            >
-                                                <option value="">--בחר חודש--</option>
-                                                {months.map((month) => (
-                                                    <option key={month.value} value={month.value}>
-                                                        {month.label}
-                                                    </option>
-                                                ))}
-                                            </select>
-
-
-                                            <label>בחר יום:</label>
-                                            <select
-                                                value={form.frequencyDetails.day}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        frequencyDetails: {
-                                                            ...prev.frequencyDetails,
-                                                            day: Number(e.target.value),
-                                                        },
-                                                    }))
-                                                }
-                                            >
-                                                <option value="">--בחר יום--</option>
-                                                {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                                                    <option key={day} value={day}>
-                                                        {day.toString().padStart(2, "0")}
-                                                    </option>
-                                                ))}
-                                            </select>
-
-                                        </div>
-                                    )}
-                                </div>
-                            }
-                        </div>
-                    )}
-                    <div className="form-group"></div>
-
-                    <div className="form-group">
-                        <button type="submit">עדכן</button>
-                    </div>
-
-                </div>
-            </form>
+          <div className="form-group">
+            <label>פרויקט</label>
+            <input id="project" name="project" value={form.project} onChange={handleChange} />
+          </div>
         </div>
-    );
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>אחראיים</label>
+            <MultiSelect
+              className="select-multiple"
+              options={allUsers}
+              selected={form.assignees}
+              onChange={(newSelected) => setForm(prev => ({ ...prev, assignees: newSelected }))}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>עמותה</label>
+            <select
+              name="organization"
+              value={form.organization?._id || form.organization || ""}
+              onChange={(e) => {
+                const selected = associations.find(a => a._id === e.target.value) || null;
+                setForm(prev => ({ ...prev, organization: selected }));
+              }}
+            >
+              <option value="">בחר</option>
+              {associations.map(a => <option key={a._id} value={a._id}>{a.name}</option>)}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>תאריך יעד</label>
+            <input
+              type="date"
+              name="dueDate"
+              value={form.dueDate}
+              onChange={handleChange}
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>אחראי ראשי</label>
+            <select
+              name="mainAssignee"
+              value={form.mainAssignee?._id || form.mainAssignee || ""}
+              onChange={(e) => {
+                const selected = allUsers.find(u => u._id === e.target.value) || null;
+                setForm(prev => ({ ...prev, mainAssignee: selected }));
+              }}
+            >
+              <option value="">בחר</option>
+              {form.assignees && form.assignees.map(u => (
+                <option key={u._id || u.id} value={u._id || u.id}>
+                  {u.userName || u.user || u._id || u.id}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>רמת חשיבות</label>
+            <select name="importance" value={form.importance || ""} onChange={handleChange}>
+              <option value="">בחר</option>
+              {allImportanceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+          </div>
+
+          {form.dueDate && (
+            <div className="form-group">
+              <label>תאריך סופי</label>
+              <input
+                type="date"
+                name="finalDeadline"
+                value={form.finalDeadline}
+                onChange={handleChange}
+                min={form.dueDate}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="form-row">
+          {form.importance === "מיידי" && (
+            <div className="form-group">
+              <label>תת דירוג</label>
+              <select
+                name="subImportance"
+                value={form.subImportance || ""}
+                onChange={handleChange}
+                required
+              >
+                <option value="">בחר</option>
+                {allSubImportanceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+              </select>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label>סטטוס</label>
+            <select name="status" value={form.status || ""} onChange={handleChange} required>
+              <option value="">בחר</option>
+              {allStatus.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <button type="submit">עדכן</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
 };
 
 export default EditTask;
