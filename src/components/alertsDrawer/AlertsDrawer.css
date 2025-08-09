@@ -39,11 +39,11 @@
     background: rgba(255,255,255,0.02);
   }
   .alert-item.unread {
-    background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    background: linear-gradient(90deg, rgba(234, 41, 20, 0.484), rgba(255,255,255,0.02));
     box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
   }
   .alert-item.read {
-    background: rgba(0,0,0,0.35);
+    background: rgba(14, 14, 14, 0.368);
     opacity: 0.7;
   }
   

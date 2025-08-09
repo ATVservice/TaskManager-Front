@@ -15,8 +15,9 @@ const NavBar = () => {
   const loadUnreadCount = async () => {
     if (!user) return;
     try {
-      const data = await fetchUserAlerts(user.token, { limit: 1 });
-      setUnreadCount(data.total || (data.alerts ? data.alerts.filter(a => !a.resolved).length : 0));
+      const data = await fetchUserAlerts(user.token, { limit: 50 });
+      const unread = data.alerts ? data.alerts.filter(a => !a.resolved).length : 0;
+      setUnreadCount(unread);
     } catch (err) {
       console.error('Error fetching unread count', err);
     }

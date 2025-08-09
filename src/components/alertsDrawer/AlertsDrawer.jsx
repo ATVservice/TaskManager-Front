@@ -29,9 +29,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
             setLoading(false);
         }
     };
-    useEffect(() => {
-        console.log("onClose is", onClose);
-    }, []);
+
 
     useEffect(() => {
         if (open) {
@@ -40,29 +38,27 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
         }
     }, [open]);
 
-    // כאשר נפתח — מסמן כמוכּר כל ה-alerts שלא נקראו
-    useEffect(() => {
-        const markShownAsRead = async () => {
-            if (!open || loading || alerts.length === 0 || !token || markedOnce.current) return;
-            const toMark = alerts.filter(a => !a.resolved).map(a => a._id);
-            if (toMark.length === 0) return;
-            try {
-                await markAlertsRead(token, toMark);
-                
-                // עידכון מקומי
-                setAlerts(prev => prev.map(a => toMark.includes(a._id) ? { ...a, resolved: true } : a));
-                markedOnce.current = true;
-                if (onMarkedRead) {
-                    onMarkedRead();
-                }
-            } catch (err) {
-                alert(err.response?.data?.message || 'שגיאה בסימון התרעה ');
-                console.error('Failed to mark alerts read', err);
-            }
-        };
-        markShownAsRead();
 
-    }, [open, loading, alerts, token, onMarkedRead]);
+const markAllAsRead = async () => {
+    if (!token) return;
+    const toMark = alerts.filter(a => !a.resolved).map(a => a._id);
+    if (toMark.length === 0) return;
+
+    try {
+        await markAlertsRead(token, toMark);
+        setAlerts(prev => prev.map(a => toMark.includes(a._id) ? { ...a, resolved: true } : a));
+        if (onMarkedRead) onMarkedRead();
+    } catch (err) {
+        alert(err.response?.data?.message || 'שגיאה בסימון התרעה');
+        console.error('Failed to mark alerts read', err);
+    }
+};
+
+const handleClose = () => {
+    markAllAsRead();
+    onClose();
+};
+
 
     const unreadCount = alerts.filter(a => !a.resolved).length;
 
@@ -70,7 +66,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
             <div className="alerts-header">
                 <h3>התרעות ({unreadCount})</h3>
-                <button className="close-drawer" onClick={onClose}>X</button>
+                <button className="close-drawer"  onClick={handleClose}>X</button>
             </div>
 
             <div className="alerts-list">
