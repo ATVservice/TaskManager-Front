@@ -11,7 +11,7 @@ const NavBar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
- 
+
   const loadUnreadCount = async () => {
     if (!user) return;
     try {
@@ -51,6 +51,9 @@ const NavBar = () => {
           {user.role === 'מנהל' && (
             <NavLink to="/register">הוספת משתמש</NavLink>
           )}
+          {user.role === 'עובד' && (
+            <NavLink to="/dashboard">דשבורד</NavLink>
+          )}
 
 
         </div>
@@ -74,7 +77,7 @@ const NavBar = () => {
         }}
         token={user?.token}
         onMarkedRead={loadUnreadCount} />
-      
+
 
     </>
   );

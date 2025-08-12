@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import Register from '../pages/register/Register'
 import CreateTask from '../components/createTask/CreateTask';
 import RecyclingBin from '../pages/recyclingBin/RecyclingBin';
+import Dashboard from '../pages/dashboard/Dashboard'
 import History from '../pages/history/History';
 
 const AppRoutes = () => {
@@ -41,6 +42,8 @@ const AppRoutes = () => {
       {user.role === 'עובד' && (
         <>
           <Route path="*" element={<Navigate to="/tasks" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+
         </>
       )}
     </Routes>
