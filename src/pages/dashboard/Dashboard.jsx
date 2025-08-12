@@ -59,7 +59,7 @@ const Dashboard = () => {
 
 
   if (!data) return <div>טוען...</div>;
-  const goalPercent = 70;
+  const goalPercent = data.overallPercentAchieved;
   const completedCount = data.completedCount;
 
   const safePrevAverage = Math.max(data.prevAverage || 0, 1);
@@ -107,10 +107,10 @@ const Dashboard = () => {
 
         {/* פאי פילוח חשיבות */}
         <div className="dashboard-card">
-          <h4>פילוח משימות שהושלמו</h4>
+          <h3>פילוח משימות שהושלמו</h3>
           <div>
-            <div>מספר משימות שהושלמו: {completedCount} ✅</div>
-            <div>עמידה ביעדים: {goalPercent}% 🎯</div>
+            <div>✅ מספר משימות שהושלמו: {completedCount} </div>
+            <div>🎯 עמידה ביעדים: {goalPercent}% </div>
           </div>
           <PieChart width={300} height={300}>
             <Pie
@@ -120,10 +120,13 @@ const Dashboard = () => {
               cx="50%"
               cy="50%"
               outerRadius={90}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
+           
+              
             >
               {pieData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+
               ))}
             </Pie>
             <Tooltip />
@@ -132,7 +135,7 @@ const Dashboard = () => {
         </div>
 
         <div className="dashboard-card">
-          <h4>השוואה לימי עבודה קודמים</h4>
+          <h3>השוואה לימי עבודה קודמים</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={[
               { name: 'ממוצע', value: data.prevAverage },
@@ -158,7 +161,7 @@ const Dashboard = () => {
 
         {/* גרף התקדמות */}
         <div className="dashboard-card">
-          <h4>גרף התקדמות</h4>
+          <h3>גרף התקדמות</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={progressData}>
               <CartesianGrid strokeDasharray="3 3" />

@@ -46,11 +46,13 @@ const NavBar = () => {
           <NavLink to="/tasks">משימות</NavLink>
 
           {user.role === 'מנהל' && (
+            <>
             <NavLink to="/association">עמותות</NavLink>
-          )}
-          {user.role === 'מנהל' && (
+            <NavLink to="/goals">הגדרת יעדים</NavLink>
             <NavLink to="/register">הוספת משתמש</NavLink>
+            </>
           )}
+        
           {user.role === 'עובד' && (
             <NavLink to="/dashboard">דשבורד</NavLink>
           )}

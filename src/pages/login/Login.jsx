@@ -1,12 +1,24 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
-import { loginUser } from '../../services/authService';
+import { forgotPassword, loginUser } from '../../services/authService';
 import './Login.css';
+import { TbWashDryP } from 'react-icons/tb';
 
 const Login = () => {
+  const location = useLocation();
+  const message = location.state?.message || null;
+  useEffect(() => {
+    if (message) {
+      console.log("&&&&&")
+      alert(message);
+    }
+  }, [message]);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [forget, setForget] = useState(false);
+
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -14,13 +26,13 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const data = await loginUser(username, password); 
+      const data = await loginUser(username, password);
       const userData = {
         ...data.user,
         token: data.token
       };
 
-      login(userData); 
+      login(userData);
 
       if (userData.role === 'admin') {
         navigate('/association');
@@ -33,7 +45,19 @@ const Login = () => {
       alert(error.response?.data?.message || 'שגיאה בהתחברות');
     }
   };
-
+  const isForgotPassword = async () => {
+    setForget(true);
+  }
+  const sendEmail = async () => {
+    setForget(false);
+    try{
+      await forgotPassword(email);
+      alert("קישור איפוס נשלח לאימייל שלך")
+  } catch (error) {
+    console.error(error);
+    alert(error.response?.data?.message || 'כרגע אין אפשרות לשלוח קישור לאיפוס');
+  }
+  }
 
   return (
     <div className="wrapper">
@@ -57,6 +81,21 @@ const Login = () => {
           />
 
           <button type="submit" id="login-button">התחבר</button>
+          <a onClick={isForgotPassword} className='forgot'>שכחת סיסמא?</a>
+          {forget && (
+            <>
+              <input
+                type="text"
+                placeholder="הכנס אימייל"
+                value={email}
+                required
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button type="button" className='sendLink' onClick={sendEmail}>שלח קישור</button>
+            </>
+          )}
+
+
         </form>
       </div>
 

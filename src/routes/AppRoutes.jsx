@@ -9,15 +9,20 @@ import CreateTask from '../components/createTask/CreateTask';
 import RecyclingBin from '../pages/recyclingBin/RecyclingBin';
 import Dashboard from '../pages/dashboard/Dashboard'
 import History from '../pages/history/History';
+import GoalForm from '../components/goalForm/GoalForm';
+import ResetPassword from '../pages/resetPassword/ResetPassword';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
   console.log(user);
 
+
   if (!user) {
     return (
       <Routes>
-        <Route path="*" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Routes>
     );
   }
@@ -36,6 +41,8 @@ const AppRoutes = () => {
           <Route path="/association" element={<Association />} />
           <Route path="*" element={<Navigate to="/association" />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/goals" element={<GoalForm />} />
+
         </>
       )}
 
