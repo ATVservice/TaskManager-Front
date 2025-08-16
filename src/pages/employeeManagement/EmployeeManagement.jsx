@@ -19,13 +19,18 @@ const EmployeeManagement = () => {
 
 
 
-
     const [columns] = useState([
 
-        { headerName: "שם משתמש", field: 'userName' },
-        { headerName: 'שם פרטי', field: 'firstName' },
-        { headerName: 'שם משפחה', field: 'lastName' },
-        { headerName: 'אימייל', field: 'email' },
+        {
+            headerName: "", field: "edit", maxWidth: 50,
+
+            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toDelete(params.data._id)} />
+        },
+        {
+            headerName: "", field: "edit", maxWidth: 50,
+
+            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data._id)} />
+        },
         { headerName: 'כניסה אחרונה', field: 'lastLogin', 
             valueFormatter: (params) => {
               if (!params.value) return '';
@@ -37,17 +42,13 @@ const EmployeeManagement = () => {
                 minute: '2-digit'
               });
             }
-          },          
-        {
-            headerName: "", field: "edit", maxWidth: 50,
+          }, 
+          { headerName: 'אימייל', field: 'email' },
+          { headerName: 'שם משפחה', field: 'lastName' },
+          { headerName: 'שם פרטי', field: 'firstName' },
+          { headerName: "שם משתמש", field: 'userName' },
 
-            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data._id)} />
-        },
-        {
-            headerName: "", field: "edit", maxWidth: 50,
 
-            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toDelete(params.data._id)} />
-        },
     ]);
     const toEdit = async () => {
         alert("עריכת משתמש תתממשק בהמשך")

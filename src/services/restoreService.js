@@ -19,6 +19,6 @@ export const fetchRestoreTask = async (token, password, taskId) => {
           },
           withCredentials: true
         });
-        console.log('מערך למשור',res.data)
+        console.log('מערך למחזור',res.data)
     return res.data;
 };

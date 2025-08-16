@@ -1,5 +1,5 @@
 import './RecyclingBin.css';
-import React, {  useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
 import Swal from 'sweetalert2';
 import { fetchGetDeletedTasks, fetchRestoreTask } from '../../services/restoreService.js';
@@ -14,30 +14,32 @@ const RecyclingBin = () => {
 
     const [data, setData] = useState([]);
 
-    const toRestoreTask = async(taskId)=> {
+    const toRestoreTask = async (taskId) => {
         const token = user?.token;
         const { value: password, isConfirmed } = await Swal.fire({
-                title: 'אימות סיסמה למחיקת משימה',
-                input: 'password',
-                inputLabel: 'הכנס/י סיסמה',
-                inputPlaceholder: 'סיסמה נדרשת למחיקה',
-                confirmButtonText: 'אשר',
-                cancelButtonText: 'ביטול',
-                showCancelButton: true,
-                inputValidator: (value) => {
-                  if (!value) {
+            title: 'אימות סיסמה למחיקת משימה',
+            input: 'password',
+            inputLabel: 'הכנס/י סיסמה',
+            inputPlaceholder: 'סיסמה נדרשת למחיקה',
+            confirmButtonText: 'אשר',
+            cancelButtonText: 'ביטול',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value) {
                     return 'חייבים להזין סיסמה';
-                  }
-                },
-              });
-            
-              if (!isConfirmed) return;
+                }
+            },
+        });
+
+        if (!isConfirmed) return;
         try {
             fetchRestoreTask(token, password, taskId)
             alert("שוחזר בהצלחה!")
-            
+            setData(prev => prev.filter(task => task._id !== taskId));
+
+
         } catch (err) {
-            alert(err.response?.data?.message ||'שגיאה בשחזור משימה');
+            alert(err.response?.data?.message || 'שגיאה בשחזור משימה');
             console.error('שגיאה בשחזור משימה', err);
         }
     }
@@ -46,8 +48,8 @@ const RecyclingBin = () => {
     const [columns] = useState([
         {
             headerName: "", field: "duplicate", maxWidth: 50,
-           
-            cellRenderer: (params) =>  <Recycle  size={20} color="#042486" onClick={() => toRestoreTask(params.data._id)} />
+
+            cellRenderer: (params) => <Recycle size={20} color="#042486" onClick={() => toRestoreTask(params.data._id)} />
         },
         { headerName: "מס'", field: 'taskId', maxWidth: 100 },
         { headerName: 'כותרת', field: 'title' },
@@ -69,24 +71,41 @@ const RecyclingBin = () => {
 
     ]);
 
-        useEffect(() => {
-            const GetDeletedTasks = async () => {
-                const token = user?.token;
-                if (!token) return;
-                try {
-                    const [deletedTasks] = await Promise.all([
-                        fetchGetDeletedTasks(token),
-                    ]);
-    
-                    setData(deletedTasks)
-                } catch (err) {
-                    alert(err.response?.data?.message ||'שגיאה בטעינת המשימות המחוקות');
-                    console.error('שגיאה בטעינת משימות מחוקות', err);
-                }
-            };
-    
-            GetDeletedTasks();
-        }, []);
+    // useEffect(() => {
+    //     const GetDeletedTasks = async () => {
+    //         const token = user?.token;
+    //         if (!token) return;
+    //         try {
+    //             const [deletedTasks] = await Promise.all([
+    //                 fetchGetDeletedTasks(token),
+    //             ]);
+
+    //             setData(deletedTasks)
+    //             console.log("סל מחזור---",deletedTasks)
+    //         } catch (err) {
+    //             alert(err.response?.data?.message ||'שגיאה בטעינת המשימות המחוקות');
+    //             console.error('שגיאה בטעינת משימות מחוקות', err);
+    //         }
+    //     };
+
+    //     GetDeletedTasks();
+    // }, []);
+    useEffect(() => {
+        if (!user?.token) return;
+        const GetDeletedTasks = async () => {
+            try {
+                const deletedTasks = await fetchGetDeletedTasks(user.token);
+                setData(deletedTasks);
+                console.log("סל מחזור---", deletedTasks)
+
+            } catch (err) {
+                alert(err.response?.data?.message || 'שגיאה בטעינת המשימות המחוקות');
+                console.error('שגיאה בטעינת משימות מחוקות', err);
+            }
+        };
+        GetDeletedTasks();
+    }, [user]);
+
 
     return (
         <div>

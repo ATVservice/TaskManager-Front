@@ -1,0 +1,39 @@
+.custom-grid-rtl {
+    font-family: "Segoe UI", "Alef", sans-serif;
+    direction: rtl;
+    text-align: right;
+}
+
+/* כותרות */
+.custom-grid-rtl .ag-header-cell-label {
+    flex-direction: row-reverse; /* אייקון לפני טקסט */
+    justify-content: flex-start; /* לא באמצע אלא לצד ימין */
+    padding-right: 8px; /* רווח מהקצה */
+    font-weight: bold;
+    font-size: 14px;
+    color: #2c3e50;
+}
+/* טקסט בשורות */
+.custom-grid-rtl .ag-cell {
+    text-align: right;
+    /* padding-right: 18px; */
+    font-size: 13px;
+    color: #333;
+}
+
+/* פסי זברה */
+.custom-grid-rtl .ag-row:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* הובר */
+.custom-grid-rtl .ag-row-hover {
+    background-color: #eaf3ff !important;
+}
+
+/* גבולות ועיגול פינות */
+.custom-grid-rtl .ag-root-wrapper {
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    overflow: hidden;
+}
