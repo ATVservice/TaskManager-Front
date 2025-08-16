@@ -13,7 +13,7 @@ export const fetchAllAssociations = async (token) => {
 
     return res.data;
 };
-export const fetchGetAssociatedEmployees = async (associationId ,token) => {
+export const fetchGetAssociatedEmployees = async (associationId, token) => {
 
 
     const res = await axios.get(`${API_URL}/api/associations/getAssociated/${associationId}`, {
@@ -22,5 +22,18 @@ export const fetchGetAssociatedEmployees = async (associationId ,token) => {
         },
     });
 
+    return res.data;
+};
+export const updateAssociationUsers = async (body, token) => {
+    console.log("token", token)
+    console.log("addAssociatedEmployees", body)
+    const res = await axios.put(`${API_URL}/api/associations/updateAssociationUsers`,
+        body,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+        });
     return res.data;
 };

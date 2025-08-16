@@ -4,7 +4,8 @@ import { AuthContext } from '../../context/AuthContext';
 import { registerUser } from '../../services/authService';
 import './Register.css';
 
-const Register = () => {
+const Register = ({onClose}) => {
+
   const { user } = useContext(AuthContext);
   const [username, setUsername] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -29,11 +30,16 @@ const Register = () => {
       alert(error.response?.data?.message || 'שגיאה בהתחברות');
     }
   };
+  const handleClose = () => {
+    onClose();
+};
+
 
 
   return (
     <div className="login-box" onSubmit={handleRegister}>
       <h2>הוספת עובד</h2>
+      <button className="close-drawer"  onClick={handleClose}>X</button>
       <form>
         <div className="user-box">
           <input type="text"

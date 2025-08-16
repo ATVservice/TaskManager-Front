@@ -4,16 +4,20 @@ import { AuthContext } from '../../context/AuthContext';
 import { forgotPassword, loginUser } from '../../services/authService';
 import './Login.css';
 import { TbWashDryP } from 'react-icons/tb';
+import { useSearchParams } from 'react-router-dom';
 
 const Login = () => {
-  const location = useLocation();
-  const message = location.state?.message || null;
+
+  const [searchParams] = useSearchParams();
+  const message = searchParams.get('message');
+  
   useEffect(() => {
-    if (message) {
-      console.log("&&&&&")
-      alert(message);
+    if (message === 'timeout') {
+      console.log("&&&&&");
+      alert('החיבור פג עקב חוסר פעילות');
     }
   }, [message]);
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
