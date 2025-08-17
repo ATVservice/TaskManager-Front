@@ -2,7 +2,7 @@ import './EmployeeManagement.css';
 import React, { useEffect, useRef, useState } from 'react';
 import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { Pencil, Trash } from 'lucide-react';
+import { Pencil, Search, Trash } from 'lucide-react';
 import { useContext } from 'react';
 import { getAllEmployees } from '../../services/userService.js';
 import Register from '../register/Register.jsx';
@@ -31,22 +31,23 @@ const EmployeeManagement = () => {
 
             cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data._id)} />
         },
-        { headerName: 'כניסה אחרונה', field: 'lastLogin', 
+        {
+            headerName: 'כניסה אחרונה', field: 'lastLogin',
             valueFormatter: (params) => {
-              if (!params.value) return '';
-              return new Date(params.value).toLocaleString('he-IL', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              });
+                if (!params.value) return '';
+                return new Date(params.value).toLocaleString('he-IL', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
             }
-          }, 
-          { headerName: 'אימייל', field: 'email' },
-          { headerName: 'שם משפחה', field: 'lastName' },
-          { headerName: 'שם פרטי', field: 'firstName' },
-          { headerName: "שם משתמש", field: 'userName' },
+        },
+        { headerName: 'אימייל', field: 'email' },
+        { headerName: 'שם משפחה', field: 'lastName' },
+        { headerName: 'שם פרטי', field: 'firstName' },
+        { headerName: "שם משתמש", field: 'userName' },
 
 
     ]);
@@ -92,15 +93,17 @@ const EmployeeManagement = () => {
     return (
         <div>
             <div className="actions-bar">
-                <input
-                    type="text"
-                    placeholder="חיפוש"
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                    className="search-input"
-                />
+                <div className="search-input-container">
+                    <Search size={16} className="search-icon" />
+                    <input
+                        type="text"
+                        placeholder="חיפוש"
+                        value={keyword}
+                        onChange={(e) => setKeyword(e.target.value)}
+                        className="search-input"
+                    />
+                </div>
                 <button className="add-user-btn" onClick={() => setShowRegister(true)}>➕ הוסף עובד</button>
-
             </div>
             <div>
                 <SimpleAgGrid rowData={filteredData} columnDefs={columns} />

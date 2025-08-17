@@ -9,6 +9,14 @@ import { getPerformance } from '../../services/dashboardService';
 import { AuthContext } from '../../context/AuthContext';
 
 const COLORS = ['#FF4C4C', '#8B8B8B', '#4C91FF', '#A3C78B', '#C9B59B'];
+const STATUS_COLORS = {
+  "תאריך": "yellow",
+  "עקביות": "purple",
+  "כללי": "blue",
+  "מגירה": "gray",
+  "מיידי": "red",
+};
+
 
 const importanceLabels = {
   מיידי: 'מיידי',
@@ -120,13 +128,15 @@ const Dashboard = () => {
               cx="50%"
               cy="50%"
               outerRadius={90}
-              label={({ name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
-           
-              
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+
+
             >
               {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-
+                <Cell
+                  key={`cell-${index}`}
+                  fill={STATUS_COLORS[entry.name] || '#ccc'} // ברירת מחדל אפור
+                />
               ))}
             </Pie>
             <Tooltip />
