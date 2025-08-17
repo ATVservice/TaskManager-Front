@@ -469,10 +469,10 @@ const Tasks = () => {
                     <Plus size={20} color="#fafafa" /> הוסף משימה
                 </button>
                 <div className="tabs-container">
+                <div className="main-tabs">
+
                     {[
                         { key: 'today', label: 'משימות להיום' },
-                        { key: 'today-single', label: 'שוטפות' },
-                        { key: 'today-recurring', label: 'קבועות' },
                         { key: 'future', label: 'משימות עתידיות' },
                         { key: 'recurring', label: 'קבועות' },
                         { key: 'completed', label: 'בוצעו' },
@@ -487,7 +487,26 @@ const Tasks = () => {
                             {tab.label}
                         </button>
                     ))}
+                    </div>
+
+                    {activeTab === 'today' && (
+                        <div className="sub-tabs">
+                            {[    
+                                   { key: 'today-single', label: 'שוטפות' },
+                                   { key: 'today-recurring', label: 'קבועות' },
+                            ].map(tab => (
+                                <button
+                                    key={tab.key}
+                                    className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
+                                    onClick={() => setActiveTab(tab.key)}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
+
             </div>
 
             {showCreatePopup && (
@@ -711,7 +730,7 @@ const Tasks = () => {
                     singleClickEdit={true}
                     rowClassRules={{
                         'drawer-task': params => params.data.importance === 'מגירה'
-                      }}
+                    }}
 
                 />
             </div>

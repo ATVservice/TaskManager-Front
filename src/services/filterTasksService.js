@@ -74,8 +74,8 @@ export const fetchDrawer = async (token) => {
             },
             withCredentials: true
           });
-          console.log("drawer", res.data);
-
+          console.log("מגירההההה", res.data);
+     
       return res.data;
   };
   
