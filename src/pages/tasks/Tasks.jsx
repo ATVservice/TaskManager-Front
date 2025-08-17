@@ -709,7 +709,9 @@ const Tasks = () => {
                     doesExternalFilterPass={doesExternalFilterPass}
                     onCellValueChanged={onCellValueChanged}
                     singleClickEdit={true}
-
+                    rowClassRules={{
+                        'drawer-task': params => params.data.importance === 'מגירה'
+                      }}
 
                 />
             </div>

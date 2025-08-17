@@ -183,7 +183,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         <label>תאריך יעד</label>
 
                         <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]} required />
+                            min={new Date().toISOString().split("T")[0]} />
                     </div>
 
                 </div>
@@ -213,7 +213,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             <label>תאריך סופי</label>
 
                             <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
-                                min={form.dueDate} required />
+                                min={form.dueDate} />
                         </div>}
 
 

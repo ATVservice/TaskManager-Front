@@ -32,8 +32,8 @@ const History = () => {
             valueGetter: (params) => params.data.user?.userName || ''
         },
         { headerName: 'שדה ששונה', field: 'field' },
-        { headerName: 'לאחר שינוי', field: 'before' },
-        { headerName: 'לפני שינוי', field: 'after' },
+        { headerName: 'לאחר שינוי', field: 'after' },
+        { headerName: 'לפני שינוי', field: 'before' },
 
     ]);
 

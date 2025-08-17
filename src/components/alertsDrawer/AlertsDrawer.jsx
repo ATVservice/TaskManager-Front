@@ -13,7 +13,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
         if (!token) return;
         setLoading(true);
         try {
-            const data = await fetchUserAlerts(token, { limit: 50, sortBy: 'createdAt', order: 'desc' });
+            const data = await fetchUserAlerts(token, { limit: 6, sortBy: 'createdAt', order: 'desc' });
             let list = data.alerts || [];
             list.sort((a, b) => {
                 if (a.resolved === b.resolved) {

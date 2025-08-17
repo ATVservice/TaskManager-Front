@@ -92,7 +92,6 @@ const Login = () => {
                 type="text"
                 placeholder="הכנס אימייל"
                 value={email}
-                required
                 onChange={(e) => setEmail(e.target.value)}
               />
               <button type="button" className='sendLink' onClick={sendEmail}>שלח קישור</button>

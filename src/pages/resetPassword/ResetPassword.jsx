@@ -45,7 +45,7 @@ export default function ResetPassword() {
         navigate("/login", { state: { message: "הסיסמה שונתה. התחברי בעזרת הסיסמה החדשה." } });
       }, 1800);
     } catch (err) {
-        alert(error.response?.data?.message || 'שגיאה ביצירת סיסמא חדשה');
+        alert(err.response?.data?.message || 'שגיאה ביצירת סיסמא חדשה');
       setError(err.message);
     } finally {
       setLoading(false);

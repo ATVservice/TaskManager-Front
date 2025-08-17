@@ -33,13 +33,13 @@ const AppRoutes = () => {
       <Route path="/createTask" element={<CreateTask />} />
       <Route path='/tasks' element={<Tasks />} />
       <Route path='/recyclingBin' element={<RecyclingBin />} />
-      
+
       <Route path="/history/:taskId" element={<History />} />
 
       {user.role === 'מנהל' && (
         <>
           <Route path="/association" element={<Association />} />
-          <Route path="*" element={<Navigate to="/association" />} />
+          <Route path="*" element={<Navigate to="/tasks" />} />
           <Route path="/register" element={<Register />} />
           <Route path="/goals" element={<GoalForm />} />
           <Route path="/employee" element={<EmployeeManagement />} />

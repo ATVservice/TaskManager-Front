@@ -157,7 +157,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
         <div className="form-row">
           <div className="form-group">
             <label>כותרת</label>
-            <input name="title" value={form.title} onChange={handleChange} />
+            <input name="title" value={form.title} onChange={handleChange} required/>
           </div>
 
           <div className="form-group">
@@ -176,6 +176,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
             <label>אחראיים</label>
             <MultiSelect
               className="select-multiple"
+              required
               options={allUsers}
               selected={form.assignees}
               onChange={(newSelected) => setForm(prev => ({ ...prev, assignees: newSelected }))}
@@ -186,6 +187,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
             <label>עמותה</label>
             <select
               name="organization"
+              required
               value={form.organization?._id || form.organization || ""}
               onChange={(e) => {
                 const selected = associations.find(a => a._id === e.target.value) || null;
@@ -214,6 +216,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
             <label>אחראי ראשי</label>
             <select
               name="mainAssignee"
+              required
               value={form.mainAssignee?._id || form.mainAssignee || ""}
               onChange={(e) => {
                 const selected = allUsers.find(u => u._id === e.target.value) || null;
@@ -231,7 +234,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
 
           <div className="form-group">
             <label>רמת חשיבות</label>
-            <select name="importance" value={form.importance || ""} onChange={handleChange}>
+            <select name="importance" value={form.importance || ""} onChange={handleChange} required>
               <option value="">בחר</option>
               {allImportanceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
