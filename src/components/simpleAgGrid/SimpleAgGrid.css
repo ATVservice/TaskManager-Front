@@ -26,10 +26,7 @@
     background-color: #f9f9f9;
 }
 
-/* הובר */
-.custom-grid-rtl .ag-row-hover {
-    background-color: #eaf3ff !important;
-}
+
 
 /* גבולות ועיגול פינות */
 .custom-grid-rtl .ag-root-wrapper {
@@ -37,3 +34,19 @@
     border-radius: 8px;
     overflow: hidden;
 }
+/* הדגשת שורה בעת מעבר עכבר */
+.custom-grid-rtl .ag-row:hover {
+    background-color: rgba(0, 123, 255, 0.1); /* צבע עדין */
+  }
+  
+  /* הדגשת עמודה בעת מעבר עכבר על תא */
+  .custom-grid-rtl .ag-cell:hover {
+    background-color: rgba(0, 123, 255, 0.15);
+  }
+  /* אפשר להעתיק תוכן מהתאים */
+  .custom-grid-rtl .ag-cell {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+  }
+  

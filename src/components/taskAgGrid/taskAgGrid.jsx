@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-quartz.css';
-import './SimpleAgGrid.css'
+import { ModuleRegistry } from 'ag-grid-community';
+import { AllCommunityModule } from 'ag-grid-community';
+import './taskAgGrid.css'
 
-const SimpleAgGrid = ({ rowData, columnDefs }) => {
+ModuleRegistry.registerModules([AllCommunityModule]);
+
+const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, doesExternalFilterPass, isExternalFilterPresent }) => {
+    const gridRef = useRef();
 
     const defaultColDef = {
         filter: 'agTextColumnFilter', 
@@ -29,8 +32,9 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         cellClass: 'copyable-cell', 
         suppressKeyboardEvent: false,
     };
-     // הגדרות Localization לעברית
-     const localeText = {
+
+    // הגדרות Localization לעברית
+    const localeText = {
         // Pagination
         page: 'עמוד',
         more: 'עוד',
@@ -75,22 +79,29 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         rowGroupColumnsEmptyMessage: 'גרור כאן עמודות כדי לקבץ',
     };
 
-
     return (
-        <div
-            className="ag-theme-quartz custom-grid-rtl"
-            style={{ height: '500px', width: '100%' }}
-            dir="rtl"
-        >            <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                pagination={true}
-                localeText={localeText} 
-                paginationPageSize={20}
-            />
+        <div className="ag-theme-alpine">
+             <AgGridReact
+                    ref={gridRef}
+                    rowData={rowData}
+                    columnDefs={columnDefs}
+                    defaultColDef={defaultColDef}
+                    pagination={true}
+                    enableRtl={true}
+                    paginationPageSize={20}
+                    domLayout="autoHeight"
+                    animateRows={true}
+                    isExternalFilterPresent={isExternalFilterPresent}
+                    doesExternalFilterPass={doesExternalFilterPass}
+                    onCellValueChanged={onCellValueChanged}
+                    singleClickEdit={true}
+                    localeText={localeText} 
+                    rowClassRules={{
+                        'drawer-task': params => params.data.importance === 'מגירה'
+                    }}
+                />
         </div>
     );
 };
 
-export default SimpleAgGrid;
+export default TaskAgGrid;

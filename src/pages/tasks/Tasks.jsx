@@ -4,7 +4,7 @@ import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { getMoreDetails, getTasks } from '../../services/taskService';
 import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
-import { Copy, Pencil, Trash, History, Plus, Search } from 'lucide-react';
+import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
 import { FilterContext } from '../../context/FilterContext';
 import { duplicateTask } from '../../services/taskService';
@@ -20,6 +20,8 @@ import { updateTaskStatus } from '../../services/updateService.js';
 import { getTaskHistory } from '../../services/historyService.js';
 import EditTask from '../../components/editTask/EditTask.jsx';
 import { useNavigate } from 'react-router-dom';
+import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
+import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -55,8 +57,6 @@ const statusOptions = [
     { status: "בוטלה", color: 'red' },
 ];
 
-const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
-const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
 
 const Tasks = () => {
@@ -73,10 +73,43 @@ const Tasks = () => {
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
     const [activeTab, setActiveTab] = useState('today');
+    const [activeType, setActiveType] = useState(null);
     const [workersList, setWorkersList] = useState([]);
     const [organizationsList, setOrganizationsList] = useState([]);
     const [ShowEditModal, setShowEditModal] = useState(false)
     const [selectedTask, setSelectedTask] = useState({});
+
+
+    const tabs = [
+        { key: 'today', label: 'משימות להיום' },
+        { key: 'future', label: 'משימות עתידיות' },
+        { key: 'recurring', label: 'קבועות' },
+        { key: 'completed', label: 'בוצעו' },
+        { key: 'cancelled', label: 'בוטלו' },
+        { key: 'drawer', label: 'מגירה' },
+    ];
+
+    const [activeIndex, setActiveIndex] = useState(0);
+
+
+    const handleNextTab = () => {
+        setActiveIndex((prev) => {
+            const newIndex = (prev + 1) % tabs.length;
+            setActiveTab(tabs[newIndex].key);
+            return newIndex;
+        });
+    };
+
+    const handlePreviousTab = () => {
+        setActiveIndex((prev) => {
+            const newIndex = (prev - 1 + tabs.length) % tabs.length;
+            setActiveTab(tabs[newIndex].key);
+            return newIndex;
+        });
+    };
+
+
+
 
     const gridRef = useRef();
 
@@ -221,9 +254,8 @@ const Tasks = () => {
     }
 
     const toHistory = async (taskId) => {
-        const token = user?.token;
         try {
-            navigate(`/history/${taskId}`, { target: '_blank' }); // פותח את העמוד החדש            
+            navigate(`/history/${taskId}`, { target: '_blank' });
         }
         catch (error) {
             alert(error.response?.data?.message);
@@ -323,17 +355,42 @@ const Tasks = () => {
     const [columnDefs] = useState([
         {
             headerName: "", field: "duplicate", maxWidth: 50,
-            cellRenderer: (params) => <Copy size={20} color="#042486" onClick={() => toDuplicateTask(params.data._id)} />
+            cellRenderer: (params) => <div className='copy iconButton'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} /></div>
         },
-        { headerName: "מס'", field: 'taskId', maxWidth: 100 },
-        { headerName: 'כותרת', field: 'title' },
+        {
+            headerName: "מס'", field: 'taskId', maxWidth: 100
+            , cellStyle: () => {
+                return {
+                    color: 'rgb(15, 164, 157)',
+                };
+            }
+        },
+        {
+            headerName: 'כותרת', field: 'title',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(29, 136, 163)',
+                };
+            }
+        },
         {
             headerName: 'עמותה',
-            valueGetter: (params) => params.data.organization?.name || ''
+            valueGetter: (params) => params.data.organization?.name || '',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(29, 51, 163)',
+                };
+            }
         },
         {
             headerName: 'אחראי ראשי',
-            valueGetter: (params) => params.data.mainAssignee?.userName || ''
+            valueGetter: (params) => params.data.mainAssignee?.userName || '',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(86, 54, 161)',
+                };
+            }
+
         },
         {
             headerName: 'סטטוס',
@@ -381,15 +438,15 @@ const Tasks = () => {
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <History size={20} color="#042486" onClick={() => toHistory(params.data._id)} />
+            cellRenderer: (params) => <div className='history iconButton'><History size={17} color="black" onClick={() => toHistory(params.data._id)} /></div>
         },
         {
             headerName: "", field: "delete", maxWidth: 50,
-            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toDelete(params.data._id)} />
+            cellRenderer: (params) => <div className='trash iconButton'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} /> </div>
         },
         {
             headerName: "", field: "edit", maxWidth: 50,
-            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data)} />
+            cellRenderer: (params) => <div className='pencil iconButton'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} /></div>
         },
     ]);
     const onCellValueChanged = async (params) => {
@@ -446,11 +503,6 @@ const Tasks = () => {
     };
 
 
-    const defaultColDef = {
-        sortable: true,
-        filter: true,
-        resizable: true
-    };
 
 
     return (
@@ -472,43 +524,45 @@ const Tasks = () => {
                     <Plus size={20} color="#fafafa" /> הוסף משימה
                 </button>
                 <div className="tabs-container">
+
                     <div className="main-tabs">
 
-                        {[
-                            { key: 'today', label: 'משימות להיום' },
-                            { key: 'future', label: 'משימות עתידיות' },
-                            { key: 'recurring', label: 'קבועות' },
-                            { key: 'completed', label: 'בוצעו' },
-                            { key: 'cancelled', label: 'בוטלו' },
-                            { key: 'drawer', label: 'מגירה' },
-                        ].map(tab => (
-                            <button
-                                key={tab.key}
-                                className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                                onClick={() => setActiveTab(tab.key)}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
+                        <button className="tab-button arrows" onClick={handlePreviousTab}>
+                            <ChevronRight />
+                        </button>
+
+
+                        <button
+                            className={`tab-button active`}
+                            onClick={() => setActiveTab(tabs[activeIndex].key)}
+                        >
+                            {tabs[activeIndex].label}
+                        </button>
+
+                        <button className="tab-button arrows" onClick={handleNextTab}>
+                            <ChevronLeft />
+                        </button>
                     </div>
 
-                    {activeTab === 'today' && (
+                    {activeTab.startsWith('today') && (
                         <div className="sub-tabs">
-                            {[
-                                { key: 'today-single', label: 'שוטפות' },
-                                { key: 'today-recurring', label: 'קבועות' },
-                            ].map(tab => (
-                                <button
-                                    key={tab.key}
-                                    className={`tab-button ${activeTab === tab.key ? 'active' : ''}`}
-                                    onClick={() => setActiveTab(tab.key)}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
+                            <button
+                                className={`filter-btn ${activeType === "today-single" ? "active" : ""}`}
+                                onClick={() => { setActiveType('today-single'); setActiveTab('today-single'); }}
+                            >
+                                שוטפות
+                            </button>
+                            <button
+                                className={`filter-btn ${activeType === "today-recurring" ? "active" : ""}`}
+                                onClick={() => { setActiveType('today-recurring'); setActiveTab('today-recurring'); }}
+                            >
+                                קבועות
+                            </button>
                         </div>
                     )}
+
                 </div>
+
 
             </div>
 
@@ -528,48 +582,16 @@ const Tasks = () => {
                         <EditTask
                             taskToEdit={selectedTask}
                             onClose={() => setShowEditModal(false)}
-                            onTaskUpdated={refreshTasks} // <-- השינוי כאן
+                            onTaskUpdated={refreshTasks}
                         />
                     </div>
                 </div>
             )}
-
-            {openDetails && (
-                <div className={`side-popup ${!openDetails ? 'hidden' : ''}`}>
-                    <button className="close-btn" onClick={closeDetailsDiv}>X</button>
-                    <h3>פרטים נוספים</h3>
-                    <p> <strong>אחראים:</strong></p>
-                    {details.assignees?.map((ass, i) => (
-                        <p key={i}><strong>{i + 1}.</strong> {ass.userName}</p>
-                    ))}
-                    <p> <strong>חשיבות: </strong>{details.importance}</p>
-                    {details.subImportance && <p> <strong>תת דירוג:</strong> {details.subImportance}</p>}
-                    {details.statusNote && <p> <strong>עדכון מצב: </strong>{details.statusNote}</p>}
-                    <p><strong> יוצר משימה : </strong>{details.creator?.userName}</p>
-                    <p> <strong>ימים מאז פתיחה: </strong>{details.daysOpen}</p>
-                    {details.dueDate && <p> <strong>יעד לביצוע: </strong> {new Date(details.dueDate).toLocaleDateString('he-IL')}</p>}
-                    {details.finalDeadline && <p> <strong>תאריך יעד סופי: </strong> {new Date(details.finalDeadline).toLocaleDateString('he-IL')}</p>}
-                    {details.details && <p> <strong>פרטים: </strong>{details.details}</p>}
-                    {details.project && <p> <strong>פרויקט: </strong> {details.project}</p>}
-                    {details.frequencyType && <p><strong>סוג תדירות:</strong> {details.frequencyType}</p>}
-                    {/* {details.frequencyDetails && <p>פרטי תדירות:</p>} */}
-                    {details.frequencyType === 'יומי' && details.frequencyDetails.includingFriday === true && <p><strong>'ימים א'-ו </strong></p>}
-                    {details.frequencyType === 'יומי' && details.frequencyDetails.includingFriday === false && <p><strong>'ימים א'-ה </strong></p>}
-                    {details.frequencyType === 'יומי פרטני' &&
-                        <p><strong>ימים: </strong></p> &&
-                        details.frequencyDetails.days.map((i, index) => (
-                            <p key={index}> <strong>{daysOfWeek[i]}</strong></p>
-                        ))}
-                    {details.frequencyType === 'חודשי' && <p><strong> יום בחודש: {details.frequencyDetails.dayOfMonth}</strong></p>}
-                    {details.frequencyType === 'שנתי' && (
-                        <>
-                            <p> <strong>יום: {details.frequencyDetails.day}</strong></p>
-                            <p> <strong>חודש: {months[details.frequencyDetails.month - 1]}</strong></p>
-                        </>
-                    )}
-
-                </div>
-            )}
+            <TaskDetails
+                details={details}
+                isOpen={openDetails}
+                onClose={closeDetailsDiv}
+            />
             <div className="filters-bar">
                 <div className="filters-content">
 
@@ -718,27 +740,13 @@ const Tasks = () => {
             </div>
 
 
-            <div className="ag-theme-alpine">
-                <AgGridReact
-                    ref={gridRef}
-                    rowData={allTasks}
-                    columnDefs={columnDefs}
-                    defaultColDef={defaultColDef}
-                    pagination={true}
-                    enableRtl={true}
-                    paginationPageSize={20}
-                    domLayout="autoHeight"
-                    animateRows={true}
-                    isExternalFilterPresent={isExternalFilterPresent}
-                    doesExternalFilterPass={doesExternalFilterPass}
-                    onCellValueChanged={onCellValueChanged}
-                    singleClickEdit={true}
-                    rowClassRules={{
-                        'drawer-task': params => params.data.importance === 'מגירה'
-                    }}
-
-                />
-            </div>
+            <TaskAgGrid
+                rowData={allTasks}
+                columnDefs={columnDefs}
+                onCellValueChanged={onCellValueChanged}
+                doesExternalFilterPass={doesExternalFilterPass}
+                isExternalFilterPresent={isExternalFilterPresent}
+            />
         </div>
     );
 };

@@ -1,21 +1,16 @@
 .icon-container {
-    background-color: rgba(255, 255, 255, 0);
-    border: none;
-    position: relative;
-    width: 50px;
-    height: 50px;
-  }
-  
-  .trash-icon {
-    font-size: 30px;
-    color: rgba(128, 128, 128, 0.805);
-  }
-  
-  .recycle-icon {
-    position: absolute;
-    bottom: 6px;
-    right: 4px;
-    font-size: 20px;
-    color: rgb(6, 181, 6);
-  }
-  
+  all: unset; 
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  cursor: pointer; 
+}
+
+
+.trash-icon {
+  max-width: 150px; 
+  max-height: 150px;
+  object-fit: contain;
+}

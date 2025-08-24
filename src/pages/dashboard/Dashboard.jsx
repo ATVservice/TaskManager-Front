@@ -84,7 +84,7 @@ const Dashboard = () => {
   const progressData = data.progress
     .map(item => ({
       date: item.date,
-      completed: item.completed
+      הושלמו: item.completed
     }))
 
 
@@ -148,14 +148,14 @@ const Dashboard = () => {
           <h3>השוואה לימי עבודה קודמים</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={[
-              { name: 'ממוצע', value: data.prevAverage },
-              { name: 'היום', value: completedCount }
+              { name: 'ממוצע', ערך: data.prevAverage },
+              { name: 'היום', ערך: completedCount }
             ]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="value">
+              <Bar dataKey="ערך">
                 <Cell fill="#4C91FF" /> {/* ממוצע */}
                 <Cell fill="#00C853" /> {/* היום */}
               </Bar>
@@ -178,7 +178,7 @@ const Dashboard = () => {
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="completed" stroke="#4C91FF" strokeWidth={3} />
+              <Line type="monotone" dataKey="הושלמו" stroke="#4C91FF" strokeWidth={3} />
             </LineChart>
           </ResponsiveContainer>
           <div className="progress-buttons">

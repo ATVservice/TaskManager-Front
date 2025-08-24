@@ -16,28 +16,79 @@ body {
   box-sizing: border-box;
   min-height: 100vh;
 }
-.ag-theme-alpine .ag-cell, 
-.ag-theme-alpine .ag-header-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
 
 
 
-/* שורת שליטה מסודרת */
 .controls-container {
   display: flex;
   flex-direction: row-reverse;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
   padding: 1rem;
   background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+
+}
+
+
+.controls-container .add-task-button {
+  display: flex;
+  align-items: center;
+  margin-right: 30%;
+  gap: 8px;
+  background: linear-gradient(135deg, #0e45eb, #2540b0);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.controls-container .add-task-button:hover {
+  background: linear-gradient(135deg, #2540b0, #0e45eb);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+.sub-tabs{
+  margin-right: 18%;
+}
+.sub-tabs button {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background-color: #e0e0e0;
+  color: #333;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.sub-tabs button.active {
+  background-color: #1b378c;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.sub-tabs button:hover {
+  background-color: #4050b0;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+.search-input-container,
+.add-task-button {
+  margin-top: 10px; 
 }
 .search-input::placeholder {
   color: #0b0b0b9c;
@@ -73,21 +124,9 @@ body {
 .search-input:focus {
   border-color: #042486;
 }
-.add-task-button {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background-color: #042486;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 15px;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-}
+
 .details{
-  background-color: #04248668;
+  background-color: #3cc2e3;
   border: black 1px solid;
   border-radius: 10%;
 }
@@ -156,16 +195,6 @@ body {
   position: relative;
 }
 
-/* עיצוב AG Grid */
-.ag-theme-alpine {
-  width: 100% !important;
-  height: 100%;
-  min-height: 500px;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: white;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-}
 
 
 
@@ -198,6 +227,17 @@ body {
   gap: 10px;
   margin-bottom: 1rem;
 }
+.main-tabs .tab-button {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #f0f0f0;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
 
 .tabs-container {
   display: flex;
@@ -211,9 +251,23 @@ body {
   cursor: pointer;
 }
 .tab-button.active {
-  background-color: #042486;
+  background-color: #1b378c;
+  height: 40px;
+  border-radius: 20px;
+  width: 150px;
   color: white;
   font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+}
+.tab-button.arrows{
+  background-color: white;
+  color: black;
+  font-size: 18px;
+}
+.main-tabs .tab-button.arrows:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
 }
 .filters-bar button {
   margin-right: 10px;
@@ -250,8 +304,8 @@ body {
 }
 
 .drawer-task {
-  background-color: #f0f0f0 !important; /* רקע אפור */
-  color: #666 !important; /* טקסט חיוור */
+  background-color: #7170704c !important; /* רקע אפור */
+  color: #302f2f !important; /* טקסט חיוור */
   font-style: italic;
 }
 /* -----------------------------------------------ניסוי */
@@ -282,4 +336,28 @@ body {
 .ag-popup-child .ag-list-item:nth-child(5) {
   background-color: red !important;
   color: black !important;
+}
+.iconButton{
+  background-color: #23c2bf;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+  width: 80%;
+}
+.copy{
+  background-color: #23c29dbe;
+}
+.pencil{
+  background-color: #5207cab7;
+}
+.trash{
+  background-color: #0762cab7;
+}
+.history{
+  background-color: #23c2bf;
+}
+.ds{
+  background-color: rgb(3, 95, 78);
 }

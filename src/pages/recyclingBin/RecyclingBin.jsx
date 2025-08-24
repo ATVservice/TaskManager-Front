@@ -1,19 +1,103 @@
 import './RecyclingBin.css';
 import React, { useEffect, useRef, useState } from 'react';
-import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
 import Swal from 'sweetalert2';
 import { fetchGetDeletedTasks, fetchRestoreTask } from '../../services/restoreService.js';
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { Recycle } from 'lucide-react';
+import { History, Recycle } from 'lucide-react';
 import { useContext } from 'react';
+import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
+import { useNavigate } from 'react-router-dom';
+import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
+import { getMoreDetails } from '../../services/taskService.js';
 
 
 const RecyclingBin = () => {
+    const navigate = useNavigate();
 
     const { user } = useContext(AuthContext);
 
     const [data, setData] = useState([]);
+    const [details, setDetails] = useState({});
+    const [openDetails, setOpenDetails] = useState(false);
+    const statusOptions = [
+        { status: "בתהליך", color: 'yellow' },
+        { status: "בטיפול", color: 'purple' },
+        { status: "הושלם", color: 'green' },
+        { status: "מושהה", color: 'gray' },
+        { status: "בוטלה", color: 'red' },
+    ];
+    
+    
+    const [columnDefs] = useState([
+        {
+            headerName: "", field: "history", maxWidth: 50,
+            cellRenderer: (params) => <Recycle size={20} color="#042486" onClick={() => toRestoreTask(params.data._id)} />
+        },
+        { headerName: "מס'", field: 'taskId', maxWidth: 100 },
+        { headerName: 'כותרת', field: 'title' },
+        {
+            headerName: 'עמותה',
+            valueGetter: (params) => params.data.organization?.name || ''
+        },
+        {
+            headerName: 'אחראי ראשי',
+            valueGetter: (params) => params.data.mainAssignee?.userName || ''
+        },
+        {
+            headerName: 'סטטוס',
+            field: 'status',
+            cellRenderer: (params) => {
+                const status = params.value;
+                const option = statusOptions.find(opt => opt.status === status);
+                const color = option?.color || 'gray';
+                return (
+                    <span style={{
+                        backgroundColor: color,
+                        width: '60px',
+                        color: 'black',
+                        padding: '2px 8px',
+                        display: 'inline-block'
+                    }}>
+                        {status}
+                    </span>
+                );
+            }
+        },
+        {
+            headerName: 'פרטים', field: 'details', maxWidth: 100,
+            cellRenderer: (params) => (
+                <button className='details' onClick={() => MoreDetails(params.data._id)}>לפרטים</button>
+            )
+        },
+        {
+            headerName: "", field: "history", maxWidth: 50,
+            cellRenderer: (params) => <History size={20} color="#042486" onClick={() => toHistory(params.data._id)} />
+        },
 
+    ]);
+    const closeDetailsDiv = () => {
+        setOpenDetails(false);
+        setDetails({});
+    };
+    const MoreDetails = async (_id) => {
+        try {
+            const detail = await getMoreDetails(_id);
+            setDetails(detail);
+            setOpenDetails(true);
+        } catch (error) {
+            alert(error.response?.data?.message);
+            console.error('Error getting more details:', error);
+        }
+    };
+    const toHistory = async (taskId) => {
+        try {
+            navigate(`/history/${taskId}`, { target: '_blank' });      
+        }
+        catch (error) {
+            alert(error.response?.data?.message);
+        }
+    };
+    
     const toRestoreTask = async (taskId) => {
         const token = user?.token;
         const { value: password, isConfirmed } = await Swal.fire({
@@ -45,51 +129,7 @@ const RecyclingBin = () => {
     }
 
 
-    const [columns] = useState([
-        {
-            headerName: "", field: "duplicate", maxWidth: 50,
 
-            cellRenderer: (params) => <Recycle size={20} color="#042486" onClick={() => toRestoreTask(params.data._id)} />
-        },
-        { headerName: "מס'", field: 'taskId', maxWidth: 100 },
-        { headerName: 'כותרת', field: 'title' },
-        {
-            headerName: 'עמותה',
-            valueGetter: (params) => params.data.organization?.name || ''
-        },
-        {
-            headerName: 'אחראי ראשי',
-            valueGetter: (params) => params.data.mainAssignee?.userName || ''
-        },
-        { headerName: 'סטטוס', field: 'status' },
-        // {
-        //     headerName: 'פרטים', field: 'details', maxWidth: 100,
-        //     cellRenderer: (params) => (
-        //         <button className='details' onClick={() => MoreDetails(params.data._id)}>לפרטים</button>
-        //     )
-        // },
-
-    ]);
-
-    // useEffect(() => {
-    //     const GetDeletedTasks = async () => {
-    //         const token = user?.token;
-    //         if (!token) return;
-    //         try {
-    //             const [deletedTasks] = await Promise.all([
-    //                 fetchGetDeletedTasks(token),
-    //             ]);
-
-    //             setData(deletedTasks)
-    //             console.log("סל מחזור---",deletedTasks)
-    //         } catch (err) {
-    //             alert(err.response?.data?.message ||'שגיאה בטעינת המשימות המחוקות');
-    //             console.error('שגיאה בטעינת משימות מחוקות', err);
-    //         }
-    //     };
-
-    //     GetDeletedTasks();
-    // }, []);
     useEffect(() => {
         if (!user?.token) return;
         const GetDeletedTasks = async () => {
@@ -110,7 +150,16 @@ const RecyclingBin = () => {
     return (
         <div>
             <h2>סל מחזור</h2>
-            <SimpleAgGrid rowData={data} columnDefs={columns} />
+            <TaskAgGrid
+                rowData={data}
+                columnDefs={columnDefs}
+
+            />
+                 <TaskDetails 
+                details={details} 
+                isOpen={openDetails} 
+                onClose={closeDetailsDiv} 
+            />
         </div>
     );
 };
