@@ -13,3 +13,14 @@ export const createGoal = async (formData, token) => {
     });
   return response.data;
 };
+export const getGoalsByEmployee = async (employeeId, token) => {
+
+  const response = await axios.get(`${API_URL}/api/goal/getGoalsByEmployee/${employeeId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true
+    });
+  return response.data;
+};

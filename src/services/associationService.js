@@ -37,3 +37,15 @@ export const updateAssociationUsers = async (body, token) => {
         });
     return res.data;
 };
+export const createAssociation = async (name,   description, token) => {
+
+    const res = await axios.post(`${API_URL}/api/associations/createAssociation`,
+        {name, description},
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+        });
+    return res.data;
+};

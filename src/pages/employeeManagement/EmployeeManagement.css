@@ -11,7 +11,7 @@
   right: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
+  color: #04248668;
   pointer-events: none;
   z-index: 1;
 }
@@ -20,7 +20,7 @@
   padding: 10px 40px 10px 16px;
   font-size: 14px;
   border-radius: 20px;
-  border: 1.5px solid #ccc;
+  border: 1.5px solid #04248668;
   outline: none;
   width: 250px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -62,14 +62,15 @@
 
 .modal-overlay {
   position: fixed;
-  top: 30%;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgb(238, 237, 237);
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
 .modal-content {
@@ -81,4 +82,105 @@
   border-radius: 8px;
   min-width: 400px;
   max-width: 80%;
+}
+
+.modern-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  animation: fadeInUp 0.3s ease;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #042486;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #555;
+}
+
+.goals-container {
+  display: flex;
+  flex-direction: column; 
+  gap: 16px;
+}
+
+.goal-card {
+  background: linear-gradient(135deg, #e3ecff, #ffffff);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+.goal-card:hover {
+  transform: translateY(-3px);
+}
+
+.no-goals {
+  text-align: center;
+  color: #999;
+  font-size: 14px;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.iconBtn{
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20px;
+  width: 80%;
+}
+.Trash{
+  background-color: #c223637f;
+}
+.Pencil{
+  background-color: #c223aa90;
+}
+.Target{
+  background-color: #9223c286;
+
+}
+
+
+.add-task-button1 {
+  display: flex;
+  align-items: center;
+  margin-right: 60%;
+  gap: 8px;
+  background: linear-gradient(135deg, #0e45eb, #2540b0);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.add-task-button1:hover {
+  background: linear-gradient(135deg, #2540b0, #0e45eb);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }

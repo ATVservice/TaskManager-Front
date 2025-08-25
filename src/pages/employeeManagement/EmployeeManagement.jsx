@@ -1,35 +1,45 @@
-import './EmployeeManagement.css';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { Pencil, Search, Trash } from 'lucide-react';
+import { Pencil, Plus, Search, Target, Trash } from 'lucide-react';
 import { useContext } from 'react';
-import { getAllEmployees } from '../../services/userService.js';
+import { deleteUser, getAllEmployees, updateUser } from '../../services/userService.js';
 import Register from '../register/Register.jsx';
+import TargetModal from '../../components/targetModal/TargetModal.jsx';
+import { registerUser } from '../../services/authService.js';
+import './EmployeeManagement.css';
 
 
 const EmployeeManagement = () => {
 
     const { user } = useContext(AuthContext);
 
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
-    const [keyword, setKeyword] = useState("");
+    const [keyword, setKeyword] = useState('');
     const [showRegister, setShowRegister] = useState(false);
+    const [editingEmployee, setEditingEmployee] = useState(null);
+
 
 
 
     const [columns] = useState([
 
         {
-            headerName: "", field: "edit", maxWidth: 50,
+            headerName: "", field: "delete", maxWidth: 50,
 
-            cellRenderer: (params) => <Trash size={20} color="#042486" onClick={() => toDelete(params.data._id)} />
+            cellRenderer: (params) => <div className='Trash iconBtn'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} /></div>
         },
         {
             headerName: "", field: "edit", maxWidth: 50,
 
-            cellRenderer: (params) => <Pencil size={20} color="#042486" onClick={() => toEdit(params.data._id)} />
+            cellRenderer: (params) => <div className='Pencil iconBtn'><Pencil className='Pencil iconBtn' size={17} color="black" onClick={() => toEdit(params.data)} /></div>
+        },
+        {
+            headerName: "", field: "target", maxWidth: 50,
+
+            cellRenderer: (params) => <div className='Target iconBtn'><Target className='Target iconBtn' size={17} color="black" onClick={() => toTarget(params.data._id)} /></div>
         },
         {
             headerName: 'כניסה אחרונה', field: 'lastLogin',
@@ -42,53 +52,140 @@ const EmployeeManagement = () => {
                     hour: '2-digit',
                     minute: '2-digit'
                 });
+            },
+            cellStyle: () => {
+                return {
+                    color: 'rgb(109, 24, 179)',
+                };
             }
         },
-        { headerName: 'אימייל', field: 'email' },
-        { headerName: 'שם משפחה', field: 'lastName' },
-        { headerName: 'שם פרטי', field: 'firstName' },
-        { headerName: "שם משתמש", field: 'userName' },
+        {
+            headerName: 'אימייל', field: 'email',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(61, 41, 193)',
+                };
+            }
+        },
+        {
+            headerName: 'שם משפחה', field: 'lastName',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(4, 105, 125)',
+                };
+            }
+        },
+        {
+            headerName: 'שם פרטי', field: 'firstName',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(4, 125, 54)',
+                };
+            }
+        },
+        {
+            headerName: "שם משתמש", field: 'userName',
+            cellStyle: () => {
+                return {
+                    color: 'rgb(28, 125, 4)',
+                };
+            }
+        },
 
 
     ]);
-    const toEdit = async () => {
-        alert("עריכת משתמש תתממשק בהמשך")
-    }
-    const toDelete = async () => {
-        alert("מחיקת משתמש תתממשק בהמשך")
-    }
+    const toEdit = (employee) => {
+        console.log('toEditDirect called with employee:', employee);
 
+        if (!employee) {
+            alert('לא נמצא עובד לעריכה.');
+            return;
+        }
+
+        setEditingEmployee(employee);
+        setShowRegister(true);
+    };
+
+    const toDelete = async (id) => {
+        const token = user?.token;
+        if (!token) return alert('אין טוקן');
+        try {
+            await deleteUser(id, token);
+            alert('העובד נמחק בהצלחה!');
+            await fetchEmployees();
+        }
+        catch (err) {
+            alert(err.response?.data?.message || 'שגיאה במחיקת עובד');
+            console.error('שגיאה במחיקת עובד', err);
+        }
+
+    }
+    const toTarget = async (employeeId) => {
+        setSelectedEmployee(employeeId);
+    };
+
+    const fetchEmployees = async () => {
+        const token = user?.token;
+        if (!token) return;
+        try {
+            const allEmployees = await getAllEmployees(token);
+            setData(allEmployees);
+            setFilteredData(allEmployees);
+        } catch (err) {
+            alert(err.response?.data?.message || 'שגיאה בטעינת עובדים');
+            console.error('שגיאה בטעינת עובדים ', err);
+        }
+    };
+
+    useEffect(() => { fetchEmployees(); }, [user]);
 
     useEffect(() => {
-        const GetAllEmployees = async () => {
-            const token = user?.token;
-            if (!token) return;
-            try {
-                const [allEmployees] = await Promise.all([
-                    getAllEmployees(token),
-                ]);
-
-                setData(allEmployees)
-                setFilteredData(allEmployees);
-            } catch (err) {
-                alert(err.response?.data?.message || 'שגיאה בטעינת עובדים');
-                console.error('שגיאה בטעינת עובדים ', err);
-            }
-        };
-
-        GetAllEmployees();
-    }, [user]);
-
-    useEffect(() => {
-        const lowerKeyword = keyword.toLowerCase();
-        const filtered = data.filter(emp =>
-            emp.userName?.toLowerCase().includes(lowerKeyword) ||
-            emp.firstName?.toLowerCase().includes(lowerKeyword) ||
-            emp.lastName?.toLowerCase().includes(lowerKeyword) ||
-            emp.email?.toLowerCase().includes(lowerKeyword)
+        const lower = keyword.toLowerCase();
+        setFilteredData(
+            data.filter(emp =>
+                emp.userName?.toLowerCase().includes(lower) ||
+                emp.firstName?.toLowerCase().includes(lower) ||
+                emp.lastName?.toLowerCase().includes(lower) ||
+                emp.email?.toLowerCase().includes(lower)
+            )
         );
-        setFilteredData(filtered);
     }, [keyword, data]);
+
+    const handleSubmitUser = async (formData) => {
+        console.log('handleSubmitUser called');
+        console.log('editingEmployee:', editingEmployee);
+        console.log('formData:', formData);
+
+        const token = user?.token;
+        if (!token) return alert('אין טוקן');
+
+        try {
+            if (editingEmployee) {
+                console.log('Going to UPDATE mode');
+                await updateUser(editingEmployee._id, formData, token);
+                alert('העובד עודכן בהצלחה!');
+            } else {
+                console.log('Going to ADD mode');
+                await registerUser(
+                    formData.userName,
+                    formData.firstName,
+                    formData.lastName,
+                    formData.password,
+                    formData.email,
+                    formData.role,
+                    token
+                );
+                alert('עובד נוסף בהצלחה!');
+            }
+
+            setShowRegister(false);
+            setEditingEmployee(null);
+            await fetchEmployees();
+        } catch (err) {
+            console.error(err);
+            alert(err.response?.data?.message || 'שגיאה בשמירת עובד');
+        }
+    };
 
     return (
         <div>
@@ -103,17 +200,42 @@ const EmployeeManagement = () => {
                         className="search-input"
                     />
                 </div>
-                <button className="add-user-btn" onClick={() => setShowRegister(true)}>➕ הוסף עובד</button>
+
+                <button className="add-task-button1"
+                    onClick={() => {
+                        setEditingEmployee(null);
+                        setShowRegister(true);
+                    }}
+                >
+                    <Plus size={20} color="#fafafa" /> הוסף עובד
+                </button>
+
             </div>
             <div>
                 <SimpleAgGrid rowData={filteredData} columnDefs={columns} />
             </div>
+
             {showRegister && (
                 <div className="modal-overlay">
                     <div className="modal-content">
-                        <Register onClose={() => setShowRegister(false)} />
+                        <Register
+                            key={editingEmployee ? editingEmployee._id : 'new'}
+                            existingUser={editingEmployee}
+                            onClose={() => {
+                                setShowRegister(false);
+                                setEditingEmployee(null);
+                            }}
+                            onSubmit={handleSubmitUser}
+                        />
                     </div>
                 </div>
+            )}
+
+            {selectedEmployee && (
+                <TargetModal
+                    employeeId={selectedEmployee}
+                    onClose={() => setSelectedEmployee(null)}
+                />
             )}
         </div>
     );
