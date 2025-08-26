@@ -1,13 +1,15 @@
 import './AdminDashboard.css';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-   Cell, Tooltip, 
+  Cell, Tooltip,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer
 } from 'recharts';
 import { AuthContext } from '../../context/AuthContext';
 import { fetchGeneralSummary } from '../../services/adminDashboard';
 import { BarChart3, X } from 'lucide-react';
 import Dashboard from '../dashboard/Dashboard';
+import { getNames } from '../../services/userService';
+import Select from "react-select";
 
 const STATUS_COLORS = {
   "תאריך": "#FFD700",
@@ -22,7 +24,26 @@ const AdminDashboard = () => {
   const { user } = useContext(AuthContext);
   const [data, setData] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [selectedEmp, setSelectedEmp] = useState(null);
 
+  useEffect(() => {
+    if (!user?.token) return;
+    getNames(user.token).then((names) => {
+      const unique = new Map();
+
+      names.forEach((n) => {
+        const key = `${n.firstName} ${n.lastName}`;
+        if (!unique.has(key)) {
+          unique.set(key, {
+            value: n.firstName,
+            label: key,
+          });
+        }
+      });
+      setEmployees([...unique.values()]);
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!user?.token) return;
@@ -36,8 +57,8 @@ const AdminDashboard = () => {
 
 
   const barData = [
-    { name: 'חודש קודם', value: data.comparison.previous },
-    { name: 'חודש נוכחי', value: data.comparison.current }
+    { name: 'חודש קודם', ערך: data.comparison.previous },
+    { name: 'חודש נוכחי', ערך: data.comparison.current }
   ];
 
   return (
@@ -46,7 +67,7 @@ const AdminDashboard = () => {
 
         <div className="admin-dashboard-card">
           <h3>פילוח לפי חשיבות</h3>
-          <p>סך הכל משימות שהושלמו: {data.totalCompleted}</p>
+          <p><strong>סך הכל משימות שהושלמו:</strong> {data.totalCompleted}</p>
 
           <div className="progress-bars-container">
             {data.tasksByImportance.map((item, idx) => {
@@ -75,22 +96,26 @@ const AdminDashboard = () => {
 
         <div className="admin-dashboard-card">
           <h3>השוואת משימות</h3>
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={300}>
             <BarChart data={barData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} />
+              <YAxis tick={{ dx: -7 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+              <Bar dataKey="ערך"
+                radius={[10, 10, 0, 0]}
+                barSize={130}
+              >
                 <Cell fill="#4C91FF" />
                 <Cell fill="#00C853" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
           <p className="comparison-text">
-            שינוי: {data.comparison.changePercent.toFixed(1)}%
+            {data.comparison.changePercent.toFixed(1)}% +
           </p>
         </div>
+
         {/* <div className="admin-dashboard-card">
           <h3>יעדים כלליים</h3>
           <ul className="goals-list">
@@ -106,6 +131,14 @@ const AdminDashboard = () => {
           <h3>ביצועי עובדים</h3>
           <p><strong> עמידה ביעדים אישים:</strong>  % {data.overallPersonalGoals} | <strong>עמידה ביעדים כלליים: </strong> % {data.overallGeneralGoals}</p>
           <p>  </p>
+          <Select
+            options={employees}
+            value={selectedEmp}
+            onChange={setSelectedEmp}
+            isClearable
+            placeholder="בחר עובד..."
+            noOptionsMessage={() => "לא נמצאו תוצאות"}
+          />
 
           <table className="employee-table">
             <thead>
@@ -118,26 +151,42 @@ const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {data.employeeRatings.map((emp, idx) => (
-                <tr key={idx}>
-                  <td>{emp.employeeUserName}</td>
-                  <td>{emp.employeeName}</td>
-                  <td>{emp.percent !== null ? emp.percent + '%' : '-'}</td>
-                  <td className={`status ${emp.rating.replace(/\s/g, '')}`}>
-                    {emp.rating}
-                  </td>
-                  <td>
-                    <button
-                      className="icon-btn"
-                      onClick={() => setSelectedEmployee(emp)}
-                      title="צפה בדשבורד העובד"
-                    >
-                      {/* 📊 */}
-                      <BarChart3 size={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {data.employeeRatings
+                .filter(emp => !selectedEmp || emp.employeeName.includes(selectedEmp.label))
+                .map((emp, idx) => (
+                  <tr key={idx}>
+                    <td>{emp.employeeUserName}</td>
+                    <td>{emp.employeeName}</td>
+                    <td>
+                      {emp.percent !== null ? (
+                        <div>
+                          <div className="progress-bar">
+                            <div
+                              className="progress-bar-fill"
+                              style={{ width: `${emp.percent}%` }}
+                            />
+                          </div>
+                          <span style={{ fontSize: "12px", color: "#666" }}>
+                            {emp.percent}%
+                          </span>
+                        </div>
+                      ) : "-"}
+                    </td>
+                    <td className={`status ${emp.rating.replace(/\s/g, '')}`}>
+                      {emp.rating}
+                    </td>
+                    <td>
+                      <button
+                        className="icon-btn"
+                        onClick={() => setSelectedEmployee(emp)}
+                        title="צפה בדשבורד העובד"
+                      >
+                        {/* 📊 */}
+                        <BarChart3 className='barChart' size={20} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

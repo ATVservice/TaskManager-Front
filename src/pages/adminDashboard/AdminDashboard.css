@@ -3,84 +3,82 @@
     padding: 20px;
     background: #f9fafc;
     font-family: 'Segoe UI', Arial, sans-serif;
-  }
-  
-  .dashboard-header {
+}
+
+.dashboard-header {
     font-size: 24px;
     margin-bottom: 20px;
     font-weight: bold;
-  }
-  
-  .dashboard-sections {
+}
+
+.dashboard-sections {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
-  }
-  
-  .admin-dashboard-card {
+}
+
+.admin-dashboard-card {
     background: #fff;
     border-radius: 16px;
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  }
-  
-  .admin-dashboard-card h3 {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.admin-dashboard-card h3 {
     margin-bottom: 15px;
     font-size: 18px;
-  }
-  
-  .admin-dashboard-card.full-width {
+}
+
+.admin-dashboard-card.full-width {
     grid-column: span 2;
-  }
-  
-  .comparison-text {
-    margin-top: 10px;
-    font-weight: bold;
-    color: #333;
-  }
-  
-  .goals-list {
+}
+
+
+
+.goals-list {
     list-style: none;
     padding: 0;
-  }
-  
-  .goal-item {
+}
+
+.goal-item {
     padding: 6px 0;
     font-size: 15px;
-  }
-  
-  .goal-item.מעברלציפיות { color: #2e7d32; font-weight: bold; }
-  .goal-item.עומדביעד { color: #1565c0; font-weight: bold; }
-  .goal-item.פיגור { color: #c62828; font-weight: bold; }
-  
-  .employee-table {
+}
+
+.goal-item.מעברלציפיות {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.goal-item.עומדביעד {
+    color: #1565c0;
+    font-weight: bold;
+}
+
+.goal-item.פיגור {
+    color: #c62828;
+    font-weight: bold;
+}
+
+.employee-table {
     width: 100%;
     border-collapse: collapse;
-  }
-  
-  .employee-table th,
-  .employee-table td {
+}
+
+.employee-table th,
+.employee-table td {
     padding: 10px;
     border-bottom: 1px solid #eee;
     text-align: right;
-  }
-  
-  .status.מעברלציפיות {
-    color: #2e7d32;
-    font-weight: bold;
-  }
-  .status.עומדביעד {
-    color: #1565c0;
-    font-weight: bold;
-  }
-  .status.פיגור {
-    color: #c62828;
-    font-weight: bold;
-  }
-  
-  /* דשבורד אישי לעובד */
+}
 
-  .employee-dashboard-modal {
+
+
+
+
+/* דשבורד אישי לעובד */
+
+.employee-dashboard-modal {
     position: fixed;
     top: 5%;
     left: 50%;
@@ -90,27 +88,99 @@
     height: 90%;
     background: #fff;
     border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
     padding: 20px;
     overflow-y: auto;
     z-index: 1000;
-  }
-  
-  .employee-dashboard-modal .modal-header {
+}
+
+.employee-dashboard-modal .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
-  }
-  
-  .icon-btn {
+}
+
+.icon-btn {
     background: none;
     border: none;
     cursor: pointer;
     color: #333;
-  }
-  
-  .icon-btn:hover {
+}
+
+.icon-btn:hover {
     color: #4C91FF;
-  }
-  
+}
+
+.comparison-text {
+    text-align: center;
+    color: green;
+    font-weight: bold;
+    margin-left: 54%
+}
+
+.employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin-top: 2%;
+}
+
+.employee-table th {
+    background: #f5f7fa;
+    color: #333;
+    text-align: right;
+    padding: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.employee-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eaeaea;
+    color: #444;
+}
+
+.employee-table tbody tr:hover {
+    background: #f9fafc;
+}
+
+.progress-bar {
+    width: 70%;
+    height: 8px;
+    border-radius: 4px;
+    background: #e6e9ef;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #97199e;
+}
+
+.status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status.מעברלציפיות {
+    background: #f3f6d488;
+    color: #c8d609;
+}
+
+.status.עומדביעד {
+    background: #c6fcc8ae;
+    color: #2e7d32;
+}
+
+.status.פיגור {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.barChart {
+    color: rgb(193, 25, 120);
+}
