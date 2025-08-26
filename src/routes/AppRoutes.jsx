@@ -12,6 +12,7 @@ import History from '../pages/history/History';
 import GoalForm from '../components/goalForm/GoalForm';
 import ResetPassword from '../pages/resetPassword/ResetPassword';
 import EmployeeManagement from '../pages/employeeManagement/EmployeeManagement';
+import AdminDashboard from '../pages/adminDashboard/AdminDashboard';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
@@ -44,6 +45,8 @@ const AppRoutes = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/goals" element={<GoalForm />} />
           <Route path="/employee" element={<EmployeeManagement />} />
+          <Route path="/adminDashboard" element={<AdminDashboard />} />
+
 
 
         </>

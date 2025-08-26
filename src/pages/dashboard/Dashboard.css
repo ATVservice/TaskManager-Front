@@ -6,6 +6,7 @@
   padding: 20px;
 }
 
+
 .dashboard-header {
   margin-bottom: 20px;
 }
@@ -36,6 +37,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
 }
+
 
 .dashboard-card {
   flex: 1;
@@ -207,3 +209,9 @@
   font-weight: bold;
   margin-left: 56%
 }
+
+.dashboard-card.full-width {
+  flex-basis: 100% !important;
+  max-width: 100% !important;
+}
+

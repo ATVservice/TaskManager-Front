@@ -49,8 +49,8 @@ const NavBar = () => {
             <>
             <NavLink to="/association">עמותות</NavLink>
             <NavLink to="/goals">הגדרת יעדים</NavLink>
-            {/* <NavLink to="/register">הוספת משתמש</NavLink> */}
             <NavLink to="/employee">ניהול עובדים</NavLink>
+            <NavLink to="/adminDashboard">דשבורד</NavLink>
             </>
           )}
         

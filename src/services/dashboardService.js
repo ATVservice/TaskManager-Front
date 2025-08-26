@@ -1,9 +1,13 @@
 import axios from 'axios';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-export async function getPerformance({ rangeType, from, to, groupBy, token }) {
+export async function getPerformance({ employeeId, rangeType, from, to, groupBy, token }) {
     try {
         const params = new URLSearchParams();
+
+        if (employeeId) {
+            params.append('employeeId', employeeId); 
+        }
 
         if (from && to) {
             // טווח מותאם
@@ -24,6 +28,7 @@ export async function getPerformance({ rangeType, from, to, groupBy, token }) {
         if (groupBy) {
             params.append('groupBy', groupBy);
         }
+
 
         const res = await fetch(`${API_URL}/api/dashboard/getUserPerformance?${params.toString()}`, {
             headers: {

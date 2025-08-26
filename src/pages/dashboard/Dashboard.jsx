@@ -30,8 +30,9 @@ const importanceLabels = {
 
 const timeRanges = ['יום', 'שבוע', 'חודש', 'שנה', 'טווח תאריכים מותאם'];
 
-const Dashboard = () => {
+const Dashboard = ({ employeeId }) => {
   const { user } = useContext(AuthContext);
+  const targetEmployeeId = employeeId || user.id;
 
   const [rangeType, setRangeType] = useState('יום');
   const [data, setData] = useState(null);
@@ -42,13 +43,15 @@ const Dashboard = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   const targetViewing = async () => {
-    setSelectedEmployee(user.id);
+    setSelectedEmployee(targetEmployeeId);
   };
 
 
   useEffect(() => {
     const requestParams = {};
     const token = user?.token;
+    requestParams.employeeId = targetEmployeeId;
+
     if (rangeType === 'טווח תאריכים מותאם') {
       requestParams.from = fromDate;
       requestParams.to = toDate;
@@ -67,7 +70,7 @@ const Dashboard = () => {
     getPerformance({ ...requestParams, token })
       .then(setData)
       .catch(console.error);
-  }, [rangeType, fromDate, toDate, progressView]);
+  }, [rangeType, fromDate, toDate, progressView, targetEmployeeId]);
 
 
   useEffect(() => {
@@ -130,14 +133,14 @@ const Dashboard = () => {
         ))}
       </div>
       {rangeType === 'טווח תאריכים מותאם' && (
-       <div className="date-range">
-       <label>מתאריך:</label>
-       <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
-       <label>עד:</label>
-       <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
-     </div>
-     
-        
+        <div className="date-range">
+          <label>מתאריך:</label>
+          <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
+          <label>עד:</label>
+          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+        </div>
+
+
       )}
 
       <div className="dashboard-sections">
@@ -253,12 +256,12 @@ const Dashboard = () => {
 
 
         {/* גרף התקדמות */}
-        <div className="dashboard-card">
+        <div className="dashboard-card full-width">
           <h3>גרף התקדמות</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={progressData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date"/>
+              <XAxis dataKey="date" />
               <YAxis tick={{ dx: -7 }} allowDecimals={false} />
               <Tooltip />
               <Line type="monotone" dataKey="הושלמו" stroke="#4C91FF" strokeWidth={3} />
