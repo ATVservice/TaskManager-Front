@@ -10,7 +10,18 @@ import { useNavigate } from 'react-router-dom';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { getMoreDetails } from '../../services/taskService.js';
 
-
+const IconCellButton = ({ title, onClick, children }) => (
+    <button
+      type="button"
+      className="icon-cell-btn"
+      title={title}
+      aria-label={title}
+      onClick={(e) => { e.stopPropagation(); onClick?.(e); }} // מונע בחירת שורה בטעות
+    >
+      {children}
+    </button>
+  );
+  
 const RecyclingBin = () => {
     const navigate = useNavigate();
 
@@ -26,12 +37,19 @@ const RecyclingBin = () => {
         { status: "מושהה", color: 'gray' },
         { status: "בוטלה", color: 'red' },
     ];
-    
-    
+
+
     const [columnDefs] = useState([
         {
-            headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <Recycle size={20} color="#042486" onClick={() => toRestoreTask(params.data._id)} />
+            headerName: "", field: "restore", maxWidth: 50,
+            cellRenderer: (params) => (
+                <IconCellButton
+                title="שחזר משימה"
+                onClick={() => toRestoreTask(params.data._id)}
+              >
+                <Recycle size={20} color="#042486" />
+              </IconCellButton>
+            )
         },
         { headerName: "מס'", field: 'taskId', maxWidth: 100 },
         { headerName: 'כותרת', field: 'title' },
@@ -66,12 +84,19 @@ const RecyclingBin = () => {
         {
             headerName: 'פרטים', field: 'details', maxWidth: 100,
             cellRenderer: (params) => (
-                <button className='details' onClick={() => MoreDetails(params.data._id)}>לפרטים</button>
+                <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>לפרטים</button>
             )
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <History size={20} color="#042486" onClick={() => toHistory(params.data._id)} />
+            cellRenderer: (params) => (
+                <IconCellButton
+                title=" צפה בהיסטוריה"
+                onClick={() => toHistory(params.data._id)}
+              >
+                <History size={20} color="#042486" />
+              </IconCellButton>
+            )
         },
 
     ]);
@@ -91,13 +116,13 @@ const RecyclingBin = () => {
     };
     const toHistory = async (taskId) => {
         try {
-            navigate(`/history/${taskId}`, { target: '_blank' });      
+            navigate(`/history/${taskId}`, { target: '_blank' });
         }
         catch (error) {
             alert(error.response?.data?.message);
         }
     };
-    
+
     const toRestoreTask = async (taskId) => {
         const token = user?.token;
         const { value: password, isConfirmed } = await Swal.fire({
@@ -155,10 +180,10 @@ const RecyclingBin = () => {
                 columnDefs={columnDefs}
 
             />
-                 <TaskDetails 
-                details={details} 
-                isOpen={openDetails} 
-                onClose={closeDetailsDiv} 
+            <TaskDetails
+                details={details}
+                isOpen={openDetails}
+                onClose={closeDetailsDiv}
             />
         </div>
     );

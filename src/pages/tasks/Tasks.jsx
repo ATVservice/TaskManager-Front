@@ -355,7 +355,7 @@ const Tasks = () => {
     const [columnDefs] = useState([
         {
             headerName: "", field: "duplicate", maxWidth: 50,
-            cellRenderer: (params) => <div className='copy iconButton'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} /></div>
+            cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
         {
             headerName: "מס'", field: 'taskId', maxWidth: 100
@@ -433,20 +433,20 @@ const Tasks = () => {
         {
             headerName: 'פרטים', field: 'details', maxWidth: 100,
             cellRenderer: (params) => (
-                <button className='details' onClick={() => MoreDetails(params.data._id)}>לפרטים</button>
+                <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>לפרטים</button>
             )
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <div className='history iconButton'><History size={17} color="black" onClick={() => toHistory(params.data._id)} /></div>
+            cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
         {
             headerName: "", field: "delete", maxWidth: 50,
-            cellRenderer: (params) => <div className='trash iconButton'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} /> </div>
+            cellRenderer: (params) => <div className='trash iconButton' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }}/> </div>
         },
         {
             headerName: "", field: "edit", maxWidth: 50,
-            cellRenderer: (params) => <div className='pencil iconButton'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} /></div>
+            cellRenderer: (params) => <div className='pencil iconButton' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
         },
     ]);
     const onCellValueChanged = async (params) => {

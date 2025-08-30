@@ -1,0 +1,62 @@
+.reports-filters {
+    direction: rtl;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
+  
+  /* כל בלוק של שדה */
+  .reports-filters .filter-group {
+    margin-bottom: 1rem;
+  }
+  
+  .reports-filters label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 0.4rem;
+  }
+  
+  .reports-filters select,
+  .reports-filters input[type="date"] {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background-color: #fafafa;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  .reports-filters select:focus,
+  .reports-filters input[type="date"]:focus {
+    border-color: #666;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+    outline: none;
+  }
+  
+  .reports-filters option {
+    padding: 0.3rem;
+  }
+  
+  /* קווים מפרידים בין קבוצות */
+  .reports-filters .filter-group:not(:last-child) {
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  /* למראה קומפקטי */
+  .reports-filters select,
+  .reports-filters input {
+    min-height: 34px;
+  }
+  
+  /* טקסט קטן יותר לשדות משנה */
+  .reports-filters .sub-label {
+    font-size: 0.8rem;
+    color: #666;
+  }
+  

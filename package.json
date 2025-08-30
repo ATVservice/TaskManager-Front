@@ -11,6 +11,8 @@
     "ag-grid-react": "^34.0.2",
     "axios": "^1.11.0",
     "date-fns": "^4.1.0",
+    "file-saver": "^2.0.5",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.526.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -20,7 +22,8 @@
     "react-select": "^5.10.2",
     "recharts": "^3.1.2",
     "sweetalert2": "^11.22.2",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -45,5 +48,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "jspdf": "^3.0.2",
+    "jspdf-autotable": "^5.0.2",
+    "jspdf-font": "^1.0.7"
   }
 }

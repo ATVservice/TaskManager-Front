@@ -51,6 +51,8 @@ const NavBar = () => {
             <NavLink to="/goals">הגדרת יעדים</NavLink>
             <NavLink to="/employee">ניהול עובדים</NavLink>
             <NavLink to="/adminDashboard">דשבורד</NavLink>
+            <NavLink to="/reports">דוחות</NavLink>
+
             </>
           )}
         
@@ -66,7 +68,7 @@ const NavBar = () => {
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
           <div className='bell'>
-            <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התרעות">
+            <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התרעות" title='התרעות'>
               <Bell />
               {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
             </button>

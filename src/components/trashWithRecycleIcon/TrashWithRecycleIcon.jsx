@@ -7,7 +7,7 @@ const TrashWithRecycleIcon = () => {
   const navigate = useNavigate();
 
   return (
-    <button className="icon-container" onClick={() => navigate('/recyclingBin')}>
+    <button className="icon-container" onClick={() => navigate('/recyclingBin')} title='סל מחזור'>
    
       <img src="/Recycleing.png" alt="Trash" className="trash-icon" />
 

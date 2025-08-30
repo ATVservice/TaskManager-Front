@@ -29,17 +29,17 @@ const EmployeeManagement = () => {
         {
             headerName: "", field: "delete", maxWidth: 50,
 
-            cellRenderer: (params) => <div className='Trash iconBtn'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} /></div>
+            cellRenderer: (params) => <div className='Trash iconBtn' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
         {
             headerName: "", field: "edit", maxWidth: 50,
 
-            cellRenderer: (params) => <div className='Pencil iconBtn'><Pencil className='Pencil iconBtn' size={17} color="black" onClick={() => toEdit(params.data)} /></div>
+            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil className='Pencil iconBtn' size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
         },
         {
             headerName: "", field: "target", maxWidth: 50,
 
-            cellRenderer: (params) => <div className='Target iconBtn'><Target className='Target iconBtn' size={17} color="black" onClick={() => toTarget(params.data._id)} /></div>
+            cellRenderer: (params) => <div className='Target iconBtn' title='צפייה ביעדים'><Target className='Target iconBtn' size={17} color="black" onClick={() => toTarget(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
         {
             headerName: 'כניסה אחרונה', field: 'lastLogin',

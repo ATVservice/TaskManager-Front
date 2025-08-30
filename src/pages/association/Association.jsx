@@ -135,13 +135,15 @@ const Association = () => {
               <td>{asso.name}</td>
               <td>
                 <button className="association-btn secondary"
-                  onClick={() => getAssociatedEmployees(asso._id)} >
+                  onClick={() => getAssociatedEmployees(asso._id)} 
+                  title='עובדים משוייכים'>
                   <Users color="#050505" />
                 </button>
               </td>
               <td>
                 <button className="association-btn primary"
-                  onClick={() => openAssignEmployees(asso._id)}>
+                  onClick={() => openAssignEmployees(asso._id)}
+                  title='שיוך עובדים'>
                   <UserPlus color="#fcfcfc" />
                 </button>
 

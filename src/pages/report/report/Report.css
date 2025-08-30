@@ -1,0 +1,155 @@
+.reports-container {
+    padding: 1rem;
+  }
+  
+  .reports-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .reports-layout {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  /* פאנל סינונים */
+  .filters-panel {
+    width: 250px;
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  /* צד התוכן */
+  .reports-content {
+    flex: 1;
+  }
+  
+  /* בחירת דוח */
+  .report-type {
+    margin-bottom: 1rem;
+  }
+  .report-label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+  .report-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  /* כפתורים */
+  .export-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+  .btn:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  .btn-excel {
+    background-color: #16a34a;
+  }
+  .btn-excel:hover:enabled {
+    background-color: #15803d;
+  }
+  .btn-pdf {
+    background-color: #2563eb;
+  }
+  .btn-pdf:hover:enabled {
+    background-color: #1d4ed8;
+  }
+  .loading-text {
+    font-size: 0.75rem;
+  }
+  
+  /* סטטיסטיקות */
+  .statistics-box {
+    background: #f3f4f6;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  .statistics-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  .statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.5rem;
+  }
+  .bold {
+    font-weight: bold;
+  }
+  
+  /* טבלה */
+  .table-wrapper {
+    overflow-x: auto;
+  }
+  .reports-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ccc;
+  }
+  .reports-table th,
+  .reports-table td {
+    border: 1px solid #ccc;
+    padding: 0.5rem;
+    text-align: right;
+  }
+  .reports-table thead {
+    background-color: #f9fafb;
+  }
+  .reports-table tr:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .no-data {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+  }
+  
+  /* פעילות אחרונה */
+  .recent-activity {
+    margin-top: 1.5rem;
+  }
+  .activity-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 0.75rem;
+  }
+  .activity-list {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .activity-item {
+    padding: 0.75rem;
+    background: #f9fafb;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
+  .activity-name {
+    font-weight: 500;
+  }
+  .activity-details {
+    font-size: 0.85rem;
+    color: #555;
+  }
+  
