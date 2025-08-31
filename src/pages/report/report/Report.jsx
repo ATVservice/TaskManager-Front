@@ -31,6 +31,8 @@ const Reports = () => {
     const reasons = [{ id: 1, name: "חוסר זמן" }, { id: 2, name: "תיעדוף אחר" }];
     const [reportData, setReportData] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [periodType, setPeriodType] = useState('month');
+
 
 
     // טוען dropdowns פעם אחת בהתחלה
@@ -54,7 +56,7 @@ const Reports = () => {
     useEffect(() => {
         const loadReport = async () => {
             try {
-                const res = await fetchReportData(reportType, user?.token, filters);
+                const res = await fetchReportData(reportType, user?.token, { ...filters, period: periodType });
                 setReportData(res);
             } catch (err) {
                 console.error("שגיאה בטעינת דוח:", err);
@@ -62,7 +64,7 @@ const Reports = () => {
             }
         };
         if (user?.token) loadReport();
-    }, [reportType, filters, user?.token]);
+    }, [reportType, filters, periodType, user?.token]);
 
     // פונקציות עיבוד הנתונים לכל סוג דוח
     const getTableDataByReportType = () => {
@@ -75,35 +77,41 @@ const Reports = () => {
 
         switch (reportType) {
             case "openTasksByEmployee":
-                return processOpenTasksByEmployee(reportData.data);
+                return processOpenTasksByEmployee(reportData.data || []);
             case "tasksByResponsibility":
-                return processTasksByResponsibility(reportData.data);
+                return processTasksByResponsibility(reportData.data ||[]);
             case "overdueTasks":
-                return processOverdueTasks(reportData.data);
+                return processOverdueTasks(reportData.data || []);
             case "tasksSummaryByPeriod":
-                return processTasksSummaryByPeriod(reportData.data);
+                return processTasksSummaryByPeriod(reportData.data || []);
             case "employeePersonalStats":
-                return processEmployeePersonalStats(reportData);
+                return processEmployeePersonalStats(reportData?.data || []);
+
             default:
                 return { headers: [], rows: [] };
         }
     };
 
     // עיבוד דוח משימות פתוחות לפי עובד
+
     const processOpenTasksByEmployee = (data) => {
-        const headers = ["עובד", "כמות משימות", "חשיבות גבוהה", "באיחור", "בתהליך"];
+        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "חשיבות דחופה ", "באיחור", "בתהליך", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
         const rows = [];
 
-        data.forEach(employeeData => {
-            const employee = employeeData.employee;
-            const summary = employeeData.summary;
+        const employees = Array.isArray(data) ? data : data?.employees || [];
+        employees.forEach(employeeData => {
+            const employee = employeeData.employee || {};
+            const summary = employeeData.summary || {};
 
             rows.push([
-                employee.name,
-                summary.total,
-                summary.byImportance['דחוף'] || 0,
-                summary.overdue || 0,
-                summary.byStatus['בתהליך'] || 0
+                employee.userName ?? '',
+                employee.name ?? '',
+                summary.total ?? 0,
+                summary.byImportance?.['דחוף'] ?? 0,
+                summary.overdue ?? 0,
+                summary.byStatus?.['בתהליך'] ?? 0,
+                summary.avgDaysOpen ?? 0,
+                summary.oldestOpenDays ?? 0
             ]);
         });
 
@@ -112,13 +120,14 @@ const Reports = () => {
 
     // עיבוד דוח משימות לפי אחריות
     const processTasksByResponsibility = (data) => {
-        const headers = ["עובד", "סוג אחריות", "כמות משימות", "הושלמו", "בתהליך", "מושהה"];
+        const headers = ["שם משתמש", "שם עובד", "סוג אחריות", "כמות משימות", "הושלמו", "בתהליך", "מושהה"];
         const rows = [];
 
         // אחראים ראשיים
         Object.values(data.mainResponsible || {}).forEach(employeeData => {
             const summary = employeeData.summary;
             rows.push([
+                employeeData.employee.userName,
                 employeeData.employee.name,
                 "אחראי ראשי",
                 summary.total,
@@ -132,6 +141,7 @@ const Reports = () => {
         Object.values(data.secondaryResponsible || {}).forEach(employeeData => {
             const summary = employeeData.summary;
             rows.push([
+                employeeData.employee.userName,
                 employeeData.employee.name,
                 "אחראי משני",
                 summary.total,
@@ -186,23 +196,23 @@ const Reports = () => {
 
         return { headers, rows };
     };
-
     // עיבוד סטטיסטיקה אישית
     const processEmployeePersonalStats = (data) => {
-        if (!data.stats) return { headers: [], rows: [] };
+        console.log("data stat", data);
+        const headers = ["שם משתמש", "שם מלא", "אחוז השלמה", "אחוז עמידה בזמנים", "אחוז עמידה ביעדים"];
+        if (!Array.isArray(data) || data.length === 0) return { headers, rows: [] };
 
-        const headers = ["מדד", "ערך"];
-        const stats = data.stats.overview;
-        const rows = [
-            ["סה״כ משימות", stats.totalTasks],
-            ["הושלמו", stats.completed],
-            ["בתהליך", stats.inProgress],
-            ["באיחור", stats.overdue],
-            ["אחוז השלמה", `${stats.completionRate}%`]
-        ];
-
+        const rows = data.map(stat => [
+            stat?.userName || '',
+            stat?.fullName || '',
+            `${stat?.completionRate || 0}%`,
+            `${stat?.onTimeRate || 0}%`,
+            `${stat?.overallGoalPercentage || 0}%`
+        ]);
         return { headers, rows };
     };
+    
+
 
     // ייצוא ל-Excel עם תיקון כיוון RTL
     const exportExcel = () => {
@@ -497,7 +507,7 @@ const Reports = () => {
     return (
         <div className="reports-container">
             <h2 className="reports-title">📊 דוחות מנהל</h2>
-    
+
             <div className="reports-layout">
                 {/* דיב של הסינונים */}
                 <div className="filters-panel">
@@ -509,12 +519,14 @@ const Reports = () => {
                         reasons={reasons}
                     />
                 </div>
-    
+                
+
                 {/* דיב של הטבלה וכל שאר התוכן */}
                 <div className="reports-content">
+                    
 
-                                    {/* כפתורי ייצוא */}
-                                    <div className="export-buttons">
+                    {/* כפתורי ייצוא */}
+                    <div className="export-buttons">
                         <button
                             onClick={exportExcel}
                             className="btn btn-excel"
@@ -522,7 +534,7 @@ const Reports = () => {
                         >
                             📥 ייצוא Excel
                         </button>
-    
+
                         <button
                             onClick={exportPDFWithCanvas}
                             className="btn btn-pdf"
@@ -533,7 +545,7 @@ const Reports = () => {
                         </button>
                     </div>
 
-                    
+
                     {/* בחירת סוג דוח */}
                     <div className="report-type">
                         <label className="report-label">סוג דוח:</label>
@@ -549,18 +561,40 @@ const Reports = () => {
                             <option value="employeePersonalStats">סטטיסטיקה אישית</option>
                         </select>
                     </div>
-    
-    
-    
+      {/* בחירת תקופה לדוח סיכום משימות לפי תקופה */}
+      {reportType === "tasksSummaryByPeriod" && (
+                        <div className="period-tabs">
+                            <button
+                                className={periodType === 'week' ? 'active' : ''}
+                                onClick={() => setPeriodType('week')}
+                            >
+                                שבוע
+                            </button>
+                            <button
+                                className={periodType === 'month' ? 'active' : ''}
+                                onClick={() => setPeriodType('month')}
+                            >
+                                חודש
+                            </button>
+                            <button
+                                className={periodType === 'year' ? 'active' : ''}
+                                onClick={() => setPeriodType('year')}
+                            >
+                                שנה
+                            </button>
+                        </div>
+                    )}
+
+
                     {/* סטטיסטיקות */}
                     {reportData?.statistics && (
                         <div className="statistics-box">
-                            <h3 className="statistics-title">סטטיסטיקות כלליות:</h3>
+                            {/* <h3 className="statistics-title">סטטיסטיקות כלליות:</h3> */}
                             <div className="statistics-grid">
-                                <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div>
-                                {reportData.statistics.averageDaysOverdue !== undefined && (
+                                {/* <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div> */}
+                                {/* {reportData.statistics.averageDaysOverdue !== undefined && (
                                     <div>ממוצע ימים באיחור: <span className="bold">{reportData.statistics.averageDaysOverdue}</span></div>
-                                )}
+                                )} */}
                                 {reportData.overallStats && (
                                     <>
                                         <div>ממוצע משימות לתקופה: <span className="bold">{reportData.overallStats.averageTasksPerPeriod}</span></div>
@@ -570,7 +604,7 @@ const Reports = () => {
                             </div>
                         </div>
                     )}
-    
+
                     {/* טבלה */}
                     {tableData.headers.length > 0 ? (
                         <div className="table-wrapper">
@@ -598,7 +632,9 @@ const Reports = () => {
                             {reportData === null ? "טוען נתונים..." : "אין נתונים להצגה"}
                         </div>
                     )}
-    
+              
+
+
                     {/* פעילות אחרונה */}
                     {reportType === "employeePersonalStats" && reportData?.stats?.recentActivity && (
                         <div className="recent-activity">
@@ -620,6 +656,6 @@ const Reports = () => {
             </div>
         </div>
     );
-}    
+}
 
 export default Reports;

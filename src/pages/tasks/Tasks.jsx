@@ -57,8 +57,6 @@ const statusOptions = [
     { status: "בוטלה", color: 'red' },
 ];
 
-
-
 const Tasks = () => {
     const navigate = useNavigate();
     const suppressedChangeNodesRef = useRef(new Set());

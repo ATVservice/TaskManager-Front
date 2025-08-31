@@ -123,7 +123,7 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons 
                                 value={filters.subImportance || ""}
                                 onChange={(e) => setFilters({ ...filters, subImportance: e.target.value })}
                             >
-                                {importanceOptions.map((p) => (
+                                {subImportanceOptions.map((p) => (
                                     <option key={p.value} value={p.value}>
                                         {p.label}
                                     </option>
