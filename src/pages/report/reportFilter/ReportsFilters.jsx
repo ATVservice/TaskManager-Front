@@ -42,7 +42,7 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons 
                 >
                     <option value="">הכל</option>
                     {employees.map((emp) => (
-                        <option key={emp.id} value={emp.id}>
+                        <option key={emp._id} value={emp._id}>
                             {emp.userName} ({emp.firstName} {emp.lastName})
                         </option>
                     ))}
@@ -58,7 +58,7 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons 
                 >
                     <option value="">הכל</option>
                     {associations.map((asso) => (
-                        <option key={asso.id} value={asso.id}>
+                        <option key={asso._id} value={asso._id}>
                             {asso.name}
                         </option>
                     ))}

@@ -11,10 +11,11 @@ import { fetchAllAssociations } from "../../../services/associationService.js";
 import { fetchReportData } from "../../../services/reportTypeService.js";
 import { AuthContext } from "../../../context/AuthContext.jsx";
 import "./Report.css";
+import { fetchLoadSavedFilter, fetchResetFilter } from "../../../services/reportFiltersService.js";
 
 const Reports = () => {
     const { user } = useContext(AuthContext);
-
+    const [isResetting, setIsResetting] = useState(false);
     const [reportType, setReportType] = useState("openTasksByEmployee");
     const [filters, setFilters] = useState({
         employeeId: "",
@@ -32,39 +33,117 @@ const Reports = () => {
     const [reportData, setReportData] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
     const [periodType, setPeriodType] = useState('month');
+    const [responsibilityType, setResponsibilityType] = useState('all');
 
+
+    // פונקציה חדשה לטעינת פילטר שמור
+        const loadSavedFilter = async (screenType) => {
+            try {
+                console.log(`Loading filter for screen: ${screenType}`);
+                const result = await fetchLoadSavedFilter(screenType, user?.token);
+                
+                if (result.success && result.filter && Object.keys(result.filter).length > 0) {
+                    console.log('טוען פילטר שמור:', result.filter);
+                    setFilters(prev => ({
+                        ...prev,
+                        ...result.filter
+                    }));
+                } else {
+                    console.log('No saved filter found or filter is empty');
+                }
+            } catch (error) {
+                console.error('שגיאה בטעינת פילטר שמור:', error);
+            }
+        };
+        
+
+    // פונקציה חדשה לאיפוס פילטר
+    const resetFilter = async () => {
+        setIsResetting(true);
+        try {
+            const screenType = getScreenTypeByReportType(reportType);
+            console.log(`Resetting filter for screen: ${screenType}`);
+            
+            const result = await fetchResetFilter(screenType, user?.token);
+            
+            if (result.success) {
+                // איפוס הפילטרים ב-state
+                setFilters({
+                    employeeId: "",
+                    associationId: "",
+                    status: "",
+                    startDate: "",
+                    endDate: "",
+                    importance: "",
+                    subImportance: "",
+                    reasonId: "",
+                });
+                
+                console.log('פילטר אופס בהצלחה');
+            } else {
+                console.error('Server error:', result.message);
+            }
+        } catch (error) {
+            console.error('שגיאה באיפוס פילטר:', error);
+        } finally {
+            setIsResetting(false);
+        }
+    };
+    // פונקציה עזר למיפוי reportType ל-screenType
+    const getScreenTypeByReportType = (reportType) => {
+        const mapping = {
+            'openTasksByEmployee': 'openTasks',
+            'tasksByResponsibility': 'tasksByResponsibility',
+            'overdueTasks': 'overdueTasks',
+            'tasksSummaryByPeriod': 'tasksByPeriod',
+            'employeePersonalStats': 'employeeStats'
+        };
+        return mapping[reportType] || 'general';
+    };
 
 
     // טוען dropdowns פעם אחת בהתחלה
     useEffect(() => {
         const loadFiltersData = async () => {
-            const token = user?.token;
+            if (!user?.token) return;
+            
             try {
+                console.log('Loading initial data...');
                 const [emps, assos] = await Promise.all([
-                    getAllEmployees(token),
-                    fetchAllAssociations(token),
+                    getAllEmployees(user.token),
+                    fetchAllAssociations(user.token),
                 ]);
                 setEmployees(emps);
                 setAssociations(assos);
+                
+                // טעינת פילטר שמור לאחר טעינת הנתונים
+                await loadSavedFilter(getScreenTypeByReportType(reportType));
+                
             } catch (err) {
                 console.error("שגיאה בטעינת נתוני פילטרים:", err);
             }
         };
+        
         loadFiltersData();
-    }, []);
-
+    }, [user?.token]);
     useEffect(() => {
         const loadReport = async () => {
-            try {
-                const res = await fetchReportData(reportType, user?.token, { ...filters, period: periodType });
-                setReportData(res);
-            } catch (err) {
-                console.error("שגיאה בטעינת דוח:", err);
-                setReportData(null);
-            }
+          try {
+            const res = await fetchReportData(reportType, user?.token, {
+              ...filters,
+              period: periodType,
+              responsibilityType: responsibilityType
+            });
+            setReportData(res);
+          } catch (err) {
+            console.error("שגיאה בטעינת דוח:", err);
+            setReportData(null);
+          }
         };
+        
         if (user?.token) loadReport();
-    }, [reportType, filters, periodType, user?.token]);
+      }, [reportType, filters, periodType, responsibilityType, user?.token]);
+
 
     // פונקציות עיבוד הנתונים לכל סוג דוח
     const getTableDataByReportType = () => {
@@ -79,7 +158,7 @@ const Reports = () => {
             case "openTasksByEmployee":
                 return processOpenTasksByEmployee(reportData.data || []);
             case "tasksByResponsibility":
-                return processTasksByResponsibility(reportData.data ||[]);
+                return processTasksByResponsibility(reportData.data || []);
             case "overdueTasks":
                 return processOverdueTasks(reportData.data || []);
             case "tasksSummaryByPeriod":
@@ -104,8 +183,8 @@ const Reports = () => {
             const summary = employeeData.summary || {};
 
             rows.push([
-                employee.userName ?? '',
-                employee.name ?? '',
+                employee.userName ?? '---',
+                employee.name ?? '---',
                 summary.total ?? 0,
                 summary.byImportance?.['דחוף'] ?? 0,
                 summary.overdue ?? 0,
@@ -127,10 +206,10 @@ const Reports = () => {
         Object.values(data.mainResponsible || {}).forEach(employeeData => {
             const summary = employeeData.summary;
             rows.push([
-                employeeData.employee.userName,
-                employeeData.employee.name,
+                employeeData.employee.userName || '---',
+                employeeData.employee.name || '---',
                 "אחראי ראשי",
-                summary.total,
+                summary.total || 0,
                 summary.byStatus['הושלם'] || 0,
                 summary.byStatus['בתהליך'] || 0,
                 summary.byStatus['מושהה'] || 0
@@ -156,7 +235,7 @@ const Reports = () => {
 
     // עיבוד דוח משימות באיחור
     const processOverdueTasks = (data) => {
-        const headers = ["מזהה משימה", "כותרת", "אחראי ראשי", "ימים באיחור", "רמת חומרה", "ארגון", "חשיבות"];
+        const headers = ["מזהה משימה", "כותרת", "פרטים", "סיבת אי ביצוע", "אחראי ראשי", "ימים באיחור", "רמת חומרה", "ארגון", "חשיבות"];
 
         if (!Array.isArray(data)) {
             console.log("overdueTasks data is not array:", data);
@@ -164,13 +243,64 @@ const Reports = () => {
         }
 
         const rows = data.map(task => [
-            task.taskId || '',
-            task.title || '',
-            task.mainAssignee ? `${task.mainAssignee.firstName || ''} ${task.mainAssignee.lastName || ''}` : '',
+            task.taskId || '---',
+            task.title || '---',
+            task.details || '---',
+            task.failureReason || '---',
+            task.mainAssignee ? `${task.mainAssignee.firstName || ''} ${task.mainAssignee.lastName || ''}` : '---',
             task.daysOverdue || 0,
-            task.severity || '',
-            task.organization?.name || "",
-            task.importance || ''
+            task.severity || '---',
+            task.organization?.name || "---",
+            task.importance || '---'
+        ]);
+
+        return { headers, rows };
+    };
+    const processOverdueTasksForExport = (data) => {
+        const headers = [
+            "מזהה משימה",
+            "כותרת",
+            "פרטים",
+            "פרויקט",
+            "סיבת אי ביצוע",
+            "אחראי ראשי",
+            "אחראי משני",
+            "ימים באיחור",
+            "רמת חומרה",
+            "ארגון",
+            "חשיבות",
+            "תת חשיבות",
+            "יוצר",
+            "תאריך יעד",
+            "תאריך סופי",
+            "תאריך יצירה",
+            "תאריך עדכון",
+            "סטטוס",
+            "הערות סטטוס",
+            "האם משימה חוזרת"
+        ];
+
+        const rows = data.map(task => [
+            task.taskId || '---',
+            task.title || '---',
+            task.details || '---',
+            task.project || '---',
+            task.failureReason || '---',
+            task.mainAssignee ? `${task.mainAssignee.firstName} ${task.mainAssignee.lastName}` : '---',
+            task.assignees?.filter(a => a._id !== task.mainAssignee?._id).map(a => `${a.firstName} ${a.lastName}`).join(', ') || '---',
+            task.daysOverdue || 0,
+            task.severity || '---',
+            task.organization?.name || '---',
+            task.importance || '---',
+            task.subImportance || '---',
+            task.creator ? `${task.creator.firstName} ${task.creator.lastName}` : '---',
+            task.dueDate ? new Date(task.dueDate).toLocaleDateString('he-IL') : '---',
+            task.finalDeadline ? new Date(task.finalDeadline).toLocaleDateString('he-IL') : '---',
+            task.createdAt ? new Date(task.createdAt).toLocaleDateString('he-IL') : '---',
+            task.updatedAt ? new Date(task.updatedAt).toLocaleDateString('he-IL') : '---',
+            task.status || '---',
+            task.statusNote || '',
+            task.isRecurringInstance ? 'כן' : 'לא'
         ]);
 
         return { headers, rows };
@@ -186,7 +316,7 @@ const Reports = () => {
         }
 
         const rows = data.map(period => [
-            period?.period || '',
+            period?.period || '---',
             period?.totalTasks || 0,
             period?.byStatus?.['הושלם'] || 0,
             period?.byStatus?.['בתהליך'] || 0,
@@ -203,20 +333,27 @@ const Reports = () => {
         if (!Array.isArray(data) || data.length === 0) return { headers, rows: [] };
 
         const rows = data.map(stat => [
-            stat?.userName || '',
-            stat?.fullName || '',
+            stat?.userName || '---',
+            stat?.fullName || '---',
             `${stat?.completionRate || 0}%`,
             `${stat?.onTimeRate || 0}%`,
             `${stat?.overallGoalPercentage || 0}%`
         ]);
         return { headers, rows };
     };
-    
+
 
 
     // ייצוא ל-Excel עם תיקון כיוון RTL
     const exportExcel = () => {
-        const tableData = getTableDataByReportType();
+
+        let tableData;
+        if (reportType === "overdueTasks") {
+            tableData = processOverdueTasksForExport(reportData.data || []);
+        } else {
+            tableData = getTableDataByReportType();
+        }
+
         if (!tableData.rows.length) return;
 
         try {
@@ -316,7 +453,13 @@ const Reports = () => {
 
     // פתרון PDF עם HTML2Canvas (עברית מושלמת)
     const exportPDFWithCanvas = async () => {
-        const tableData = getTableDataByReportType();
+        let tableData;
+        if (reportType === "overdueTasks") {
+            tableData = processOverdueTasksForExport(reportData.data || []);
+        } else {
+            tableData = getTableDataByReportType();
+        }
+
         if (!tableData.rows.length) return;
 
         setIsExporting(true);
@@ -506,7 +649,7 @@ const Reports = () => {
     const tableData = getTableDataByReportType();
     return (
         <div className="reports-container">
-            <h2 className="reports-title">📊 דוחות מנהל</h2>
+            <h2 className="reports-title"> דוחות מנהל</h2>
 
             <div className="reports-layout">
                 {/* דיב של הסינונים */}
@@ -519,142 +662,181 @@ const Reports = () => {
                         reasons={reasons}
                     />
                 </div>
-                
+                <div className="filter-actions">
+                    <button
+                        onClick={() => resetFilter()}
+                        disabled={isResetting}
+                        className="btn btn-reset"
+                        style={{
+                            marginTop: '10px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        {isResetting ? '⏳ מאפס...' : '🗑️ איפוס סינון'}
+                    </button>
+                </div>
 
-                {/* דיב של הטבלה וכל שאר התוכן */}
-                <div className="reports-content">
-                    
+            {/* דיב של הטבלה וכל שאר התוכן */}
+            <div className="reports-content">
 
-                    {/* כפתורי ייצוא */}
-                    <div className="export-buttons">
+
+                {/* כפתורי ייצוא */}
+                <div className="export-buttons">
+                    <button
+                        onClick={exportExcel}
+                        className="btn btn-excel"
+                        disabled={!reportData?.data || tableData.rows.length === 0}
+                    >
+                        📥 ייצוא Excel
+                    </button>
+
+                    <button
+                        onClick={exportPDFWithCanvas}
+                        className="btn btn-pdf"
+                        disabled={!reportData?.data || tableData.rows.length === 0 || isExporting}
+                    >
+                        {isExporting ? '⏳' : '📥'} PDF עברית
+                        {isExporting && <span className="loading-text">(יוצר...)</span>}
+                    </button>
+                </div>
+
+
+                {/* בחירת סוג דוח */}
+                <div className="report-type">
+                    <label className="report-label">סוג דוח:</label>
+                    <select
+                        value={reportType}
+                        onChange={(e) => setReportType(e.target.value)}
+                        className="report-select"
+                    >
+                        <option value="openTasksByEmployee">משימות פתוחות לפי עובד</option>
+                        <option value="tasksByResponsibility">משימות לפי אחריות</option>
+                        <option value="overdueTasks">משימות חורגות מיעד</option>
+                        <option value="tasksSummaryByPeriod">סיכום משימות לפי תקופה</option>
+                        <option value="employeePersonalStats">סטטיסטיקה אישית</option>
+                    </select>
+                </div>
+                {/* בחירת תקופה לדוח סיכום משימות לפי תקופה */}
+                {reportType === "tasksByResponsibility" && (
+                    <div className="period-tabs">
                         <button
-                            onClick={exportExcel}
-                            className="btn btn-excel"
-                            disabled={!reportData?.data || tableData.rows.length === 0}
+                            className={responsibilityType === 'all' ? 'active' : ''}
+                            onClick={() => setResponsibilityType('all')}
                         >
-                            📥 ייצוא Excel
+                            הכל
                         </button>
-
                         <button
-                            onClick={exportPDFWithCanvas}
-                            className="btn btn-pdf"
-                            disabled={!reportData?.data || tableData.rows.length === 0 || isExporting}
+                            className={responsibilityType === 'main' ? 'active' : ''}
+                            onClick={() => setResponsibilityType('main')}
                         >
-                            {isExporting ? '⏳' : '📥'} PDF עברית
-                            {isExporting && <span className="loading-text">(יוצר...)</span>}
+                            ראשי
+                        </button>
+                        <button
+                            className={responsibilityType === 'secondary' ? 'active' : ''}
+                            onClick={() => setResponsibilityType('secondary')}
+                        >
+                            משני
                         </button>
                     </div>
+                )}
 
-
-                    {/* בחירת סוג דוח */}
-                    <div className="report-type">
-                        <label className="report-label">סוג דוח:</label>
-                        <select
-                            value={reportType}
-                            onChange={(e) => setReportType(e.target.value)}
-                            className="report-select"
+                {/*בחירת סוג אחריות רצוי*/}
+                {reportType === "tasksSummaryByPeriod" && (
+                    <div className="period-tabs">
+                        <button
+                            className={periodType === 'week' ? 'active' : ''}
+                            onClick={() => setPeriodType('week')}
                         >
-                            <option value="openTasksByEmployee">משימות פתוחות לפי עובד</option>
-                            <option value="tasksByResponsibility">משימות לפי אחריות</option>
-                            <option value="overdueTasks">משימות חורגות מיעד</option>
-                            <option value="tasksSummaryByPeriod">סיכום משימות לפי תקופה</option>
-                            <option value="employeePersonalStats">סטטיסטיקה אישית</option>
-                        </select>
+                            שבוע
+                        </button>
+                        <button
+                            className={periodType === 'month' ? 'active' : ''}
+                            onClick={() => setPeriodType('month')}
+                        >
+                            חודש
+                        </button>
+                        <button
+                            className={periodType === 'year' ? 'active' : ''}
+                            onClick={() => setPeriodType('year')}
+                        >
+                            שנה
+                        </button>
                     </div>
-      {/* בחירת תקופה לדוח סיכום משימות לפי תקופה */}
-      {reportType === "tasksSummaryByPeriod" && (
-                        <div className="period-tabs">
-                            <button
-                                className={periodType === 'week' ? 'active' : ''}
-                                onClick={() => setPeriodType('week')}
-                            >
-                                שבוע
-                            </button>
-                            <button
-                                className={periodType === 'month' ? 'active' : ''}
-                                onClick={() => setPeriodType('month')}
-                            >
-                                חודש
-                            </button>
-                            <button
-                                className={periodType === 'year' ? 'active' : ''}
-                                onClick={() => setPeriodType('year')}
-                            >
-                                שנה
-                            </button>
-                        </div>
-                    )}
-
-
-                    {/* סטטיסטיקות */}
-                    {reportData?.statistics && (
-                        <div className="statistics-box">
-                            {/* <h3 className="statistics-title">סטטיסטיקות כלליות:</h3> */}
-                            <div className="statistics-grid">
-                                {/* <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div> */}
-                                {/* {reportData.statistics.averageDaysOverdue !== undefined && (
+                )}
+                {/* סטטיסטיקות */}
+                {reportData?.statistics && (
+                    <div className="statistics-box">
+                        {/* <h3 className="statistics-title">סטטיסטיקות כלליות:</h3> */}
+                        <div className="statistics-grid">
+                            {/* <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div> */}
+                            {/* {reportData.statistics.averageDaysOverdue !== undefined && (
                                     <div>ממוצע ימים באיחור: <span className="bold">{reportData.statistics.averageDaysOverdue}</span></div>
                                 )} */}
-                                {reportData.overallStats && (
-                                    <>
-                                        <div>ממוצע משימות לתקופה: <span className="bold">{reportData.overallStats.averageTasksPerPeriod}</span></div>
-                                        <div>ממוצע אחוז השלמה: <span className="bold">{reportData.overallStats.averageCompletionRate}%</span></div>
-                                    </>
-                                )}
-                            </div>
+                            {reportData.overallStats && (
+                                <>
+                                    <div>ממוצע משימות לתקופה: <span className="bold">{reportData.overallStats.averageTasksPerPeriod}</span></div>
+                                    <div>ממוצע אחוז השלמה: <span className="bold">{reportData.overallStats.averageCompletionRate}%</span></div>
+                                </>
+                            )}
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {/* טבלה */}
-                    {tableData.headers.length > 0 ? (
-                        <div className="table-wrapper">
-                            <table className="reports-table">
-                                <thead>
-                                    <tr>
-                                        {tableData.headers.map((header, idx) => (
-                                            <th key={idx}>{header}</th>
+                {/* טבלה */}
+                {tableData.headers.length > 0 ? (
+                    <div className="table-wrapper">
+                        <table className="reports-table">
+                            <thead>
+                                <tr>
+                                    {tableData.headers.map((header, idx) => (
+                                        <th key={idx}>{header}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tableData.rows.map((row, rowIdx) => (
+                                    <tr key={rowIdx}>
+                                        {row.map((cell, cellIdx) => (
+                                            <td key={cellIdx}>{String(cell)}</td>
                                         ))}
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {tableData.rows.map((row, rowIdx) => (
-                                        <tr key={rowIdx}>
-                                            {row.map((cell, cellIdx) => (
-                                                <td key={cellIdx}>{String(cell)}</td>
-                                            ))}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    ) : (
-                        <div className="no-data">
-                            {reportData === null ? "טוען נתונים..." : "אין נתונים להצגה"}
-                        </div>
-                    )}
-              
-
-
-                    {/* פעילות אחרונה */}
-                    {reportType === "employeePersonalStats" && reportData?.stats?.recentActivity && (
-                        <div className="recent-activity">
-                            <h3 className="activity-title">פעילות אחרונה:</h3>
-                            <div className="activity-list">
-                                {reportData.stats.recentActivity.slice(0, 5).map((activity, idx) => (
-                                    <div key={idx} className="activity-item">
-                                        <div className="activity-name">{activity.title}</div>
-                                        <div className="activity-details">
-                                            סטטוס: {activity.status} | חשיבות: {activity.importance}
-                                            {activity.organization && ` | ${activity.organization}`}
-                                        </div>
-                                    </div>
                                 ))}
-                            </div>
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="no-data">
+                        {reportData === null ? "טוען נתונים..." : "אין נתונים להצגה"}
+                    </div>
+                )}
+
+
+
+                {/* פעילות אחרונה */}
+                {reportType === "employeePersonalStats" && reportData?.stats?.recentActivity && (
+                    <div className="recent-activity">
+                        <h3 className="activity-title">פעילות אחרונה:</h3>
+                        <div className="activity-list">
+                            {reportData.stats.recentActivity.slice(0, 5).map((activity, idx) => (
+                                <div key={idx} className="activity-item">
+                                    <div className="activity-name">{activity.title}</div>
+                                    <div className="activity-details">
+                                        סטטוס: {activity.status} | חשיבות: {activity.importance}
+                                        {activity.organization && ` | ${activity.organization}`}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </div>
+        </div >
     );
 }
 
