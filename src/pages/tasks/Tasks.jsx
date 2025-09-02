@@ -22,6 +22,7 @@ import EditTask from '../../components/editTask/EditTask.jsx';
 import { useNavigate } from 'react-router-dom';
 import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
+import { fetchAddProject } from '../../services/projectService.js';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -32,7 +33,7 @@ const enrichTasksWithSearchText = (tasks) => {
             task.taskId,
             task.title,
             task.details,
-            task.project,
+            task.project?.name,
             task.status,
             task.statusNote,
             task.failureReason,
@@ -353,7 +354,7 @@ const Tasks = () => {
     const [columnDefs] = useState([
         {
             headerName: "", field: "duplicate", maxWidth: 50,
-            cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
         {
             headerName: "מס'", field: 'taskId', maxWidth: 100
@@ -436,15 +437,15 @@ const Tasks = () => {
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data._id)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
         {
             headerName: "", field: "delete", maxWidth: 50,
-            cellRenderer: (params) => <div className='trash iconButton' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }}/> </div>
+            cellRenderer: (params) => <div className='trash iconButton' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }} /> </div>
         },
         {
             headerName: "", field: "edit", maxWidth: 50,
-            cellRenderer: (params) => <div className='pencil iconButton' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='pencil iconButton' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }} /></div>
         },
     ]);
     const onCellValueChanged = async (params) => {
@@ -499,8 +500,33 @@ const Tasks = () => {
             }
         }
     };
+    
+    const createProject = async () => {
+        const token = user?.token;
+        const { value: name, isConfirmed } = await Swal.fire({
+            title: "הוספת פרויקט",
+            input: 'text',
+            inputPlaceholder: 'הכנס/י שם פרויקט',
+            confirmButtonText: 'אשר',
+            cancelButtonText: 'ביטול',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'חובה להזין שם פרויקט';
+                }
+            },
+        });
 
+        if (!isConfirmed) return;
+        try {
+            fetchAddProject(name, token)
+            await alert("נוסף בהצלחה!")
 
+        } catch (err) {
+            alert(err.response?.data?.message || 'שגיאה בהוספת פרויקט ');
+            console.error('שגיאה בהוספת פרויקט', err);
+        }
+    }
 
 
     return (
@@ -518,8 +544,11 @@ const Tasks = () => {
                     />
                 </div>
 
-                <button className="add-task-button" onClick={() => setShowCreatePopup(true)}>
+                <button className="btn-add add-task-button" onClick={() => setShowCreatePopup(true)}>
                     <Plus size={20} color="#fafafa" /> הוסף משימה
+                </button>
+                <button className="btn-add add-project-button" onClick={() => createProject(true)}>
+                    <Plus size={20} color="#fafafa" /> הוסף פרויקט
                 </button>
                 <div className="tabs-container">
 
@@ -531,7 +560,7 @@ const Tasks = () => {
 
 
                         <button
-                            className={`tab-button active`}
+                            className={`tab-button  active`}
                             onClick={() => setActiveTab(tabs[activeIndex].key)}
                         >
                             {tabs[activeIndex].label}

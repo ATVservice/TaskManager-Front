@@ -7,6 +7,7 @@ import { createTask } from '../../services/taskService';
 
 import "./CreateTask.css";
 import { AuthContext } from "../../context/AuthContext";
+import { fetchGetAllProjectNames } from "../../services/projectService";
 
 const CreateTask = ({ onClose, onTaskCreated }) => {
     const { user } = useContext(AuthContext);
@@ -15,6 +16,9 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
     const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
     const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
     const frequencyTypeOptions = ["שנתי", "חודשי", "יומי פרטני", "יומי"];
+    const [allUsers, setAllUsers] = useState([]);
+    const [allProjects, setAllProjects] = useState([]);
+
     const weekDays = [
         { label: "ראשון", value: 0 },
         { label: "שני", value: 1 },
@@ -55,10 +59,11 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         frequencyDetails: {
             days: [],
             month: "",
-            day:""
+            day: ""
         },
     });
-    const [allUsers, setAllUsers] = useState([]);
+
+
     useEffect(() => {
         const token = user?.token;
 
@@ -95,6 +100,18 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         getAssociations();
     }, []);
 
+    useEffect(() => {
+        const loadProjects = async () => {
+            const token = user?.token;
+            try {
+                const projects = await fetchGetAllProjectNames(token);
+                setAllProjects(projects);
+            } catch (err) {
+                console.error("שגיאה בשליפת פרויקטים:", err);
+            }
+        };
+        loadProjects();
+    }, []);
 
     const handleChange = (e) => {
 
@@ -114,7 +131,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
             const preparedForm = {
                 ...form,
-                assignees: form.assignees.map((u) => u._id), 
+                assignees: form.assignees.map((u) => u._id),
             };
             console.log("preparedForm", preparedForm);
 
@@ -146,14 +163,23 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
                         <input name="details" value={form.details} onChange={handleChange} />
                     </div>
+
                     <div className="form-group">
                         <label>פרויקט</label>
-                        <input
+                        <select
                             id="project"
                             name="project"
                             value={form.project}
                             onChange={handleChange}
-                        />
+                            required
+                        >
+                            <option value="">בחר פרויקט</option>
+                            {allProjects.map((project) => (
+                                <option key={project._id} value={project._id}>
+                                    {project.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                 </div>
@@ -244,7 +270,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             </select>
                         </div>
                     }
-                      
+
 
 
                 </div>
@@ -359,7 +385,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                                     </option>
                                                 ))}
                                             </select>
-                                            
+
 
                                             <label>בחר יום:</label>
                                             <select

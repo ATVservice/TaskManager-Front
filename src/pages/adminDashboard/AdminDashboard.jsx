@@ -19,7 +19,6 @@ const STATUS_COLORS = {
   "מיידי": "#FF4C4C",
 };
 
-
 const AdminDashboard = () => {
   const { user } = useContext(AuthContext);
   const [data, setData] = useState(null);

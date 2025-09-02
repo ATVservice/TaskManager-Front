@@ -67,7 +67,7 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
             )}
             
             {details.project && (
-                <p><strong>פרויקט: </strong>{details.project}</p>
+                <p><strong>פרויקט: </strong>{details.project.name}</p>
             )}
             
             {details.assignees && details.assignees.length > 0 && (
