@@ -501,32 +501,44 @@ const Tasks = () => {
         }
     };
     
+
     const createProject = async () => {
         const token = user?.token;
-        const { value: name, isConfirmed } = await Swal.fire({
+    
+        const { value: formValues, isConfirmed } = await Swal.fire({
             title: "הוספת פרויקט",
-            input: 'text',
-            inputPlaceholder: 'הכנס/י שם פרויקט',
-            confirmButtonText: 'אשר',
-            cancelButtonText: 'ביטול',
+            html: `
+                <input id="swal-input1" class="swal2-input" placeholder="הכנס/י שם פרויקט">
+                <label style="display:flex; align-items:center; justify-content:flex-start; margin-top:10px;">
+                    <input type="checkbox" id="swal-input2" checked style="margin-right:8px;">
+                    פעיל
+                </label>
+            `,
+            focusConfirm: false,
             showCancelButton: true,
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'חובה להזין שם פרויקט';
+            preConfirm: () => {
+                const name = document.getElementById('swal-input1').value;
+                const isActive = document.getElementById('swal-input2').checked;
+                if (!name) {
+                    Swal.showValidationMessage('חובה להזין שם פרויקט');
                 }
+                return { name, isActive };
             },
+            confirmButtonText: 'אשר',
+            cancelButtonText: 'ביטול'
         });
-
+    
         if (!isConfirmed) return;
+    
         try {
-            fetchAddProject(name, token)
-            await alert("נוסף בהצלחה!")
-
+            await fetchAddProject(formValues.name, formValues.isActive, token);
+            await alert("נוסף בהצלחה!");
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בהוספת פרויקט ');
+            alert(err.response?.data?.message || 'שגיאה בהוספת פרויקט');
             console.error('שגיאה בהוספת פרויקט', err);
         }
-    }
+    };
+    
 
 
     return (

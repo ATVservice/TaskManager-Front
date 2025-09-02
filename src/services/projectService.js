@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
-export const fetchAddProject = async (name, token) => {
+export const fetchAddProject = async (name, isActive, token) => {
 
-  const response = await axios.post(`${API_URL}/api/project/addProject`, { name },
+  const response = await axios.post(`${API_URL}/api/project/addProject`, { name, isActive },
     {
       headers: {
         Authorization: `Bearer ${token}`,
