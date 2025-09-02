@@ -188,7 +188,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
               name="project"
               value={form.project}
               onChange={handleChange}
-              required
+              
             >
               <option value="">בחר פרויקט</option>
               {allProjects.map((project) => (

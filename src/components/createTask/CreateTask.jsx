@@ -135,6 +135,9 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             };
             console.log("preparedForm", preparedForm);
 
+            if (!preparedForm.project) {
+                delete preparedForm.project;
+            }
             await createTask(preparedForm, token);
             alert("משימה נוצרה בהצלחה!");
             onTaskCreated();
@@ -171,7 +174,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             name="project"
                             value={form.project}
                             onChange={handleChange}
-                            required
+
                         >
                             <option value="">בחר פרויקט</option>
                             {allProjects.map((project) => (

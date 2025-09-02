@@ -16,7 +16,7 @@ import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
 import { fetchDeleteTask } from '../../services/deleteTaskService.js';
 import TrashWithRecycleIcon from '../../components/trashWithRecycleIcon/TrashWithRecycleIcon.jsx';
-import { updateTaskStatus } from '../../services/updateService.js';
+import { updateRecurringStatus, updateTaskStatus } from '../../services/updateService.js';
 import { getTaskHistory } from '../../services/historyService.js';
 import EditTask from '../../components/editTask/EditTask.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -70,8 +70,8 @@ const Tasks = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
-    const [activeTab, setActiveTab] = useState('today');
-    const [activeType, setActiveType] = useState(null);
+    const [activeTab, setActiveTab] = useState('today-recurring');
+    const [activeType, setActiveType] = useState('today-recurring');
     const [ShowEditModal, setShowEditModal] = useState(false)
     const [selectedTask, setSelectedTask] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -154,14 +154,21 @@ const Tasks = () => {
     }, [user]);
     const filteredTasks = allTasks.filter(task =>
         task.combinedSearchText.includes(searchTerm.toLowerCase())
-      );
-      
+    );
+
     const [version, setVersion] = useState(0);
 
     const refreshTasks = () => setVersion(v => v + 1);
+   
     useEffect(() => {
+        if (activeTab === "today") {
+            setActiveTab("today-recurring");
+            setActiveType("today-recurring");
+            return;
+        }
         fetchTasks(activeTab);
     }, [activeTab, version]);
+    
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -390,12 +397,43 @@ const Tasks = () => {
         }
         const token = user?.token;
 
-
         if (params.colDef.field === 'status') {
             const taskId = params.data._id;
             const newStatus = params.newValue;
             const oldStatus = params.oldValue;
 
+            // אם זה מופע של משימה קבועה (בטאב today-recurring)
+            if (activeTab === 'today-recurring') {
+                try {
+                    const { value: content, isConfirmed } = await Swal.fire({
+                        title: 'הוספת הערה יומית',
+                        input: 'text',
+                        inputLabel: 'מה קרה במשימה?',
+                        showCancelButton: true,
+                        confirmButtonText: 'הוסף',
+                        cancelButtonText: 'בטל',
+                    });
+
+                    if (isConfirmed) {
+
+                        await updateRecurringStatus(params.data.sourceTaskId, newStatus,token,content);
+                        // עדכון מיידי בטבלה שהעובד יראה את הסטטוס החדש
+                        params.node.setDataValue(params.colDef.field, newStatus);
+                        alert("עודכן בהצלחה");
+                    } else {
+                        // אם בוטל → החזרת ערך ישן
+                        suppressedChangeNodesRef.current.add(params.node.id);
+                        params.node.setDataValue(params.colDef.field, oldStatus);
+                    }
+                } catch (error) {
+                    alert(error.response?.data?.message || 'שגיאה בעדכון משימה קבועה');
+                    suppressedChangeNodesRef.current.add(params.node.id);
+                    params.node.setDataValue(params.colDef.field, oldStatus);
+                }
+                return; // לצאת מהפונקציה, לא להמשיך ללוגיקה של משימות רגילות
+            }
+
+            // אחרת – משימה רגילה (אותו קוד שהיה לך קודם)
             if (newStatus === 'בוטלה') {
                 const allowed = canCancelTask(user, params.data);
                 if (!allowed) {
@@ -424,22 +462,19 @@ const Tasks = () => {
 
                 alert("עודכן בהצלחה");
 
-            }
-            catch (error) {
+            } catch (error) {
                 console.log("!", error.response?.data?.message || error.message || 'שגיאה לא ידועה')
                 alert(error.response?.data?.message || error.message || 'שגיאה לא ידועה');
-
-                // החזרת הערך הישן אם קרתה שגיאה בשרת
                 suppressedChangeNodesRef.current.add(params.node.id);
                 params.node.setDataValue(params.colDef.field, oldStatus);
             }
         }
     };
-    
+
 
     const createProject = async () => {
         const token = user?.token;
-    
+
         const { value: formValues, isConfirmed } = await Swal.fire({
             title: "הוספת פרויקט",
             html: `
@@ -462,9 +497,9 @@ const Tasks = () => {
             confirmButtonText: 'אשר',
             cancelButtonText: 'ביטול'
         });
-    
+
         if (!isConfirmed) return;
-    
+
         try {
             await fetchAddProject(formValues.name, formValues.isActive, token);
             await alert("נוסף בהצלחה!");
@@ -473,22 +508,25 @@ const Tasks = () => {
             console.error('שגיאה בהוספת פרויקט', err);
         }
     };
-    
+
 
 
     return (
         <div className="page-container">
             <div className="controls-container">
-                <div className="search-input-container">
-                    <Search size={16} className="search-icon" />
+                <div className='searchRecycleIcon'>
+                    <div className="search-input-container">
+                        <Search size={16} className="search-icon" />
 
-                    <input
-                        type="text"
-                        placeholder="חיפוש"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
+                        <input
+                            type="text"
+                            placeholder="חיפוש"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
+                    </div>
+                    <TrashWithRecycleIcon />
                 </div>
 
                 <button className="btn-add add-task-button" onClick={() => setShowCreatePopup(true)}>
@@ -501,8 +539,10 @@ const Tasks = () => {
 
                     <div className="main-tabs">
 
-                        <button className="tab-button arrows" onClick={handlePreviousTab}>
-                            <ChevronRight />
+                        <button className="tab-button arrows " onClick={handlePreviousTab}>
+                            <ChevronRight size={16} />
+                            הקודם
+
                         </button>
 
 
@@ -513,8 +553,9 @@ const Tasks = () => {
                             {tabs[activeIndex].label}
                         </button>
 
-                        <button className="tab-button arrows" onClick={handleNextTab}>
-                            <ChevronLeft />
+                        <button className="tab-button arrows ChevronLeft" onClick={handleNextTab}>
+                            הבא
+                            <ChevronLeft size={16} />
                         </button>
                     </div>
 
@@ -566,18 +607,13 @@ const Tasks = () => {
                 isOpen={openDetails}
                 onClose={closeDetailsDiv}
             />
-            <div className="filters-bar">
-               
-                <TrashWithRecycleIcon />
-
-            </div>
 
 
             <TaskAgGrid
                 rowData={filteredTasks}
                 columnDefs={columnDefs}
                 onCellValueChanged={onCellValueChanged}
-              
+
             />
         </div>
     );

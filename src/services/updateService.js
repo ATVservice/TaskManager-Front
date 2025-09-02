@@ -23,3 +23,14 @@ export const updateTask = async (taskId, preparedForm, token) => {
 
     return response.data;
 };
+export const updateRecurringStatus = async (taskId, status, token, content ) => {
+    const response = await axios.put(`${API_URL}/api/updateToday/completeRecurringTask/${taskId}`, {status, content },{
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
