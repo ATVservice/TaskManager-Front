@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
@@ -12,6 +12,7 @@ import { fetchReportData } from "../../../services/reportTypeService.js";
 import { AuthContext } from "../../../context/AuthContext.jsx";
 import "./Report.css";
 import { fetchLoadSavedFilter, fetchResetFilter } from "../../../services/reportFiltersService.js";
+import { Download } from "lucide-react";
 
 const Reports = () => {
     const { user } = useContext(AuthContext);
@@ -35,60 +36,6 @@ const Reports = () => {
     const [periodType, setPeriodType] = useState('month');
     const [responsibilityType, setResponsibilityType] = useState('all');
 
-
-    // פונקציה חדשה לטעינת פילטר שמור
-        const loadSavedFilter = async (screenType) => {
-            try {
-                console.log(`Loading filter for screen: ${screenType}`);
-                const result = await fetchLoadSavedFilter(screenType, user?.token);
-                
-                if (result.success && result.filter && Object.keys(result.filter).length > 0) {
-                    console.log('טוען פילטר שמור:', result.filter);
-                    setFilters(prev => ({
-                        ...prev,
-                        ...result.filter
-                    }));
-                } else {
-                    console.log('No saved filter found or filter is empty');
-                }
-            } catch (error) {
-                console.error('שגיאה בטעינת פילטר שמור:', error);
-            }
-        };
-        
-
-    // פונקציה חדשה לאיפוס פילטר
-    const resetFilter = async () => {
-        setIsResetting(true);
-        try {
-            const screenType = getScreenTypeByReportType(reportType);
-            console.log(`Resetting filter for screen: ${screenType}`);
-            
-            const result = await fetchResetFilter(screenType, user?.token);
-            
-            if (result.success) {
-                // איפוס הפילטרים ב-state
-                setFilters({
-                    employeeId: "",
-                    associationId: "",
-                    status: "",
-                    startDate: "",
-                    endDate: "",
-                    importance: "",
-                    subImportance: "",
-                    reasonId: "",
-                });
-                
-                console.log('פילטר אופס בהצלחה');
-            } else {
-                console.error('Server error:', result.message);
-            }
-        } catch (error) {
-            console.error('שגיאה באיפוס פילטר:', error);
-        } finally {
-            setIsResetting(false);
-        }
-    };
     // פונקציה עזר למיפוי reportType ל-screenType
     const getScreenTypeByReportType = (reportType) => {
         const mapping = {
@@ -102,47 +49,91 @@ const Reports = () => {
     };
 
 
-    // טוען dropdowns פעם אחת בהתחלה
+    // פונקציה חדשה לטעינת פילטר שמור
+    const loadSavedFilter = useCallback(async (screenType) => {
+        try {
+            console.log(`Loading filter for screen: ${screenType}`);
+            const result = await fetchLoadSavedFilter(screenType, user?.token);
+
+            if (result.success && result.filter && Object.keys(result.filter).length > 0) {
+                console.log('טוען פילטר שמור:', result.filter);
+                setFilters(prev => ({
+                    ...prev,
+                    ...result.filter
+                }));
+            } else {
+                console.log('No saved filter found or filter is empty');
+                return {};
+            }
+        } catch (error) {
+            console.error('שגיאה בטעינת פילטר שמור:', error);
+            return {};
+        }
+    }, [user?.token]);
+
     useEffect(() => {
-        const loadFiltersData = async () => {
+        const loadBasicData = async () => {
             if (!user?.token) return;
-            
+
             try {
-                console.log('Loading initial data...');
+                console.log('🔄 Loading employees and associations...');
                 const [emps, assos] = await Promise.all([
                     getAllEmployees(user.token),
                     fetchAllAssociations(user.token),
                 ]);
                 setEmployees(emps);
                 setAssociations(assos);
-                
-                // טעינת פילטר שמור לאחר טעינת הנתונים
-                await loadSavedFilter(getScreenTypeByReportType(reportType));
-                
+                console.log('✅ Basic data loaded');
             } catch (err) {
-                console.error("שגיאה בטעינת נתוני פילטרים:", err);
+                console.error("❌ Error loading basic data:", err);
             }
         };
-        
-        loadFiltersData();
+
+        loadBasicData();
     }, [user?.token]);
+
+    useEffect(() => {
+        if (user?.token && employees.length > 0) {
+            const screenType = getScreenTypeByReportType(reportType);
+            console.log(`📋 Report type changed to: ${reportType} (${screenType})`);
+            loadSavedFilter(screenType);
+        }
+    }, [reportType, employees.length, loadSavedFilter]); // רק כשמשתנה סוג הדוח
+
+    // **useEffect 3: טעינת דוחות כשמשתנים פילטרים**
     useEffect(() => {
         const loadReport = async () => {
-          try {
-            const res = await fetchReportData(reportType, user?.token, {
-              ...filters,
-              period: periodType,
-              responsibilityType: responsibilityType
-            });
-            setReportData(res);
-          } catch (err) {
-            console.error("שגיאה בטעינת דוח:", err);
-            setReportData(null);
-          }
+            if (!user?.token) return;
+
+            try {
+                console.log('📊 Loading report with filters:', {
+                    reportType,
+                    filters,
+                    periodType,
+                    responsibilityType
+                });
+
+                const res = await fetchReportData(reportType, user?.token, {
+                    ...filters,
+                    period: periodType,
+                    responsibilityType: responsibilityType
+                });
+
+                console.log('📈 Report loaded successfully');
+                setReportData(res);
+
+            } catch (err) {
+                console.error("❌ Error loading report:", err);
+                setReportData(null);
+            }
         };
-        
-        if (user?.token) loadReport();
-      }, [reportType, filters, periodType, responsibilityType, user?.token]);
+
+        // עיכוב קטן כדי לוודא שהפילטרים התעדכנו
+        const timeoutId = setTimeout(loadReport, 300);
+        return () => clearTimeout(timeoutId);
+
+    }, [filters, periodType, responsibilityType, reportType, user?.token]);
+
 
 
     // פונקציות עיבוד הנתונים לכל סוג דוח
@@ -174,7 +165,7 @@ const Reports = () => {
     // עיבוד דוח משימות פתוחות לפי עובד
 
     const processOpenTasksByEmployee = (data) => {
-        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "חשיבות דחופה ", "באיחור", "בתהליך", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
+        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "באיחור", "בתהליך", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
         const rows = [];
 
         const employees = Array.isArray(data) ? data : data?.employees || [];
@@ -186,7 +177,6 @@ const Reports = () => {
                 employee.userName ?? '---',
                 employee.name ?? '---',
                 summary.total ?? 0,
-                summary.byImportance?.['דחוף'] ?? 0,
                 summary.overdue ?? 0,
                 summary.byStatus?.['בתהליך'] ?? 0,
                 summary.avgDaysOpen ?? 0,
@@ -649,7 +639,6 @@ const Reports = () => {
     const tableData = getTableDataByReportType();
     return (
         <div className="reports-container">
-            <h2 className="reports-title"> דוחות מנהל</h2>
 
             <div className="reports-layout">
                 {/* דיב של הסינונים */}
@@ -660,182 +649,167 @@ const Reports = () => {
                         employees={employees}
                         associations={associations}
                         reasons={reasons}
+                        reportType={reportType}
                     />
                 </div>
-                <div className="filter-actions">
-                    <button
-                        onClick={() => resetFilter()}
-                        disabled={isResetting}
-                        className="btn btn-reset"
-                        style={{
-                            marginTop: '10px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            border: 'none',
-                            padding: '8px 16px',
-                            borderRadius: '4px',
-                            cursor: 'pointer'
-                        }}
-                    >
-                        {isResetting ? '⏳ מאפס...' : '🗑️ איפוס סינון'}
-                    </button>
-                </div>
 
-            {/* דיב של הטבלה וכל שאר התוכן */}
-            <div className="reports-content">
+                {/* דיב של הטבלה וכל שאר התוכן */}
+                <div className="reports-content">
 
 
-                {/* כפתורי ייצוא */}
-                <div className="export-buttons">
-                    <button
-                        onClick={exportExcel}
-                        className="btn btn-excel"
-                        disabled={!reportData?.data || tableData.rows.length === 0}
-                    >
-                        📥 ייצוא Excel
-                    </button>
-
-                    <button
-                        onClick={exportPDFWithCanvas}
-                        className="btn btn-pdf"
-                        disabled={!reportData?.data || tableData.rows.length === 0 || isExporting}
-                    >
-                        {isExporting ? '⏳' : '📥'} PDF עברית
-                        {isExporting && <span className="loading-text">(יוצר...)</span>}
-                    </button>
-                </div>
-
-
-                {/* בחירת סוג דוח */}
-                <div className="report-type">
-                    <label className="report-label">סוג דוח:</label>
-                    <select
-                        value={reportType}
-                        onChange={(e) => setReportType(e.target.value)}
-                        className="report-select"
-                    >
-                        <option value="openTasksByEmployee">משימות פתוחות לפי עובד</option>
-                        <option value="tasksByResponsibility">משימות לפי אחריות</option>
-                        <option value="overdueTasks">משימות חורגות מיעד</option>
-                        <option value="tasksSummaryByPeriod">סיכום משימות לפי תקופה</option>
-                        <option value="employeePersonalStats">סטטיסטיקה אישית</option>
-                    </select>
-                </div>
-                {/* בחירת תקופה לדוח סיכום משימות לפי תקופה */}
-                {reportType === "tasksByResponsibility" && (
-                    <div className="period-tabs">
+                    {/* כפתורי ייצוא */}
+                    <div className="export-buttons">
                         <button
-                            className={responsibilityType === 'all' ? 'active' : ''}
-                            onClick={() => setResponsibilityType('all')}
+                            onClick={exportExcel}
+                            className="btn btn-excel"
+                            disabled={!reportData?.data || tableData.rows.length === 0}
                         >
-                            הכל
+                            <Download size={20} color="#ffffff" strokeWidth={2} />
+                            ייצוא Excel
                         </button>
+
                         <button
-                            className={responsibilityType === 'main' ? 'active' : ''}
-                            onClick={() => setResponsibilityType('main')}
+                            onClick={exportPDFWithCanvas}
+                            className="btn btn-pdf"
+                            disabled={!reportData?.data || tableData.rows.length === 0 || isExporting}
                         >
-                            ראשי
-                        </button>
-                        <button
-                            className={responsibilityType === 'secondary' ? 'active' : ''}
-                            onClick={() => setResponsibilityType('secondary')}
-                        >
-                            משני
+                            <Download size={20} color="#ffffff" strokeWidth={2} />
+                            ייצוא PDF
+                            {isExporting && <span className="loading-text">(יוצר...)</span>}
                         </button>
                     </div>
-                )}
 
-                {/*בחירת סוג אחריות רצוי*/}
-                {reportType === "tasksSummaryByPeriod" && (
-                    <div className="period-tabs">
-                        <button
-                            className={periodType === 'week' ? 'active' : ''}
-                            onClick={() => setPeriodType('week')}
+
+                    {/* בחירת סוג דוח */}
+                    <div className="report-type">
+                        <label className="report-label">סוג דוח:</label>
+                        <select
+                            value={reportType}
+                            onChange={(e) => setReportType(e.target.value)}
+                            className="report-select"
                         >
-                            שבוע
-                        </button>
-                        <button
-                            className={periodType === 'month' ? 'active' : ''}
-                            onClick={() => setPeriodType('month')}
-                        >
-                            חודש
-                        </button>
-                        <button
-                            className={periodType === 'year' ? 'active' : ''}
-                            onClick={() => setPeriodType('year')}
-                        >
-                            שנה
-                        </button>
+                            <option value="openTasksByEmployee">משימות פתוחות לפי עובד</option>
+                            <option value="tasksByResponsibility">משימות לפי אחריות</option>
+                            <option value="overdueTasks">משימות חורגות מיעד</option>
+                            <option value="tasksSummaryByPeriod">סיכום משימות לפי תקופה</option>
+                            <option value="employeePersonalStats">סטטיסטיקה אישית</option>
+                        </select>
                     </div>
-                )}
-                {/* סטטיסטיקות */}
-                {reportData?.statistics && (
-                    <div className="statistics-box">
-                        {/* <h3 className="statistics-title">סטטיסטיקות כלליות:</h3> */}
-                        <div className="statistics-grid">
-                            {/* <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div> */}
-                            {/* {reportData.statistics.averageDaysOverdue !== undefined && (
+                    {/* בחירת תקופה לדוח סיכום משימות לפי תקופה */}
+                    {reportType === "tasksByResponsibility" && (
+                        <div className="period-tabs">
+                            <button
+                                className={responsibilityType === 'all' ? 'active' : ''}
+                                onClick={() => setResponsibilityType('all')}
+                            >
+                                הכל
+                            </button>
+                            <button
+                                className={responsibilityType === 'main' ? 'active' : ''}
+                                onClick={() => setResponsibilityType('main')}
+                            >
+                                ראשי
+                            </button>
+                            <button
+                                className={responsibilityType === 'secondary' ? 'active' : ''}
+                                onClick={() => setResponsibilityType('secondary')}
+                            >
+                                משני
+                            </button>
+                        </div>
+                    )}
+
+                    {/*בחירת סוג אחריות רצוי*/}
+                    {reportType === "tasksSummaryByPeriod" && (
+                        <div className="period-tabs">
+                            <button
+                                className={periodType === 'week' ? 'active' : ''}
+                                onClick={() => setPeriodType('week')}
+                            >
+                                שבוע
+                            </button>
+                            <button
+                                className={periodType === 'month' ? 'active' : ''}
+                                onClick={() => setPeriodType('month')}
+                            >
+                                חודש
+                            </button>
+                            <button
+                                className={periodType === 'year' ? 'active' : ''}
+                                onClick={() => setPeriodType('year')}
+                            >
+                                שנה
+                            </button>
+                        </div>
+                    )}
+                    {/* סטטיסטיקות */}
+                    {reportData?.statistics && (
+                        <div className="statistics-box">
+                            {/* <h3 className="statistics-title">סטטיסטיקות כלליות:</h3> */}
+                            <div className="statistics-grid">
+                                {/* <div>סה״כ משימות: <span className="bold">{reportData.statistics.total}</span></div> */}
+                                {/* {reportData.statistics.averageDaysOverdue !== undefined && (
                                     <div>ממוצע ימים באיחור: <span className="bold">{reportData.statistics.averageDaysOverdue}</span></div>
                                 )} */}
-                            {reportData.overallStats && (
-                                <>
-                                    <div>ממוצע משימות לתקופה: <span className="bold">{reportData.overallStats.averageTasksPerPeriod}</span></div>
-                                    <div>ממוצע אחוז השלמה: <span className="bold">{reportData.overallStats.averageCompletionRate}%</span></div>
-                                </>
-                            )}
+                                {reportData.overallStats && (
+                                    <>
+                                        <div>ממוצע משימות לתקופה: <span className="bold">{reportData.overallStats.averageTasksPerPeriod}</span></div>
+                                        <div>ממוצע אחוז השלמה: <span className="bold">{reportData.overallStats.averageCompletionRate}%</span></div>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* טבלה */}
-                {tableData.headers.length > 0 ? (
-                    <div className="table-wrapper">
-                        <table className="reports-table">
-                            <thead>
-                                <tr>
-                                    {tableData.headers.map((header, idx) => (
-                                        <th key={idx}>{header}</th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tableData.rows.map((row, rowIdx) => (
-                                    <tr key={rowIdx}>
-                                        {row.map((cell, cellIdx) => (
-                                            <td key={cellIdx}>{String(cell)}</td>
+                    {/* טבלה */}
+                    {tableData.headers.length > 0 ? (
+                        <div className="table-wrapper">
+                            <table className="reports-table">
+                                <thead>
+                                    <tr>
+                                        {tableData.headers.map((header, idx) => (
+                                            <th key={idx}>{header}</th>
                                         ))}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <div className="no-data">
-                        {reportData === null ? "טוען נתונים..." : "אין נתונים להצגה"}
-                    </div>
-                )}
-
-
-
-                {/* פעילות אחרונה */}
-                {reportType === "employeePersonalStats" && reportData?.stats?.recentActivity && (
-                    <div className="recent-activity">
-                        <h3 className="activity-title">פעילות אחרונה:</h3>
-                        <div className="activity-list">
-                            {reportData.stats.recentActivity.slice(0, 5).map((activity, idx) => (
-                                <div key={idx} className="activity-item">
-                                    <div className="activity-name">{activity.title}</div>
-                                    <div className="activity-details">
-                                        סטטוס: {activity.status} | חשיבות: {activity.importance}
-                                        {activity.organization && ` | ${activity.organization}`}
-                                    </div>
-                                </div>
-                            ))}
+                                </thead>
+                                <tbody>
+                                    {tableData.rows.map((row, rowIdx) => (
+                                        <tr key={rowIdx}>
+                                            {row.map((cell, cellIdx) => (
+                                                <td key={cellIdx}>{String(cell)}</td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                )}
+                    ) : (
+                        <div className="no-data">
+                            {reportData === null ? "טוען נתונים..." : "אין נתונים להצגה"}
+                        </div>
+                    )}
+
+
+
+                    {/* פעילות אחרונה */}
+                    {reportType === "employeePersonalStats" && reportData?.stats?.recentActivity && (
+                        <div className="recent-activity">
+                            <h3 className="activity-title">פעילות אחרונה:</h3>
+                            <div className="activity-list">
+                                {reportData.stats.recentActivity.slice(0, 5).map((activity, idx) => (
+                                    <div key={idx} className="activity-item">
+                                        <div className="activity-name">{activity.title}</div>
+                                        <div className="activity-details">
+                                            סטטוס: {activity.status} | חשיבות: {activity.importance}
+                                            {activity.organization && ` | ${activity.organization}`}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
         </div >
     );
 }

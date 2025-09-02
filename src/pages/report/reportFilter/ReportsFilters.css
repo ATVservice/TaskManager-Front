@@ -1,62 +1,85 @@
 .reports-filters {
-    direction: rtl;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background: #fff;
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #eee;
-  }
-  
-  /* כל בלוק של שדה */
-  .reports-filters .filter-group {
-    margin-bottom: 1rem;
-  }
-  
-  .reports-filters label {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #444;
-    margin-bottom: 0.4rem;
-  }
-  
-  .reports-filters select,
-  .reports-filters input[type="date"] {
-    width: 100%;
-    padding: 0.45rem 0.6rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    background-color: #fafafa;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  
-  .reports-filters select:focus,
-  .reports-filters input[type="date"]:focus {
-    border-color: #666;
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-    outline: none;
-  }
-  
-  .reports-filters option {
-    padding: 0.3rem;
-  }
-  
-  /* קווים מפרידים בין קבוצות */
-  .reports-filters .filter-group:not(:last-child) {
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid #eee;
-  }
-  
-  /* למראה קומפקטי */
-  .reports-filters select,
-  .reports-filters input {
-    min-height: 34px;
-  }
-  
-  /* טקסט קטן יותר לשדות משנה */
-  .reports-filters .sub-label {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
+  direction: rtl;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  max-width: 700px;
+}
+
+.reports-filters h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.reports-filters .reset-btn {
+  float: left;
+  font-size: 0.85rem;
+  color: #007bff;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.filter-group {
+  margin-bottom: 1.2rem;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.4rem;
+}
+
+.filter-group select,
+.filter-group input[type="date"],
+.filter-group input[type="text"] {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+  border-color: #007bff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  outline: none;
+}
+
+.filter-group:not(:last-child) {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.reports-filters option {
+  padding: 0.3rem;
+}
+
+/* כפתור איפוס בזמן טעינה */
+.reports-filters .reset-btn.loading {
+  color: #aaa;
+  cursor: wait;
+  text-decoration: none;
+}
+.reset-link {
+  color: black;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: small;
+  margin-right: 25%;
+
+}

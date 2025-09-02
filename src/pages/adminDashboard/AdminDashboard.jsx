@@ -112,7 +112,7 @@ const AdminDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
           <p className="comparison-text">
-            {data.comparison.changePercent.toFixed(1)}% +
+            {data.comparison.changePercent.toFixed(1)}% 
           </p>
         </div>
 
