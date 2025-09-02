@@ -293,7 +293,7 @@ const Tasks = () => {
 
 
 
-    const [columnDefs] = useState([
+    const getColumnDefs = () => [
         {
             headerName: "", field: "duplicate", maxWidth: 50,
             cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }} /></div>
@@ -333,10 +333,11 @@ const Tasks = () => {
             }
 
         },
+        
         {
             headerName: 'סטטוס',
             field: 'status',
-            editable: true,
+            editable: () => activeTab !== 'recurring', 
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
                 values: statusOptions.map(x => x.status)
@@ -389,7 +390,7 @@ const Tasks = () => {
             headerName: "", field: "edit", maxWidth: 50,
             cellRenderer: (params) => <div className='pencil iconButton' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }} /></div>
         },
-    ]);
+    ];
     const onCellValueChanged = async (params) => {
         if (suppressedChangeNodesRef.current.has(params.node.id)) {
             suppressedChangeNodesRef.current.delete(params.node.id);
@@ -611,7 +612,7 @@ const Tasks = () => {
 
             <TaskAgGrid
                 rowData={filteredTasks}
-                columnDefs={columnDefs}
+                columnDefs={getColumnDefs()}
                 onCellValueChanged={onCellValueChanged}
 
             />
