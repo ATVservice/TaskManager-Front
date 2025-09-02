@@ -6,7 +6,7 @@ import './taskAgGrid.css'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, doesExternalFilterPass, isExternalFilterPresent }) => {
+const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
     const gridRef = useRef();
 
     const defaultColDef = {
@@ -91,8 +91,6 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, doesExternalFilte
                     paginationPageSize={20}
                     domLayout="autoHeight"
                     animateRows={true}
-                    isExternalFilterPresent={isExternalFilterPresent}
-                    doesExternalFilterPass={doesExternalFilterPass}
                     onCellValueChanged={onCellValueChanged}
                     singleClickEdit={true}
                     localeText={localeText} 

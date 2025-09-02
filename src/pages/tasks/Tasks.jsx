@@ -65,7 +65,6 @@ const Tasks = () => {
 
     const { user } = useContext(AuthContext);
 
-    const { filters, setFilters } = useContext(FilterContext);
 
     const [allTasks, setAllTasks] = useState([]);
     const [details, setDetails] = useState({});
@@ -73,10 +72,10 @@ const Tasks = () => {
     const [showCreatePopup, setShowCreatePopup] = useState(false);
     const [activeTab, setActiveTab] = useState('today');
     const [activeType, setActiveType] = useState(null);
-    const [workersList, setWorkersList] = useState([]);
-    const [organizationsList, setOrganizationsList] = useState([]);
     const [ShowEditModal, setShowEditModal] = useState(false)
     const [selectedTask, setSelectedTask] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
+
 
 
     const tabs = [
@@ -153,6 +152,10 @@ const Tasks = () => {
             console.error('Error getting tasks:', error);
         }
     }, [user]);
+    const filteredTasks = allTasks.filter(task =>
+        task.combinedSearchText.includes(searchTerm.toLowerCase())
+      );
+      
     const [version, setVersion] = useState(0);
 
     const refreshTasks = () => setVersion(v => v + 1);
@@ -167,34 +170,6 @@ const Tasks = () => {
     }, [activeTab, fetchTasks]);
 
 
-    useEffect(() => {
-
-        const fetchFiltersData = async () => {
-            const token = user?.token;
-            if (!token) return;
-            try {
-                const [usersRes, orgsRes] = await Promise.all([
-                    getUserNames(token),
-                    fetchAllAssociations(token)
-                ]);
-
-                setWorkersList(usersRes);
-                setOrganizationsList(orgsRes);
-            } catch (err) {
-                alert(err.response?.data?.message || 'שגיאה בטעינת משתמשים/עמותות');
-                console.error('שגיאה בטעינת משתמשים/עמותות:', err);
-            }
-        };
-
-        fetchFiltersData();
-    }, []);
-    useEffect(() => {
-        if (gridRef.current?.api && allTasks.length > 0) {
-            setTimeout(() => {
-                gridRef.current.api.onFilterChanged();
-            }, 0);
-        }
-    }, [filters, allTasks]);
 
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
@@ -309,47 +284,7 @@ const Tasks = () => {
 
     };
 
-    const isExternalFilterPresent = () => {
-        return Object.values(filters).some(val => val);
-    };
 
-    const doesExternalFilterPass = (node) => {
-        console.log('בודק סינון עבור:', node.data);
-
-
-        const data = node.data;
-        const search = filters.keyword.toLowerCase();
-
-        const matchesText = !filters.keyword || data.combinedSearchText?.includes(search);
-        const matchesImportance = !filters.importance || data.importance === filters.importance;
-        const matchesSubImportance = !filters.subImportance || data.subImportance === filters.subImportance;
-        const effectiveStatus = data.personalDetails?.status || data.status;
-        const matchesStatus = !filters.status || effectiveStatus === filters.status;
-        const matchesOrganization =
-            !filters.organization || data.organization?._id === filters.organization;
-
-
-        const matchesDateFrom = !filters.dateFrom || new Date(data.dueDate) >= new Date(filters.dateFrom);
-        const matchesDateTo = !filters.dateTo || new Date(data.dueDate) <= new Date(filters.dateTo);
-
-        const matchesAssignee = !filters.selectedAssignee || (
-            filters.assigneeType === 'main'
-                ? data.mainAssignee?._id === filters.selectedAssignee
-                : data.assignees?.some(a => a._id === filters.selectedAssignee)
-        );
-
-
-        return (
-            matchesText &&
-            matchesImportance &&
-            matchesSubImportance &&
-            matchesStatus &&
-            matchesOrganization &&
-            matchesDateFrom &&
-            matchesDateTo &&
-            matchesAssignee
-        );
-    };
 
     const [columnDefs] = useState([
         {
@@ -550,8 +485,8 @@ const Tasks = () => {
                     <input
                         type="text"
                         placeholder="חיפוש"
-                        value={filters.keyword}
-                        onChange={(e) => setFilters({ ...filters, keyword: e.target.value })}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="search-input"
                     />
                 </div>
@@ -632,159 +567,17 @@ const Tasks = () => {
                 onClose={closeDetailsDiv}
             />
             <div className="filters-bar">
-                <div className="filters-content">
-
-                    <button onClick={() => setFilters({
-                        keyword: '',
-                        importance: '',
-                        subImportance: '',
-                        status: '',
-                        assigneeType: '',
-                        selectedAssignee: '',
-                        organization: '',
-                        dateFrom: '',
-                        dateTo: ''
-                    })}>
-                        איפוס סינון
-                    </button>
-
-                    {/* חשיבות */}
-                    <select
-                        value={filters.importance || ''}
-                        onChange={(e) => {
-                            const importance = e.target.value || undefined;
-                            setFilters(prev => ({
-                                ...prev,
-                                importance,
-                                subImportance: importance === 'מיידי' ? prev.subImportance : undefined
-                            }));
-                        }}
-                    >
-                        <option value="">רמת חשיבות</option>
-                        <option value="מיידי">מיידי</option>
-                        <option value="מגירה">מגירה</option>
-                        <option value="תאריך">תאריך</option>
-                        <option value="כללי">כללי</option>
-                        <option value="עקביות">עקביות</option>
-                    </select>
-
-                    {/* תת־חשיבות */}
-                    {filters.importance === 'מיידי' && (
-                        <select
-                            value={filters.subImportance || ''}
-                            onChange={(e) =>
-                                setFilters(prev => ({ ...prev, subImportance: e.target.value || undefined }))
-                            }
-                        >
-                            <option value="">תת דירוג</option>
-                            <option value="דחוף">דחוף</option>
-                            <option value="ממוספר">ממוספר</option>
-                            <option value="בהקדם האפשרי">בהקדם האפשרי</option>
-                            <option value="לפי תאריך">לפי תאריך</option>
-                        </select>
-                    )}
-
-                    {/* סטטוס */}
-                    <select
-                        value={filters.status || ''}
-                        onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value || undefined }))}
-                    >
-                        <option value="">סטטוס</option>
-
-                        {statusOptions.map((op, i) =>
-                            <option key={i} value={op.status}
-                                style={{
-                                    backgroundColor: op.color,
-                                }}>{op.status}</option>
-
-                        )}
-                    </select>
-
-                    {/* סוג עובד */}
-                    <select
-                        value={filters.assigneeType || ''}
-                        onChange={(e) => setFilters(prev => ({
-                            ...prev,
-                            assigneeType: e.target.value || undefined,
-                            selectedAssignee: undefined // איפוס עובד שנבחר
-                        }))}
-                    >
-                        <option value="">בחר סוג עובד</option>
-                        <option value="main">ראשי</option>
-                        <option value="secondary">משני</option>
-                    </select>
-
-                    {/* בחירת עובד מתוך רשימה */}
-                    {filters.assigneeType && (
-                        <select
-                            value={filters.selectedAssignee || ''}
-                            onChange={(e) =>
-                                setFilters(prev => ({ ...prev, selectedAssignee: e.target.value || undefined }))
-                            }
-                        >
-                            <option value="">בחר עובד</option>
-                            {workersList.map(worker => (
-                                <option key={worker._id} value={worker._id}>
-                                    {worker.userName}
-                                </option>
-                            ))}
-                        </select>
-                    )}
-
-                    {/* עמותה */}
-                    <select
-                        value={filters.organization || ''}
-                        onChange={(e) =>
-                            setFilters(prev => ({ ...prev, organization: e.target.value || undefined }))
-                        }
-                    >
-                        <option value="">בחר עמותה</option>
-                        {organizationsList.map(org => (
-                            <option key={org._id} value={org._id}>
-                                {org.name}
-                            </option>
-                        ))}
-                    </select>
-
-                    {/* טווח תאריכים */}
-
-                    <input
-                        type="date"
-                        value={filters.dateFrom || ''}
-                        onChange={(e) =>
-                            setFilters(prev => ({
-                                ...prev,
-                                dateFrom: e.target.value || '',
-                                dateTo: '' // איפוס dateTo כשמשנים התחלה
-                            }))
-                        }
-                    />
-
-                    {filters.dateFrom && (
-                        <input
-                            type="date"
-                            value={filters.dateTo || ''}
-                            min={filters.dateFrom} // מונע בחירה של תאריך מוקדם
-                            onChange={(e) =>
-                                setFilters(prev => ({
-                                    ...prev,
-                                    dateTo: e.target.value || ''
-                                }))
-                            }
-                        />
-                    )}
-                </div>
+               
                 <TrashWithRecycleIcon />
 
             </div>
 
 
             <TaskAgGrid
-                rowData={allTasks}
+                rowData={filteredTasks}
                 columnDefs={columnDefs}
                 onCellValueChanged={onCellValueChanged}
-                doesExternalFilterPass={doesExternalFilterPass}
-                isExternalFilterPresent={isExternalFilterPresent}
+              
             />
         </div>
     );

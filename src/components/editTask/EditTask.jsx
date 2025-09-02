@@ -5,6 +5,7 @@ import { fetchAllAssociations } from '../../services/associationService';
 import { updateTask } from '../../services/updateService';
 import { AuthContext } from "../../context/AuthContext";
 import "../createTask/CreateTask.css";
+import { fetchGetAllProjectNames } from "../../services/projectService";
 
 const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
   const { user } = useContext(AuthContext);
@@ -12,6 +13,8 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
   const [allUsers, setAllUsers] = useState([]);
   const [associations, setAssociations] = useState([]);
   const [form, setForm] = useState(null);
+  const [allProjects, setAllProjects] = useState([]);
+
 
   const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
   const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
@@ -22,6 +25,19 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
     getUserNames(token).then(setAllUsers).catch(console.error);
     fetchAllAssociations(token).then(setAssociations).catch(console.error);
   }, [user?.token]);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      const token = user?.token;
+      try {
+        const projects = await fetchGetAllProjectNames(token);
+        setAllProjects(projects);
+      } catch (err) {
+        console.error("שגיאה בשליפת פרויקטים:", err);
+      }
+    };
+    loadProjects();
+  }, []);
 
   const formatDate = (d) => {
     if (!d) return "";
@@ -157,7 +173,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
         <div className="form-row">
           <div className="form-group">
             <label>כותרת</label>
-            <input name="title" value={form.title} onChange={handleChange} required/>
+            <input name="title" value={form.title} onChange={handleChange} required />
           </div>
 
           <div className="form-group">
@@ -167,8 +183,22 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
 
           <div className="form-group">
             <label>פרויקט</label>
-            <input id="project" name="project" value={form.project} onChange={handleChange} />
+            <select
+              id="project"
+              name="project"
+              value={form.project}
+              onChange={handleChange}
+              required
+            >
+              <option value="">בחר פרויקט</option>
+              {allProjects.map((project) => (
+                <option key={project._id} value={project._id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
           </div>
+
         </div>
 
         <div className="form-row">
