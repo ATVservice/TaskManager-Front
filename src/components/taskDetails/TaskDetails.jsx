@@ -61,15 +61,15 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
         <div className={`side-popup ${!isOpen ? 'hidden' : ''}`}>
             <button className="close-btn" onClick={onClose}>X</button>
             <h3>פרטים נוספים</h3>
-            
+
             {details.details && (
                 <p><strong>פרטי משימה: </strong>{details.details}</p>
             )}
-            
+
             {details.project && (
                 <p><strong>פרויקט: </strong>{details.project.name}</p>
             )}
-            
+
             {details.assignees && details.assignees.length > 0 && (
                 <>
                     <p><strong>אחראים:</strong></p>
@@ -80,43 +80,46 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                     ))}
                 </>
             )}
-            
+
             {details.importance && (
                 <p><strong>חשיבות: </strong>{details.importance}</p>
             )}
-            
+
             {details.subImportance && (
                 <p><strong>תת דירוג: </strong>{details.subImportance}</p>
             )}
-            
+
             {details.statusNote && (
                 <p><strong>עדכון מצב: </strong>{details.statusNote}</p>
             )}
-            
+
             {details.creator?.userName && (
                 <p><strong>יוצר משימה: </strong>{details.creator.userName}</p>
             )}
-            
+
             {details.daysOpen !== undefined && (
                 <p><strong>ימים מאז פתיחה: </strong>{details.daysOpen}</p>
             )}
-            
+
             {details.dueDate && (
                 <p><strong>יעד לביצוע: </strong>{formatDate(details.dueDate)}</p>
             )}
-            
+
             {details.finalDeadline && (
                 <p><strong>תאריך יעד סופי: </strong>{formatDate(details.finalDeadline)}</p>
             )}
-            
-            {details.failureReason && (
-                <p><strong>סיבת אי ביצוע: </strong>{details.failureReason}</p>
+
+            {details.failureReason?.option && details.failureReason.option != "אחר" && (
+                <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.option}</p>
             )}
-            
+            {details.failureReason?.option == "אחר" && (
+                <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.customText}</p>
+            )}
+
             {details.cancelReason && (
                 <p><strong>סיבת ביטול: </strong>{details.cancelReason}</p>
             )}
-            
+
             {details.frequencyType && (
                 <>
                     <p><strong>סוג תדירות: </strong>{details.frequencyType}</p>

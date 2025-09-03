@@ -3,8 +3,6 @@ import MultiSelect from "../multiSelect/MultiSelect";
 import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
 import { createTask } from '../../services/taskService';
-
-
 import "./CreateTask.css";
 import { AuthContext } from "../../context/AuthContext";
 import { fetchGetAllProjectNames } from "../../services/projectService";
@@ -151,7 +149,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
     return (
         <div className="create-task-container">
-            <h4>צור משימה</h4>
+            <h4 className="title-h4">צור משימה</h4>
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
 
@@ -249,6 +247,19 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 </div>
                 <div className="form-row">
 
+                    {form.importance === "מיידי" &&
+                        <div className="form-group">
+                            <label>תת דירוג</label>
+                            <select name="subImportance" value={form.subImportance} onChange={handleChange} required>
+                                <option value="">בחר</option>
+                                {allSubImportanceOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
+                    }
+                </div>
+                <div className="form-row">
 
                     <div className="form-group">
                         <label htmlFor="isRecurring">משימה קבועה?</label>
@@ -262,21 +273,8 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                     </div>
                     <div className="form-group"></div>
 
-                    {form.importance === "מיידי" &&
-                        <div className="form-group">
-                            <label>תת דירוג</label>
-                            <select name="subImportance" value={form.subImportance} onChange={handleChange} required>
-                                <option value="">בחר</option>
-                                {allSubImportanceOptions.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                            </select>
-                        </div>
-                    }
-
-
-
                 </div>
+
                 <div className="form-row">
                     {form.isRecurring && (
                         <div>
@@ -344,7 +342,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                     {form.frequencyType === 'חודשי' && (
                                         <div className="form-group">
 
-                                            <label>בחר יום:</label>
                                             <select
                                                 value={form.frequencyDetails.dayOfMonth}
                                                 onChange={(e) =>
@@ -368,7 +365,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                     )}
                                     {form.frequencyType === 'שנתי' && (
                                         <div className="form-group">
-                                            <label>בחר חודש:</label>
                                             <select
                                                 value={form.frequencyDetails.month}
                                                 onChange={(e) =>
@@ -390,7 +386,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                             </select>
 
 
-                                            <label>בחר יום:</label>
                                             <select
                                                 value={form.frequencyDetails.day}
                                                 onChange={(e) =>

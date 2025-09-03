@@ -2,19 +2,19 @@ import React, { useContext, useEffect, useState } from "react";
 import MultiSelect from "../multiSelect/MultiSelect";
 import { getUserNames } from '../../services/userService';
 import { fetchAllAssociations } from '../../services/associationService';
-import { updateTask } from '../../services/updateService';
+import { updateRecurringTask, updateTask } from '../../services/updateService';
 import { AuthContext } from "../../context/AuthContext";
 import "../createTask/CreateTask.css";
 import { fetchGetAllProjectNames } from "../../services/projectService";
+import Swal from "sweetalert2";
 
-const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
+const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
   const { user } = useContext(AuthContext);
 
   const [allUsers, setAllUsers] = useState([]);
   const [associations, setAssociations] = useState([]);
   const [form, setForm] = useState(null);
   const [allProjects, setAllProjects] = useState([]);
-
 
   const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
   const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
@@ -70,7 +70,9 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
     setForm({
       title: taskToEdit.title || "",
       details: taskToEdit.details || "",
-      project: taskToEdit.project || "",
+      project: typeof taskToEdit.project === "object"
+        ? taskToEdit.project._id
+        : taskToEdit.project || null,
       dueDate: formatDate(taskToEdit.dueDate),
       finalDeadline: formatDate(taskToEdit.finalDeadline),
       importance: taskToEdit.importance || "",
@@ -117,44 +119,206 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
 
     setForm(prev => ({ ...prev, [name]: value }));
   };
+  const handleDateChange = async (e) => {
+    const { name, value } = e.target;
+
+    if ((name === "dueDate" || name === "finalDeadline") && value !== form[name]) {
+      const { value: result } = await Swal.fire({
+        title: 'בחר סיבת אי - ביצוע',
+        html: `
+          <select id="reasonSelect" class="swal2-input">
+            <option value="">בחר סיבה</option>
+            <option value="חוסר זמן">חוסר זמן</option>
+            <option value="חופשה">חופשה</option>
+            <option value="בעיה טכנית">בעיה טכנית</option>
+            <option value="תלות בגורם חיצוני">תלות בגורם חיצוני</option>
+            <option value="לא דחוף">לא דחוף</option>
+            <option value="אחר">אחר</option>
+          </select>
+          <input id="customReason" class="swal2-input" placeholder="פירוט..." style="display:none" />
+        `,
+        focusConfirm: false,
+        preConfirm: () => {
+          const reason = document.getElementById('reasonSelect').value;
+          const custom = document.getElementById('customReason').value;
+          if (!reason) {
+            Swal.showValidationMessage('חובה לבחור סיבה');
+            return false;
+          }
+          if (reason === "אחר" && !custom) {
+            Swal.showValidationMessage('חובה למלא פירוט');
+            return false;
+          }
+          return { option: reason, customText: custom };
+        },
+        didOpen: () => {
+          const select = document.getElementById('reasonSelect');
+          const customInput = document.getElementById('customReason');
+          select.addEventListener('change', (e) => {
+            if (e.target.value === "אחר") {
+              customInput.style.display = "block";
+            } else {
+              customInput.style.display = "none";
+            }
+          });
+        },
+        showCancelButton: true,
+        confirmButtonText: 'אישור',
+        cancelButtonText: 'ביטול'
+      });
+
+      if (!result) return; // בוטל
+
+      setForm(prev => ({
+        ...prev,
+        [name]: value,
+        failureReason: result
+      }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   const token = user?.token;
+  //   try {
+  //     // קופצים רק אם יש form
+  //     if (!form) throw new Error("אין טופס למלא");
+
+  //     // יוצאים מ־form את subImportance כדי לא לכלול אותו שלא בצורך
+  //     const { subImportance, ...rest } = form;
+  //     const preparedForm = {
+  //       ...rest,
+  //       assignees: Array.isArray(form.assignees) ? form.assignees.map(a => a._id || a.id || a) : [],
+
+  //     };
+
+  //     // --- הוספה של בדיקה לשדות recurring ---
+  //     if (taskToEdit.isRecurring === form.isRecurring) delete preparedForm.isRecurring;
+
+  //     if (taskToEdit.frequencyType === form.frequencyType) delete preparedForm.frequencyType;
+
+  //     if (JSON.stringify(taskToEdit.frequencyDetails || {}) === JSON.stringify(form.frequencyDetails || {})) {
+  //       delete preparedForm.frequencyDetails;
+  //     }
+
+  //     // במקרה וחשיבות איננה "מיידי" - מוחקים בטוח את השדה מה־payload
+  //     if (form.importance !== "מיידי") {
+  //       if ('subImportance' in preparedForm) delete preparedForm.subImportance;
+  //     } else {
+  //       // אם כן "מיידי" - הוסיפי רק אם יש ערך אמיתי שלא מחרוזת ריקה
+  //       if (typeof subImportance === "string") {
+  //         if (subImportance.trim() !== "") {
+  //           preparedForm.subImportance = subImportance;
+  //         } else {
+  //           // אם ריק — וודאי שלא נשלח
+  //           if ('subImportance' in preparedForm) delete preparedForm.subImportance;
+  //         }
+  //       } else if (subImportance !== undefined) {
+  //         preparedForm.subImportance = subImportance;
+  //       }
+  //     }
+  //     if (form.project === "") {
+  //       delete preparedForm.project;
+  //     }
+
+  //     // --- DEBUG: בדקי בקונסול מה הולך להישלח ---
+  //     console.log("Prepared payload for updateTask:", JSON.stringify(preparedForm, null, 2));
+
+  //     // שליחה לשרת
+  //     // if (taskType == "today-recurring") {
+  //     //   await updateRecurringTask(taskToEdit.sourceTaskId, preparedForm, token);
+  //     //   alert("המשימה עודכנה במקור בלבד!!");
+
+  //     // }
+  //     // else if (taskType == "today-single") {
+  //     //   await updateTask(taskToEdit.sourceTaskId, preparedForm, token);
+  //     //   alert("המשימה עודכנה במקור בלבד!");
+
+  //     // }
+  //     if (taskType === "recurring") {
+  //       await updateRecurringTask(taskToEdit._id, preparedForm, token);
+  //       alert("המשימה עודכנה בהצלחה!");
+
+  //     }
+  //     else {
+  //       await updateTask(taskToEdit._id, preparedForm, token);
+  //       alert("המשימה עודכנה בהצלחה!");
+
+
+  //     }
+  //     onTaskUpdated();
+  //     onClose();
+  //   } catch (error) {
+  //     console.error("Update error:", error);
+  //     alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = user?.token;
     try {
-      // קופצים רק אם יש form
       if (!form) throw new Error("אין טופס למלא");
-
-      // יוצאים מ־form את subImportance כדי לא לכלול אותו שלא בצורך
-      const { subImportance, ...rest } = form;
-      const preparedForm = {
-        ...rest,
-        assignees: Array.isArray(form.assignees) ? form.assignees.map(a => a._id || a.id || a) : [],
-      };
-
-      // במקרה וחשיבות איננה "מיידי" - מוחקים בטוח את השדה מה־payload
-      if (form.importance !== "מיידי") {
-        if ('subImportance' in preparedForm) delete preparedForm.subImportance;
-      } else {
-        // אם כן "מיידי" - הוסיפי רק אם יש ערך אמיתי שלא מחרוזת ריקה
-        if (typeof subImportance === "string") {
-          if (subImportance.trim() !== "") {
-            preparedForm.subImportance = subImportance;
-          } else {
-            // אם ריק — וודאי שלא נשלח
-            if ('subImportance' in preparedForm) delete preparedForm.subImportance;
-          }
-        } else if (subImportance !== undefined) {
-          preparedForm.subImportance = subImportance;
+  
+      const preparedForm = {};
+      
+      // פונקציה עוזרת להשוואת ערכים (פשוטה)
+      const isEqual = (a, b) => {
+        if (typeof a === "object" && typeof b === "object") {
+          return JSON.stringify(a || {}) === JSON.stringify(b || {});
         }
+        return a === b;
+      };
+  
+      // השוואת כל השדות מול taskToEdit, מוסיפים רק אם שונים
+      for (const key in form) {
+        let value = form[key];
+        let original = taskToEdit[key];
+  
+        // המרה מיוחדת ל-assignees ומחלקת mainAssignee
+        if (key === "assignees") {
+          const ids = value.map(a => a._id || a.id || a);
+          const originalIds = (original || []).map(a => a._id || a.id || a);
+          if (!isEqual(ids, originalIds)) preparedForm.assignees = ids;
+          continue;
+        }
+  
+        if (key === "mainAssignee") {
+          const id = value?._id || value?.id || value;
+          const origId = original?._id || original?.id || original;
+          if (!isEqual(id, origId)) preparedForm.mainAssignee = id;
+          continue;
+        }
+  
+        // שדות recurring
+        if (["isRecurring", "frequencyType", "frequencyDetails"].includes(key)) {
+          if (!isEqual(value, original)) preparedForm[key] = value;
+          continue;
+        }
+  
+        // subImportance רק אם importance מיידי
+        if (key === "subImportance") {
+          if (form.importance === "מיידי" && value && value.trim() !== "") {
+            if (!isEqual(value, original)) preparedForm.subImportance = value;
+          }
+          continue;
+        }
+  
+        // שדות רגילים
+        if (!isEqual(value, original)) preparedForm[key] = value;
       }
-
-      // --- DEBUG: בדקי בקונסול מה הולך להישלח ---
-      console.log("Prepared payload for updateTask:", JSON.stringify(preparedForm, null, 2));
-
+  
+      console.log("Prepared payload for updateTask:", preparedForm);
+  
       // שליחה לשרת
-      await updateTask(taskToEdit._id, preparedForm, token);
-
+      if (taskType === "recurring") {
+        await updateRecurringTask(taskToEdit._id, preparedForm, token);
+      } else {
+        await updateTask(taskToEdit._id, preparedForm, token);
+      }
+  
       alert("המשימה עודכנה בהצלחה!");
       onTaskUpdated();
       onClose();
@@ -163,12 +327,12 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
       alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
     }
   };
-
+  
   if (!form) return <div>טוען...</div>;
 
   return (
     <div className="create-task-container">
-      <h4>עריכת משימה</h4>
+      <h4 className="title-h4">עריכת משימה</h4>
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <div className="form-group">
@@ -186,9 +350,8 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
             <select
               id="project"
               name="project"
-              value={form.project}
+              value={form.project || ""}
               onChange={handleChange}
-              
             >
               <option value="">בחר פרויקט</option>
               {allProjects.map((project) => (
@@ -197,6 +360,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
                 </option>
               ))}
             </select>
+
           </div>
 
         </div>
@@ -229,16 +393,38 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
             </select>
           </div>
 
-          <div className="form-group">
-            <label>תאריך יעד</label>
-            <input
-              type="date"
-              name="dueDate"
-              value={form.dueDate}
-              onChange={handleChange}
-              min={new Date().toISOString().split("T")[0]}
-            />
-          </div>
+          {(taskType === "single") && (
+            <>
+              <div className="form-group">
+                <label>תאריך יעד</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={form.dueDate}
+                  onChange={handleChange}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+            </>
+          )}
+
+          {(taskType === "recurring") && (
+            <div className="form-group">
+              <label htmlFor="frequencyType">סוג תדירות</label>
+              <select
+                name="frequencyType"
+                value={form.frequencyType || ""}
+                onChange={handleChange}
+                required
+              >
+                <option value="">בחר</option>
+                <option value="שנתי">שנתי</option>
+                <option value="חודשי">חודשי</option>
+                <option value="יומי פרטני">יומי פרטני</option>
+                <option value="יומי">יומי</option>
+              </select>
+            </div>
+          )}
         </div>
 
         <div className="form-row">
@@ -277,13 +463,166 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
                 type="date"
                 name="finalDeadline"
                 value={form.finalDeadline}
-                onChange={handleChange}
+                onChange={handleDateChange}
                 min={form.dueDate}
               />
             </div>
           )}
+          {form.frequencyType && (
+            <div className="form-group">
+              <label>פרטי תדירות</label>
+
+              {form.frequencyType === "יומי" && (
+                <label>
+                  כולל ימי שישי?
+                  <input
+                    type="checkbox"
+                    checked={form.frequencyDetails?.includingFriday || false}
+                    onChange={(e) =>
+                      setForm(prev => ({
+                        ...prev,
+                        frequencyDetails: {
+                          ...prev.frequencyDetails,
+                          includingFriday: e.target.checked
+                        }
+                      }))
+                    }
+                  />
+                </label>
+              )}
+
+              {(taskType === "recurring") && form.frequencyType === "יומי פרטני" && (
+                <div className="form-group">
+                  <label>בחר ימים:</label>
+                  {[
+                    { label: "ראשון", value: 0 },
+                    { label: "שני", value: 1 },
+                    { label: "שלישי", value: 2 },
+                    { label: "רביעי", value: 3 },
+                    { label: "חמישי", value: 4 },
+                    { label: "שישי", value: 5 }
+                  ].map((day) => (
+                    <label key={day.value} style={{ marginInlineEnd: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={form.frequencyDetails?.days?.includes(day.value) || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setForm((prev) => {
+                            const prevDays = prev.frequencyDetails?.days || [];
+                            const newDays = checked
+                              ? [...prevDays, day.value]
+                              : prevDays.filter((v) => v !== day.value);
+                            return {
+                              ...prev,
+                              frequencyDetails: { ...prev.frequencyDetails, days: newDays },
+                            };
+                          });
+                        }}
+                      />
+                      {day.label}
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {form.frequencyType === "חודשי" && (
+                <select
+                  value={form.frequencyDetails?.dayOfMonth || ""}
+                  onChange={(e) =>
+                    setForm(prev => ({
+                      ...prev,
+                      frequencyDetails: {
+                        ...prev.frequencyDetails,
+                        dayOfMonth: Number(e.target.value),
+                      },
+                    }))
+                  }
+                >
+                  <option value="">--בחר יום--</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                    <option key={day} value={day}>
+                      {day.toString().padStart(2, "0")}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {form.frequencyType === "שנתי" && (
+                <div className="form-group">
+                  <select
+                    value={form.frequencyDetails?.month || ""}
+                    onChange={(e) =>
+                      setForm(prev => ({
+                        ...prev,
+                        frequencyDetails: {
+                          ...prev.frequencyDetails,
+                          month: Number(e.target.value),
+                        },
+                      }))
+                    }
+                  >
+                    <option value="">--בחר חודש--</option>
+                    {[
+                      { label: "ינואר", value: 1 },
+                      { label: "פברואר", value: 2 },
+                      { label: "מרץ", value: 3 },
+                      { label: "אפריל", value: 4 },
+                      { label: "מאי", value: 5 },
+                      { label: "יוני", value: 6 },
+                      { label: "יולי", value: 7 },
+                      { label: "אוגוסט", value: 8 },
+                      { label: "ספטמבר", value: 9 },
+                      { label: "אוקטובר", value: 10 },
+                      { label: "נובמבר", value: 11 },
+                      { label: "דצמבר", value: 12 },
+                    ].map((month) => (
+                      <option key={month.value} value={month.value}>
+                        {month.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={form.frequencyDetails?.day || ""}
+                    onChange={(e) =>
+                      setForm(prev => ({
+                        ...prev,
+                        frequencyDetails: {
+                          ...prev.frequencyDetails,
+                          day: Number(e.target.value),
+                        },
+                      }))
+                    }
+                  >
+                    <option value="">--בחר יום--</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <option key={day} value={day}>
+                        {day.toString().padStart(2, "0")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
+        <div className="form-row">
+
+          {(taskType === "single") && (
+            <>
+              <div className="form-group">
+                <label>סטטוס</label>
+                <select name="status" value={form.status || ""} onChange={handleChange} required>
+                  <option value="">בחר</option>
+                  {allStatus.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </>
+          )}
+        </div>
         <div className="form-row">
           {form.importance === "מיידי" && (
             <div className="form-group">
@@ -299,16 +638,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit }) => {
               </select>
             </div>
           )}
-
-          <div className="form-group">
-            <label>סטטוס</label>
-            <select name="status" value={form.status || ""} onChange={handleChange} required>
-              <option value="">בחר</option>
-              {allStatus.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
         </div>
-
         <div className="form-row">
           <div className="form-group">
             <button type="submit">עדכן</button>

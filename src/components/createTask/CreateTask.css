@@ -25,18 +25,18 @@
   .create-task-container {
     max-width: 1200px;
     margin: 40px auto;
-    padding: 5px;
+    padding: 3px;
     background-color: var(--secondary-bg-color);
     border-radius: 10px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-color);
   }
   
-  h4 {
+  .title-h4 {
     text-align: center;
     color: var(--header-color);
     margin-bottom: 30px;
-    font-size: 2.2em;
+    font-size: 1.2em;
     font-weight: 600;
     border-bottom: 2px solid var(--accent-color);
     padding-bottom: 10px;

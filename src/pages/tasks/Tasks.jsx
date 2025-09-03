@@ -61,8 +61,6 @@ const statusOptions = [
 const Tasks = () => {
     const navigate = useNavigate();
     const suppressedChangeNodesRef = useRef(new Set());
-
-
     const { user } = useContext(AuthContext);
 
 
@@ -75,8 +73,7 @@ const Tasks = () => {
     const [ShowEditModal, setShowEditModal] = useState(false)
     const [selectedTask, setSelectedTask] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
-
-
+    const [taskType, setTaskType] = useState("")
 
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
@@ -88,7 +85,6 @@ const Tasks = () => {
     ];
 
     const [activeIndex, setActiveIndex] = useState(0);
-
 
     const handleNextTab = () => {
         setActiveIndex((prev) => {
@@ -105,9 +101,6 @@ const Tasks = () => {
             return newIndex;
         });
     };
-
-
-
 
     const gridRef = useRef();
 
@@ -159,7 +152,7 @@ const Tasks = () => {
     const [version, setVersion] = useState(0);
 
     const refreshTasks = () => setVersion(v => v + 1);
-   
+
     useEffect(() => {
         if (activeTab === "today") {
             setActiveTab("today-recurring");
@@ -168,7 +161,7 @@ const Tasks = () => {
         }
         fetchTasks(activeTab);
     }, [activeTab, version]);
-    
+
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -243,7 +236,6 @@ const Tasks = () => {
         }
     };
 
-
     const toDelete = async (taskId) => {
         const token = user?.token;
 
@@ -275,25 +267,39 @@ const Tasks = () => {
 
 
     const toEdit = (task) => {
+
         const canEditTask = user.id === task.creator ||
             user.id === task.mainAssignee._id ||
             user.role === 'מנהל';
 
+
         if (canEditTask) {
             setShowEditModal(true);
             setSelectedTask(task);
+
+             if (task.frequencyType || task.isRecurringInstance) {
+                setTaskType("recurring")
+            }
+              // if (task.taskModel == "Task") {
+            //     setTaskType("today-single")
+            // }
+            // else if (task.taskModel == "RecurringTask") {
+            //     setTaskType("today-recurring")
+            // }
+            else {
+                setTaskType("single")
+            }
             console.log("המשימה לעריכה:", task);
         }
         else {
             alert("אין לך הרשאה לערוך משימה זו!")
         }
-
-
     };
 
 
+    const getColumnDefs = () => {
+        const baseColumns = [
 
-    const getColumnDefs = () => [
         {
             headerName: "", field: "duplicate", maxWidth: 50,
             cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }} /></div>
@@ -333,11 +339,11 @@ const Tasks = () => {
             }
 
         },
-        
+
         {
             headerName: 'סטטוס',
             field: 'status',
-            editable: () => activeTab !== 'recurring', 
+            editable: () => activeTab !== 'recurring',
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
                 values: statusOptions.map(x => x.status)
@@ -386,11 +392,22 @@ const Tasks = () => {
             headerName: "", field: "delete", maxWidth: 50,
             cellRenderer: (params) => <div className='trash iconButton' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }} /> </div>
         },
-        {
+
+    ]
+    // הוספת עמודת עריכה רק אם זה לא טאב משימות להיום
+    if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
+        baseColumns.push({
             headerName: "", field: "edit", maxWidth: 50,
-            cellRenderer: (params) => <div className='pencil iconButton' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }} /></div>
-        },
-    ];
+            cellRenderer: (params) => (
+                <div className='pencil iconButton' title='ערוך'>
+                    <Pencil size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }} />
+                </div>
+            )
+        });
+    }
+
+    return baseColumns;
+};
     const onCellValueChanged = async (params) => {
         if (suppressedChangeNodesRef.current.has(params.node.id)) {
             suppressedChangeNodesRef.current.delete(params.node.id);
@@ -417,7 +434,7 @@ const Tasks = () => {
 
                     if (isConfirmed) {
 
-                        await updateRecurringStatus(params.data.sourceTaskId, newStatus,token,content);
+                        await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content);
                         // עדכון מיידי בטבלה שהעובד יראה את הסטטוס החדש
                         params.node.setDataValue(params.colDef.field, newStatus);
                         alert("עודכן בהצלחה");
@@ -472,7 +489,6 @@ const Tasks = () => {
         }
     };
 
-
     const createProject = async () => {
         const token = user?.token;
 
@@ -510,8 +526,6 @@ const Tasks = () => {
         }
     };
 
-
-
     return (
         <div className="page-container">
             <div className="controls-container">
@@ -546,7 +560,6 @@ const Tasks = () => {
 
                         </button>
 
-
                         <button
                             className={`tab-button  active`}
                             onClick={() => setActiveTab(tabs[activeIndex].key)}
@@ -578,8 +591,6 @@ const Tasks = () => {
                     )}
 
                 </div>
-
-
             </div>
 
             {showCreatePopup && (
@@ -597,6 +608,7 @@ const Tasks = () => {
                         <button onClick={handleClosePopupEdit} className="close-btn">X</button>
                         <EditTask
                             taskToEdit={selectedTask}
+                            taskType={taskType}
                             onClose={() => setShowEditModal(false)}
                             onTaskUpdated={refreshTasks}
                         />
@@ -608,7 +620,6 @@ const Tasks = () => {
                 isOpen={openDetails}
                 onClose={closeDetailsDiv}
             />
-
 
             <TaskAgGrid
                 rowData={filteredTasks}

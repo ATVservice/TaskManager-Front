@@ -34,3 +34,15 @@ export const updateRecurringStatus = async (taskId, status, token, content ) => 
     return response.data;
 };
 
+export const updateRecurringTask = async (taskId, preparedForm, token) => {
+    console.log("preparedForm" ,preparedForm)
+    const response = await axios.put(`${API_URL}/api/update/updateRecurringTask/${taskId}`, {preparedForm},{
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+    });
+
+    return response.data;
+};
+
