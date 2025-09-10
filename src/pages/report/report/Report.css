@@ -152,4 +152,34 @@
     font-size: 0.85rem;
     color: #555;
   }
-  
+  /* כפתורי בחירת תקופה */
+.period-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  width: 20%;
+
+}
+
+.period-tabs button {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #f3f4f6;
+  color: #333;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.period-tabs button:hover {
+  background: #e5e7eb;
+}
+
+.period-tabs button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}

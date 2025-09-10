@@ -26,6 +26,51 @@ const AdminDashboard = () => {
   const [employees, setEmployees] = useState([]);
   const [selectedEmp, setSelectedEmp] = useState(null);
 
+  //סינונים
+  const [rangeType, setRangeType] = useState('חודש');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const timeRanges = ['יום', 'שבוע', 'חודש', 'שנה', 'טווח תאריכים מותאם'];
+
+  // פונקציה להמרת טקסט עברי ל-filterType באנגלית
+  const getFilterType = (hebrewRange) => {
+    const mapping = {
+      'יום': 'day',
+      'שבוע': 'week',
+      'חודש': 'month',
+      'שנה': 'year',
+      'טווח תאריכים מותאם': 'custom'
+    };
+    return mapping[hebrewRange] || 'month';
+  };
+
+  const loadSummaryData = async () => {
+    if (!user?.token) return;
+
+    setLoading(true);
+    try {
+      const filterOptions = {
+        filterType: getFilterType(rangeType)
+      };
+
+      // אם זה טווח מותאם, נוסיף את התאריכים
+      if (rangeType === 'טווח תאריכים מותאם') {
+        filterOptions.startDate = fromDate;
+        filterOptions.endDate = toDate;
+      }
+
+      const result = await fetchGeneralSummary(user.token, filterOptions);
+      setData(result);
+    } catch (error) {
+      console.error('שגיאה בטעינת נתונים:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     if (!user?.token) return;
     getNames(user.token).then((names) => {
@@ -44,15 +89,18 @@ const AdminDashboard = () => {
     });
   }, [user]);
 
+  // טעינת נתונים כשמשתנה הסינון
   useEffect(() => {
-    if (!user?.token) return;
-    fetchGeneralSummary(user.token)
-      .then(setData)
-      .catch(console.error);
-  }, [user]);
+    // אם זה טווח מותאם, נחכה שיבחרו תאריכים
+    if (rangeType === 'טווח תאריכים מותאם' && (!fromDate || !toDate)) {
+      return;
+    }
 
-  if (!data) return <div>טוען...</div>;
+    loadSummaryData();
+  }, [rangeType, fromDate, toDate, user]);
 
+  if (loading) return <div>טוען נתונים...</div>;
+  if (!data) return <div>אין נתונים להצגה</div>;
 
 
   const barData = [
@@ -62,15 +110,48 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
+
       <div className="dashboard-sections">
 
         <div className="admin-dashboard-card">
           <h3>פילוח לפי חשיבות</h3>
-          <p><strong>סך הכל משימות שהושלמו:</strong> {data.totalCompleted}</p>
+          {/* 🔹 כפתורי סינון */}
+          <div className="filter-section">
+            <div className="range-buttons">
+              {timeRanges.map(r => (
+                <button
+                  key={r}
+                  onClick={() => setRangeType(r)}
+                  className={`range-button ${r === rangeType ? 'active' : ''}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+
+            {/* בחירת תאריכים אם זה טווח מותאם */}
+            {rangeType === 'טווח תאריכים מותאם' && (
+              <div className="date-range">
+                <label>מתאריך:</label>
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={e => setFromDate(e.target.value)}
+                />
+                <label>עד:</label>
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={e => setToDate(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+          <p><strong>סך הכל משימות שהושלמו:</strong> {data.totalCompletedFiltered}</p>
 
           <div className="progress-bars-container">
             {data.tasksByImportance.map((item, idx) => {
-              const total = data.totalCompleted || 1;
+              const total = data.totalCompletedFiltered || 1;
               const percentage = Math.round((item.count / total) * 100);
               const color = STATUS_COLORS[item._id] || '#ccc';
               return (
@@ -81,6 +162,7 @@ const AdminDashboard = () => {
                   </div>
                   <div className="progress-bar-track">
                     <div
+                      key={`${item._id}-${percentage}`}
                       className="progress-bar-fill"
                       style={{ width: `${percentage}%`, backgroundColor: color }}
                     >
@@ -111,7 +193,7 @@ const AdminDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
           <p className="comparison-text">
-            {data.comparison.changePercent.toFixed(1)}% 
+            {data.comparison.changePercent.toFixed(1)}%
           </p>
         </div>
 

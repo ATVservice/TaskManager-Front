@@ -8,6 +8,7 @@ import "../createTask/CreateTask.css";
 import { fetchGetAllProjectNames } from "../../services/projectService";
 import Swal from "sweetalert2";
 
+
 const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
   const { user } = useContext(AuthContext);
 
@@ -18,7 +19,25 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
 
   const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
   const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
-  const allStatus = ['בתהליך', 'בטיפול', 'הושלם', 'מושהה', 'בוטלה'];
+  const allStatus = ['לביצוע', 'בטיפול', 'הושלם', 'בוטלה'];
+
+
+
+
+  function removeUnchangedFields(preparedForm, originalTask) {
+    const cleaned = { ...preparedForm };
+    for (const key in preparedForm) {
+      const newVal = preparedForm[key];
+      const oldVal = originalTask[key];
+
+      // השוואה פשוטה של ערכים, אפשר להרחיב לפי סוג (date, array וכו')
+      if (JSON.stringify(newVal) === JSON.stringify(oldVal)) {
+        delete cleaned[key];
+      }
+    }
+    return cleaned;
+  }
+
 
   useEffect(() => {
     const token = user?.token;
@@ -70,9 +89,10 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
     setForm({
       title: taskToEdit.title || "",
       details: taskToEdit.details || "",
-      project: typeof taskToEdit.project === "object"
+      project: taskToEdit.project && typeof taskToEdit.project === "object"
         ? taskToEdit.project._id
         : taskToEdit.project || null,
+
       dueDate: formatDate(taskToEdit.dueDate),
       finalDeadline: formatDate(taskToEdit.finalDeadline),
       importance: taskToEdit.importance || "",
@@ -86,6 +106,10 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       frequencyDetails: taskToEdit.frequencyDetails || {},
     });
   }, [taskToEdit, allUsers]);
+
+
+
+
 
   // אם importance שונה שלא "מיידי" - נמחק לחלוטין את שדה ה-subImportance מה-state
   useEffect(() => {
@@ -116,6 +140,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       });
       return;
     }
+
 
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -178,156 +203,120 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       setForm(prev => ({ ...prev, [name]: value }));
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   const token = user?.token;
-  //   try {
-  //     // קופצים רק אם יש form
-  //     if (!form) throw new Error("אין טופס למלא");
-
-  //     // יוצאים מ־form את subImportance כדי לא לכלול אותו שלא בצורך
-  //     const { subImportance, ...rest } = form;
-  //     const preparedForm = {
-  //       ...rest,
-  //       assignees: Array.isArray(form.assignees) ? form.assignees.map(a => a._id || a.id || a) : [],
-
-  //     };
-
-  //     // --- הוספה של בדיקה לשדות recurring ---
-  //     if (taskToEdit.isRecurring === form.isRecurring) delete preparedForm.isRecurring;
-
-  //     if (taskToEdit.frequencyType === form.frequencyType) delete preparedForm.frequencyType;
-
-  //     if (JSON.stringify(taskToEdit.frequencyDetails || {}) === JSON.stringify(form.frequencyDetails || {})) {
-  //       delete preparedForm.frequencyDetails;
-  //     }
-
-  //     // במקרה וחשיבות איננה "מיידי" - מוחקים בטוח את השדה מה־payload
-  //     if (form.importance !== "מיידי") {
-  //       if ('subImportance' in preparedForm) delete preparedForm.subImportance;
-  //     } else {
-  //       // אם כן "מיידי" - הוסיפי רק אם יש ערך אמיתי שלא מחרוזת ריקה
-  //       if (typeof subImportance === "string") {
-  //         if (subImportance.trim() !== "") {
-  //           preparedForm.subImportance = subImportance;
-  //         } else {
-  //           // אם ריק — וודאי שלא נשלח
-  //           if ('subImportance' in preparedForm) delete preparedForm.subImportance;
-  //         }
-  //       } else if (subImportance !== undefined) {
-  //         preparedForm.subImportance = subImportance;
-  //       }
-  //     }
-  //     if (form.project === "") {
-  //       delete preparedForm.project;
-  //     }
-
-  //     // --- DEBUG: בדקי בקונסול מה הולך להישלח ---
-  //     console.log("Prepared payload for updateTask:", JSON.stringify(preparedForm, null, 2));
-
-  //     // שליחה לשרת
-  //     // if (taskType == "today-recurring") {
-  //     //   await updateRecurringTask(taskToEdit.sourceTaskId, preparedForm, token);
-  //     //   alert("המשימה עודכנה במקור בלבד!!");
-
-  //     // }
-  //     // else if (taskType == "today-single") {
-  //     //   await updateTask(taskToEdit.sourceTaskId, preparedForm, token);
-  //     //   alert("המשימה עודכנה במקור בלבד!");
-
-  //     // }
-  //     if (taskType === "recurring") {
-  //       await updateRecurringTask(taskToEdit._id, preparedForm, token);
-  //       alert("המשימה עודכנה בהצלחה!");
-
-  //     }
-  //     else {
-  //       await updateTask(taskToEdit._id, preparedForm, token);
-  //       alert("המשימה עודכנה בהצלחה!");
-
-
-  //     }
-  //     onTaskUpdated();
-  //     onClose();
-  //   } catch (error) {
-  //     console.error("Update error:", error);
-  //     alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
-  //   }
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = user?.token;
     try {
       if (!form) throw new Error("אין טופס למלא");
-  
+
       const preparedForm = {};
-      
-      // פונקציה עוזרת להשוואת ערכים (פשוטה)
+
+      if (!form.project) {
+        delete preparedForm.project; 
+      }
+
+      if (form.failureReason) {
+        const fr = form.failureReason;
+        if (fr.option === "אחר") {
+          preparedForm.failureReason = fr.customText; // רק הטקסט החופשי
+        } else {
+          preparedForm.failureReason = fr.option;    // אחד מהאופציות הקבועות
+        }
+      }
+
+      const formatDateStr = (d) => d ? new Date(d).toISOString().split("T")[0] : null;
+
       const isEqual = (a, b) => {
+        if (Array.isArray(a) && Array.isArray(b)) {
+          const aIds = a.map(x => x._id || x.id || x);
+          const bIds = b.map(x => x._id || x.id || x);
+          return JSON.stringify(aIds) === JSON.stringify(bIds);
+        }
         if (typeof a === "object" && typeof b === "object") {
           return JSON.stringify(a || {}) === JSON.stringify(b || {});
         }
         return a === b;
       };
-  
-      // השוואת כל השדות מול taskToEdit, מוסיפים רק אם שונים
+
       for (const key in form) {
         let value = form[key];
         let original = taskToEdit[key];
-  
-        // המרה מיוחדת ל-assignees ומחלקת mainAssignee
-        if (key === "assignees") {
-          const ids = value.map(a => a._id || a.id || a);
-          const originalIds = (original || []).map(a => a._id || a.id || a);
-          if (!isEqual(ids, originalIds)) preparedForm.assignees = ids;
+
+        if (key === "isRecurring") continue;
+
+        // frequency fields נשלחים רק אם משימה חוזרת
+        if (["frequencyType", "frequencyDetails"].includes(key)) {
+          const isTaskRecurring =  taskToEdit.frequencyType || taskToEdit.frequencyDetails;
+          if (!isTaskRecurring) continue;
+          if (!isEqual(value, original)) preparedForm[key] = value;
           continue;
         }
-  
+
+        // המרה מיוחדת לתאריכים
+        if (key === "dueDate" || key === "finalDeadline") {
+          if (formatDateStr(value) !== formatDateStr(original)) preparedForm[key] = value;
+          continue;
+        }
+
+        // מערכים של אובייקטים
+        if (key === "assignees") {
+          const ids = value.map(a => a._id || a.id || a);
+          const origIds = (original || []).map(a => a._id || a.id || a);
+          if (!isEqual(ids, origIds)) preparedForm.assignees = ids;
+          continue;
+        }
+
         if (key === "mainAssignee") {
           const id = value?._id || value?.id || value;
           const origId = original?._id || original?.id || original;
           if (!isEqual(id, origId)) preparedForm.mainAssignee = id;
           continue;
         }
-  
-        // שדות recurring
-        if (["isRecurring", "frequencyType", "frequencyDetails"].includes(key)) {
+
+        // אובייקטים nested
+        if (key === "frequencyDetails") {
           if (!isEqual(value, original)) preparedForm[key] = value;
           continue;
         }
-  
-        // subImportance רק אם importance מיידי
+
+        // recurring
+        if (["isRecurring", "frequencyType"].includes(key)) {
+          if (!isEqual(value, original)) preparedForm[key] = value;
+          continue;
+        }
+
+        // subImportance
         if (key === "subImportance") {
-          if (form.importance === "מיידי" && value && value.trim() !== "") {
-            if (!isEqual(value, original)) preparedForm.subImportance = value;
+          if (form.importance === "מיידי" && value && value.trim() !== "" && !isEqual(value, original)) {
+            preparedForm.subImportance = value;
           }
           continue;
         }
-  
+
         // שדות רגילים
         if (!isEqual(value, original)) preparedForm[key] = value;
       }
-  
+
       console.log("Prepared payload for updateTask:", preparedForm);
-  
+
       // שליחה לשרת
       if (taskType === "recurring") {
         await updateRecurringTask(taskToEdit._id, preparedForm, token);
       } else {
         await updateTask(taskToEdit._id, preparedForm, token);
       }
-  
+
       alert("המשימה עודכנה בהצלחה!");
       onTaskUpdated();
       onClose();
+
     } catch (error) {
       console.error("Update error:", error);
       alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
     }
   };
-  
+
+ 
   if (!form) return <div>טוען...</div>;
 
   return (
@@ -350,10 +339,16 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
             <select
               id="project"
               name="project"
-              value={form.project || ""}
-              onChange={handleChange}
+              value={form?.project || ""}
+              onChange={(e) => {
+                const val = e.target.value;
+                setForm(prev => ({
+                  ...prev,
+                  project: val === "" || val === "בחר פרויקט" ? null : val
+                }));
+              }}
             >
-              <option value="">בחר פרויקט</option>
+              <option>בחר פרויקט</option>
               {allProjects.map((project) => (
                 <option key={project._id} value={project._id}>
                   {project.name}
@@ -402,7 +397,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
                   name="dueDate"
                   value={form.dueDate}
                   onChange={handleChange}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={form.dueDate}
                 />
               </div>
             </>
@@ -464,7 +459,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
                 name="finalDeadline"
                 value={form.finalDeadline}
                 onChange={handleDateChange}
-                min={form.dueDate}
+                min={form.finalDeadline}
               />
             </div>
           )}

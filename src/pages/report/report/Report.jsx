@@ -136,6 +136,7 @@ const Reports = () => {
 
 
 
+    
     // פונקציות עיבוד הנתונים לכל סוג דוח
     const getTableDataByReportType = () => {
         if (!reportData?.data) {
@@ -165,7 +166,7 @@ const Reports = () => {
     // עיבוד דוח משימות פתוחות לפי עובד
 
     const processOpenTasksByEmployee = (data) => {
-        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "באיחור", "בתהליך", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
+        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "באיחור", "בטיפול", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
         const rows = [];
 
         const employees = Array.isArray(data) ? data : data?.employees || [];
@@ -178,7 +179,7 @@ const Reports = () => {
                 employee.name ?? '---',
                 summary.total ?? 0,
                 summary.overdue ?? 0,
-                summary.byStatus?.['בתהליך'] ?? 0,
+                summary.byStatus?.['בטיפול'] ?? 0,
                 summary.avgDaysOpen ?? 0,
                 summary.oldestOpenDays ?? 0
             ]);
@@ -189,7 +190,7 @@ const Reports = () => {
 
     // עיבוד דוח משימות לפי אחריות
     const processTasksByResponsibility = (data) => {
-        const headers = ["שם משתמש", "שם עובד", "סוג אחריות", "כמות משימות", "הושלמו", "בתהליך", "מושהה"];
+        const headers = ["שם משתמש", "שם עובד", "סוג אחריות", "כמות משימות", "הושלמו", "לביצוע"];
         const rows = [];
 
         // אחראים ראשיים
@@ -201,8 +202,7 @@ const Reports = () => {
                 "אחראי ראשי",
                 summary.total || 0,
                 summary.byStatus['הושלם'] || 0,
-                summary.byStatus['בתהליך'] || 0,
-                summary.byStatus['מושהה'] || 0
+                summary.byStatus['לביצוע'] || 0,
             ]);
         });
 
@@ -215,8 +215,7 @@ const Reports = () => {
                 "אחראי משני",
                 summary.total,
                 summary.byStatus['הושלם'] || 0,
-                summary.byStatus['בתהליך'] || 0,
-                summary.byStatus['מושהה'] || 0
+                summary.byStatus['לביצוע'] || 0,
             ]);
         });
 
@@ -298,7 +297,7 @@ const Reports = () => {
 
     // עיבוד סיכום משימות לפי תקופה
     const processTasksSummaryByPeriod = (data) => {
-        const headers = ["תקופה", "כמות כללית", "הושלמו", "בתהליך", "מושהה", "אחוז השלמה"];
+        const headers = ["תקופה", "הושלמו","כללי","עקביות","תאריך","מיידי","מגירה"];
 
         if (!Array.isArray(data)) {
             console.log("tasksSummaryByPeriod data is not array:", data);
@@ -307,11 +306,14 @@ const Reports = () => {
 
         const rows = data.map(period => [
             period?.period || '---',
-            period?.totalTasks || 0,
-            period?.byStatus?.['הושלם'] || 0,
-            period?.byStatus?.['בתהליך'] || 0,
-            period?.byStatus?.['מושהה'] || 0,
-            `${period?.completionRate || 0}%`
+            period?.completedTasks || 0,
+             period?.byImportance?.['כללי'] || 0,
+             period?.byImportance?.['עקביות'] || 0,
+             period?.byImportance?.['תאריך'] || 0,
+             period?.byImportance?.['מיידי'] || 0,
+             period?.byImportance?.['מגירה'] || 0,
+
+            // `${period?.completionRate || 0}%`
         ]);
 
         return { headers, rows };
@@ -319,15 +321,17 @@ const Reports = () => {
     // עיבוד סטטיסטיקה אישית
     const processEmployeePersonalStats = (data) => {
         console.log("data stat", data);
-        const headers = ["שם משתמש", "שם מלא", "אחוז השלמה", "אחוז עמידה בזמנים", "אחוז עמידה ביעדים"];
+        const headers = ["שם משתמש", "שם מלא","משימות שהושלמו", "אחוז השלמה", "אחוז עמידה בזמנים", "אחוז עמידה ביעדים"];
         if (!Array.isArray(data) || data.length === 0) return { headers, rows: [] };
 
         const rows = data.map(stat => [
             stat?.userName || '---',
-            stat?.fullName || '---',
+            stat?.employeeName || '---',
+            stat?.tasksCompleted || 0,
             `${stat?.completionRate || 0}%`,
             `${stat?.onTimeRate || 0}%`,
-            `${stat?.overallGoalPercentage || 0}%`
+            `${stat?.goalAchievementRate || 0}%`
+            
         ]);
         return { headers, rows };
     };
@@ -557,9 +561,8 @@ const Reports = () => {
                 'כמות משימות': 'Tasks Count',
                 'חשיבות גבוהה': 'High Priority',
                 'באיחור': 'Overdue',
-                'בתהליך': 'In Progress',
+                "לביצוע": "To Do",
                 'הושלמו': 'Completed',
-                'מושהה': 'Suspended',
                 'סוג אחריות': 'Responsibility Type',
                 'אחראי ראשי': 'Main Responsible',
                 'אחראי משני': 'Secondary',
@@ -578,9 +581,9 @@ const Reports = () => {
 
             // מיפוי ערכים לאנגלית
             const valueMapping = {
-                'בתהליך': 'In Progress',
+                'לביצוע': 'To Do',
+                'בטיפול': 'In Progress',
                 'הושלם': 'Completed',
-                'מושהה': 'Suspended',
                 'דחוף': 'Urgent',
                 'גבוהה': 'High',
                 'בינונית': 'Medium',

@@ -31,10 +31,9 @@ const RecyclingBin = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const statusOptions = [
-        { status: "בתהליך", color: 'yellow' },
+        { status: "לביצוע", color: 'yellow' },
         { status: "בטיפול", color: 'purple' },
         { status: "הושלם", color: 'green' },
-        { status: "מושהה", color: 'gray' },
         { status: "בוטלה", color: 'red' },
     ];
 

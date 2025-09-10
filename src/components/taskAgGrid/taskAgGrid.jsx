@@ -88,7 +88,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
                     defaultColDef={defaultColDef}
                     pagination={true}
                     enableRtl={true}
-                    paginationPageSize={20}
+                    paginationPageSize={10}
                     domLayout="autoHeight"
                     animateRows={true}
                     onCellValueChanged={onCellValueChanged}
@@ -97,6 +97,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
                     rowClassRules={{
                         'drawer-task': params => params.data.importance === 'מגירה'
                     }}
+                    
                 />
         </div>
     );

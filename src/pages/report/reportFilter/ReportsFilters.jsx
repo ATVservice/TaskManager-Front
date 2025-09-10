@@ -9,10 +9,9 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons,
 
   const statusOptions = [
     { value: "", label: "הכל" },
-    { value: "בתהליך", label: "בתהליך" },
+    { value: "לביצוע", label: "לביצוע" },
     { value: "בטיפול", label: "בטיפול" },
     { value: "הושלם", label: "הושלם" },
-    { value: "מושהה", label: "מושהה" },
     { value: "בוטלה", label: "בוטלה" },
   ];
 

@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
-import { getTaskHistory } from '../../services/historyService.js';
+import { getRecurringTaskHistory, getTaskHistory } from '../../services/historyService.js';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 
 
 const History = () => {
-    const { taskId } = useParams();
+    const { taskId, model } = useParams();
     const { user } = useContext(AuthContext);
 
     const [data, setData] = useState([]);
@@ -27,13 +27,13 @@ const History = () => {
                 });
             }
         },
+        { headerName: 'לאחר שינוי', field: 'after' },
+        { headerName: 'לפני שינוי', field: 'before' },
+        { headerName: 'שדה ששונה', field: 'field' },
         {
             headerName: 'שם משתמש',
             valueGetter: (params) => params.data.user?.userName || ''
         },
-        { headerName: 'שדה ששונה', field: 'field' },
-        { headerName: 'לאחר שינוי', field: 'after' },
-        { headerName: 'לפני שינוי', field: 'before' },
 
     ]);
 
@@ -42,11 +42,21 @@ const History = () => {
             const token = user?.token;
             if (!token) return;
             try {
-                const [historyTask] = await Promise.all([
-                    getTaskHistory(taskId, token),
-                ]);
+                if (model == "Task") {
+                    const [historyTask] = await Promise.all([
+                        getTaskHistory(taskId, token, model),
+                    ]);
 
-                setData(historyTask.history)
+                    setData(historyTask.history)
+                }
+                else {
+                        const [historyTask] = await Promise.all([
+                            getRecurringTaskHistory(taskId, token, model),
+                        ]);
+    
+                        setData(historyTask.history)
+                    
+                }
             } catch (err) {
                 alert(err.response?.data?.message || 'שגיאה בטעינת ההיסטוריה');
             }

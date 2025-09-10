@@ -35,7 +35,7 @@ const AppRoutes = () => {
       <Route path="/createTask" element={<CreateTask />} />
       <Route path='/tasks' element={<Tasks />} />
       <Route path='/recyclingBin' element={<RecyclingBin />} />
-      <Route path="/history/:taskId" element={<History />} />
+      <Route path="/history/:taskId/:model" element={<History />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
 

@@ -338,11 +338,6 @@ body {
 }
 
 .ag-popup-child .ag-list-item:nth-child(4) {
-  background-color: gray !important;
-  color: black !important;
-}
-
-.ag-popup-child .ag-list-item:nth-child(5) {
   background-color: red !important;
   color: black !important;
 }

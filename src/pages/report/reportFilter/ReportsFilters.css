@@ -39,9 +39,18 @@
   color: #444;
   margin-bottom: 0.4rem;
 }
+.filter-group input[type="date"]{
+  width: 87%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: #fafafa;
+  transition: all 0.2s ease;
+}
+
 
 .filter-group select,
-.filter-group input[type="date"],
 .filter-group input[type="text"] {
   width: 100%;
   padding: 0.55rem 0.7rem;

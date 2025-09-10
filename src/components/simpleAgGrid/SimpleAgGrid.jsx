@@ -87,7 +87,7 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
                 defaultColDef={defaultColDef}
                 pagination={true}
                 localeText={localeText} 
-                paginationPageSize={20}
+                paginationPageSize={15}
             />
         </div>
     );

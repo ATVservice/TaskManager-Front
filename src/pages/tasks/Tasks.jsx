@@ -51,10 +51,9 @@ const enrichTasksWithSearchText = (tasks) => {
     });
 };
 const statusOptions = [
-    { status: "בתהליך", color: 'yellow' },
+    { status: "לביצוע", color: 'yellow' },
     { status: "בטיפול", color: 'purple' },
     { status: "הושלם", color: 'green' },
-    { status: "מושהה", color: 'gray' },
     { status: "בוטלה", color: 'red' },
 ];
 
@@ -227,11 +226,24 @@ const Tasks = () => {
         setShowEditModal(false)
     }
 
-    const toHistory = async (taskId) => {
+    const toHistory = async (task) => {
+        console.log("tttt",task)
+        let model;
+        if (task.frequencyType) {
+            model = "RecurringTask";
+        }
+        else if (task.taskModel) {
+          model = "TodayTask";
+        }
+        else {
+            model = "Task";
+        }
+        
         try {
-            navigate(`/history/${taskId}`, { target: '_blank' });
+            navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
+            alert("הבעיה פה")
             alert(error.response?.data?.message);
         }
     };
@@ -340,43 +352,43 @@ const Tasks = () => {
 
         },
 
-        {
-            headerName: 'סטטוס',
-            field: 'status',
-            editable: () => activeTab !== 'recurring',
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: statusOptions.map(x => x.status)
-            },
-            valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
-            valueSetter: (params) => {
-                if (params.newValue !== params.oldValue) {
-                    if (params.data.personalDetails) {
-                        params.data.personalDetails.status = params.newValue;
-                    } else {
-                        params.data.status = params.newValue;
-                    }
-                    return true;
-                }
-                return false;
-            },
-            cellRenderer: (params) => {
-                const status = params.value;
-                const option = statusOptions.find(opt => opt.status === status);
-                const color = option?.color || 'gray';
-                return (
-                    <span style={{
-                        backgroundColor: color,
-                        width: '60px',
-                        color: 'black',
-                        padding: '2px 8px',
-                        display: 'inline-block'
-                    }}>
-                        {status}
-                    </span>
-                );
-            }
-        },
+        // {
+        //     headerName: 'סטטוס',
+        //     field: 'status',
+        //     editable: () => activeTab !== 'recurring',
+        //     cellEditor: 'agSelectCellEditor',
+        //     cellEditorParams: {
+        //         values: statusOptions.map(x => x.status)
+        //     },
+        //     valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
+        //     valueSetter: (params) => {
+        //         if (params.newValue !== params.oldValue) {
+        //             if (params.data.personalDetails) {
+        //                 params.data.personalDetails.status = params.newValue;
+        //             } else {
+        //                 params.data.status = params.newValue;
+        //             }
+        //             return true;
+        //         }
+        //         return false;
+        //     },
+        //     cellRenderer: (params) => {
+        //         const status = params.value;
+        //         const option = statusOptions.find(opt => opt.status === status);
+        //         const color = option?.color || 'gray';
+        //         return (
+        //             <span style={{
+        //                 backgroundColor: color,
+        //                 width: '60px',
+        //                 color: 'black',
+        //                 padding: '2px 8px',
+        //                 display: 'inline-block'
+        //             }}>
+        //                 {status}
+        //             </span>
+        //         );
+        //     }
+        // },
 
         {
             headerName: 'פרטים', field: 'details', maxWidth: 100,
@@ -386,7 +398,7 @@ const Tasks = () => {
         },
         {
             headerName: "", field: "history", maxWidth: 50,
-            cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data._id)} style={{ cursor: "pointer" }} /></div>
+            cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data)} style={{ cursor: "pointer" }} /></div>
         },
         {
             headerName: "", field: "delete", maxWidth: 50,
@@ -404,6 +416,49 @@ const Tasks = () => {
                 </div>
             )
         });
+    }
+    if (activeTab !== 'recurring') {
+        const statusColumn ={
+        
+                headerName: 'סטטוס',
+                field: 'status',
+                editable: () => activeTab !== 'recurring',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                    values: statusOptions.map(x => x.status)
+                },
+                valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
+                valueSetter: (params) => {
+                    if (params.newValue !== params.oldValue) {
+                        if (params.data.personalDetails) {
+                            params.data.personalDetails.status = params.newValue;
+                        } else {
+                            params.data.status = params.newValue;
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+                cellRenderer: (params) => {
+                    const status = params.value;
+                    const option = statusOptions.find(opt => opt.status === status);
+                    const color = option?.color || 'gray';
+                    return (
+                        <span style={{
+                            backgroundColor: color,
+                            width: '60px',
+                            color: 'black',
+                            padding: '2px 8px',
+                            display: 'inline-block'
+                        }}>
+                            {status}
+                        </span>
+                    );
+                }
+            
+        };
+        const detailsIndex = baseColumns.findIndex(c => c.field === "details");
+        baseColumns.splice(detailsIndex, 0, statusColumn);
     }
 
     return baseColumns;
