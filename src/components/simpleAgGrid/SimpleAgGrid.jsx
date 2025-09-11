@@ -75,7 +75,8 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
             className="ag-theme-quartz custom-grid-rtl"
             style={{ 
                 height: '600px', 
-                width: '100%'
+                width: '100%',
+                
             }}
             dir="rtl"
         >            
@@ -84,7 +85,7 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 pagination={true}
-                paginationPageSize={15}
+                paginationPageSize={20}
                 paginationNumberFormatter={(params) => params.value.toLocaleString('he-IL')}
                 localeText={localeText}
                 gridOptions={gridOptions}

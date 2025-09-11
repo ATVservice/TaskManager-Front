@@ -27,6 +27,8 @@ const EmployeeManagement = () => {
     const [columns] = useState([
         {
             headerName: "שם משתמש", field: 'userName',
+            minWidth: 150,
+            flex: 1,
             cellStyle: () => {
                 return {
                     color: 'rgb(28, 125, 4)',
@@ -35,6 +37,8 @@ const EmployeeManagement = () => {
         },
         {
             headerName: 'שם פרטי', field: 'firstName',
+            minWidth: 150,
+            flex: 1,
             cellStyle: () => {
                 return {
                     color: 'rgb(4, 125, 54)',
@@ -43,6 +47,8 @@ const EmployeeManagement = () => {
         },
         {
             headerName: 'שם משפחה', field: 'lastName',
+            minWidth: 150,
+            flex: 1,
             cellStyle: () => {
                 return {
                     color: 'rgb(4, 105, 125)',
@@ -51,6 +57,8 @@ const EmployeeManagement = () => {
         },
         {
             headerName: 'אימייל', field: 'email',
+            minWidth: 250,
+            flex: 1,
             cellStyle: () => {
                 return {
                     color: 'rgb(61, 41, 193)',
@@ -59,6 +67,8 @@ const EmployeeManagement = () => {
         },
         {
             headerName: 'כניסה אחרונה', field: 'lastLogin',
+            minWidth: 150,
+            flex: 1,
             valueFormatter: (params) => {
                 if (!params.value) return '';
                 return new Date(params.value).toLocaleString('he-IL', {
@@ -76,26 +86,33 @@ const EmployeeManagement = () => {
             }
         },
         {
-            headerName: "", field: "target", maxWidth: 50,
+            headerName: "", field: "target",
+            maxWidth: 50,
+            minWidth: 50,
+            flex: 1,
 
-            cellRenderer: (params) => <div className='Target iconBtn' title='צפייה ביעדים'><Target className='Target iconBtn' size={17} color="black" onClick={() => toTarget(params.data._id)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='Target iconBtn' title='צפייה ביעדים'><Target  size={17} color="black" onClick={() => toTarget(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
      
         {
-            headerName: "", field: "edit", maxWidth: 50,
+            headerName: "", field: "edit", 
+            maxWidth: 50,
+            minWidth: 50,
+            flex: 1,
 
-            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil className='Pencil iconBtn' size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil  size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
         },
       
         {
-            headerName: "", field: "delete", maxWidth: 50,
-
+            headerName: "", field: "delete", 
+            maxWidth: 50,
+            minWidth: 50,
+            flex: 1,
             cellRenderer: (params) => <div className='Trash iconBtn' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }}/></div>
         },
      
    
-     
-     
+    
 
 
     ]);

@@ -66,7 +66,7 @@ const Register = ({ onClose, onSubmit, existingUser }) => {
           <label>שם משתמש</label>
         </div>
         <div className="user-box password-box">
-          <input 
+          <input
             type={showPassword ? "text" : "password"}
             value={password}
             required={!existingUser}
@@ -101,8 +101,7 @@ const Register = ({ onClose, onSubmit, existingUser }) => {
           <label>אימייל</label>
         </div>
         <div className="user-box">
-          <label>סוג הרשאה</label>
-          <select className='selectRole' value={role} required onChange={(e) => setRole(e.target.value)}>
+          <select className='selectRole' value={role} placeholder='fff' required onChange={(e) => setRole(e.target.value)}>
             <option value="עובד" >עובד</option>
             <option value="מנהל" >מנהל</option>
           </select>

@@ -210,7 +210,8 @@ const AdminDashboard = () => {
 
         <div className="admin-dashboard-card full-width">
           <h3>ביצועי עובדים</h3>
-          <p><strong> עמידה ביעדים אישים:</strong>  % {data.overallPersonalGoals} | <strong>עמידה ביעדים כלליים: </strong> % {data.overallGeneralGoals}</p>
+          <p><strong> עמידה ביעדים אישים:</strong>  % {data.overallGeneralGoals} | <strong>עמידה ביעדים כלליים: </strong> % {data.overallPersonalGoals}</p>
+
           <p>  </p>
           <Select
             options={employees}

@@ -1,4 +1,6 @@
 import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export async function getPerformance({ employeeId, rangeType, from, to, groupBy, token }) {
@@ -30,15 +32,15 @@ export async function getPerformance({ employeeId, rangeType, from, to, groupBy,
         }
 
 
-        const res = await fetch(`${API_URL}/api/dashboard/getUserPerformance?${params.toString()}`, {
+        const res = await api.get(`${API_URL}/api/dashboard/getUserPerformance`, {
+            params, 
             headers: {
                 Authorization: `Bearer ${token}`,
             },
             withCredentials: true
         });
 
-        if (!res.ok) throw new Error("שגיאה בטעינת הנתונים");
-        return await res.json();
+        return await res.data;
     } catch (err) {
         console.error(err);
         throw err;

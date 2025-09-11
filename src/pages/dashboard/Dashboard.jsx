@@ -145,7 +145,7 @@ const Dashboard = ({ employeeId }) => {
 
       <div className="dashboard-sections">
         {/* מסילות התקדמות   */}
-        <div className="dashboard-card">
+        <div className="dashboard-card half-width">
           <h3>פילוח משימות שהושלמו</h3>
           <div>
             <button className="goal-btn" onClick={() => targetViewing()}>
@@ -230,7 +230,7 @@ const Dashboard = ({ employeeId }) => {
           />
         )}
 
-        <div className="dashboard-card">
+        <div className="dashboard-card half-width">
           <h3>השוואה לימי עבודה קודמים</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={[
@@ -256,7 +256,7 @@ const Dashboard = ({ employeeId }) => {
 
 
         {/* גרף התקדמות */}
-        <div className="dashboard-card full-width">
+        <div className="dashboard-card full-width1">
           <h3>גרף התקדמות</h3>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={progressData}>

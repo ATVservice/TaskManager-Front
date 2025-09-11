@@ -210,8 +210,24 @@
   margin-left: 56%
 }
 
-.dashboard-card.full-width {
-  flex-basis: 100% !important;
-  max-width: 100% !important;
+.dashboard-card.half-width {
+  grid-column: span 1; /* כל חצי */
 }
 
+.dashboard-card.full-width1 {
+  grid-column: span 2; /* יתפרס על כל הרוחב */
+}
+
+/* ריספונסיביות: במסכים קטנים כולם אחד מתחת לשני */
+@media (max-width: 768px) {
+  .dashboard-sections {
+    display: grid;
+    grid-template-columns: 1fr; /* עמודה אחת */
+    gap: 20px;
+  }
+
+  .dashboard-card.half-width,
+  .dashboard-card.full-width1 {
+    grid-column: span 1; /* כולם לוקחים שורה מלאה */
+  }
+}

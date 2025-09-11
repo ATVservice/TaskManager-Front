@@ -6,6 +6,7 @@
     text-align: right;
     border-radius: 12px;
     overflow: hidden;
+    overflow-x: auto;   
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
@@ -99,6 +100,8 @@
     justify-content: center !important;
     align-items: center !important;
     gap: 10px !important;
+    height: 40px !important;
+
 }
 
 .custom-grid-rtl .ag-paging-button {
@@ -109,7 +112,7 @@
     border-radius: 6px !important;
     padding: 8px 12px !important;
     min-width: 36px !important;
-    height: 90% !important;
+    /* height: 90% !important; */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -134,10 +137,11 @@
     color: #4a5568 !important;
     font-weight: 500;
     margin: 0 15px !important;
-    background: rgba(102, 126, 234, 0.1) !important;
+    background: rgba(21, 46, 158, 0.1) !important;
     padding: 8px 12px !important;
     border-radius: 6px !important;
     border: 1px solid rgba(102, 126, 234, 0.2) !important;
+    
 }
 
 /* Show pagination buttons */
@@ -177,3 +181,4 @@
 .custom-grid-rtl .ag-center-cols-container {
     overflow: visible !important;
 }
+

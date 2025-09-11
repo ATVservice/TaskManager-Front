@@ -232,9 +232,12 @@ const Tasks = () => {
         if (task.frequencyType) {
             model = "RecurringTask";
         }
-        else if (task.taskModel) {
-          model = "TodayTask";
+        else if (task.taskModel=='Task') {
+          model = "Task";
         }
+        else if (task.taskModel=='RecurringTask') {
+            model = "RecurringTask";
+          }
         else {
             model = "Task";
         }
@@ -313,7 +316,7 @@ const Tasks = () => {
         const baseColumns = [
 
         {
-            headerName: "", field: "duplicate", maxWidth: 50,
+            headerName: "", field: "duplicate", maxWidth: 50, minWidth: 50,flex:1,
             cellRenderer: (params) => <div className='copy iconButton' title='שכפל'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
         {

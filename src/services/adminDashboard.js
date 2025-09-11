@@ -1,4 +1,6 @@
 import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const fetchGeneralSummary = async (token, filterOptions = {}) => {
@@ -18,7 +20,7 @@ export const fetchGeneralSummary = async (token, filterOptions = {}) => {
     
     const url = `${API_URL}/api/adminDashboard/getGeneralSummary${params.toString() ? `?${params.toString()}` : ''}`;
     
-    const res = await axios.get(url, {
+    const res = await api.get(url, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

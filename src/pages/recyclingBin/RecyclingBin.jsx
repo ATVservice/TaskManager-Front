@@ -12,16 +12,16 @@ import { getMoreDetails } from '../../services/taskService.js';
 
 const IconCellButton = ({ title, onClick, children }) => (
     <button
-      type="button"
-      className="icon-cell-btn"
-      title={title}
-      aria-label={title}
-      onClick={(e) => { e.stopPropagation(); onClick?.(e); }} // מונע בחירת שורה בטעות
+        type="button"
+        className="icon-cell-btn"
+        title={title}
+        aria-label={title}
+        onClick={(e) => { e.stopPropagation(); onClick?.(e); }} // מונע בחירת שורה בטעות
     >
-      {children}
+        {children}
     </button>
-  );
-  
+);
+
 const RecyclingBin = () => {
     const navigate = useNavigate();
 
@@ -43,11 +43,11 @@ const RecyclingBin = () => {
             headerName: "", field: "restore", maxWidth: 50,
             cellRenderer: (params) => (
                 <IconCellButton
-                title="שחזר משימה"
-                onClick={() => toRestoreTask(params.data._id)}
-              >
-                <Recycle size={20} color="#042486" />
-              </IconCellButton>
+                    title="שחזר משימה"
+                    onClick={() => toRestoreTask(params.data._id)}
+                >
+                    <Recycle size={20} color="#042486" />
+                </IconCellButton>
             )
         },
         { headerName: "מס'", field: 'taskId', maxWidth: 100 },
@@ -90,11 +90,11 @@ const RecyclingBin = () => {
             headerName: "", field: "history", maxWidth: 50,
             cellRenderer: (params) => (
                 <IconCellButton
-                title=" צפה בהיסטוריה"
-                onClick={() => toHistory(params.data._id)}
-              >
-                <History size={20} color="#042486" />
-              </IconCellButton>
+                    title=" צפה בהיסטוריה"
+                    onClick={() => toHistory(params.data._id)}
+                >
+                    <History size={20} color="#042486" />
+                </IconCellButton>
             )
         },
 
@@ -172,18 +172,24 @@ const RecyclingBin = () => {
 
 
     return (
-        <div>
-            <h2>סל מחזור</h2>
-            <TaskAgGrid
-                rowData={data}
-                columnDefs={columnDefs}
+        <div className='RecyclingBin-page-wrapper'>
+            <div className="RecyclingBin-header">
+                <Recycle className="title-icon-RecyclingBin" size={20} />
+                <h2 className="RecyclingBin-title">סל המיחזור</h2>
+            </div>
+            <div className="RecyclingBin-grid-container">
 
-            />
-            <TaskDetails
-                details={details}
-                isOpen={openDetails}
-                onClose={closeDetailsDiv}
-            />
+                <TaskAgGrid
+                    rowData={data}
+                    columnDefs={columnDefs}
+
+                />
+                <TaskDetails
+                    details={details}
+                    isOpen={openDetails}
+                    onClose={closeDetailsDiv}
+                />
+            </div>
         </div>
     );
 };
