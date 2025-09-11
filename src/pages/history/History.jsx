@@ -4,7 +4,8 @@ import { getRecurringTaskHistory, getTaskHistory } from '../../services/historyS
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
-
+import './History.css';
+import { Clock } from 'lucide-react';
 
 const History = () => {
     const { taskId, model } = useParams();
@@ -13,9 +14,35 @@ const History = () => {
     const [data, setData] = useState([]);
 
     const [columns] = useState([
-
         {
-            headerName: "תאריך", field: 'date',
+            headerName: 'שם משתמש',
+            field: 'userName',
+            minWidth: 120,
+            flex: 1,
+            valueGetter: (params) => params.data.user?.userName || ''
+        },
+        {
+            headerName: 'שדה ששונה',
+            field: 'field',
+            minWidth: 120,
+            flex: 1
+        },
+        {
+            headerName: 'לפני שינוי',
+            field: 'before',
+            minWidth: 150,
+            flex: 1
+        },
+        {
+            headerName: 'לאחר שינוי',
+            field: 'after',
+            minWidth: 150,
+            flex: 1
+        },
+        {
+            headerName: "תאריך",
+            field: 'date',
+            width: 180,
             valueFormatter: (params) => {
                 if (!params.value) return '';
                 return new Date(params.value).toLocaleString('he-IL', {
@@ -27,14 +54,10 @@ const History = () => {
                 });
             }
         },
-        { headerName: 'לאחר שינוי', field: 'after' },
-        { headerName: 'לפני שינוי', field: 'before' },
-        { headerName: 'שדה ששונה', field: 'field' },
-        {
-            headerName: 'שם משתמש',
-            valueGetter: (params) => params.data.user?.userName || ''
-        },
-
+   
+    
+     
+   
     ]);
 
     useEffect(() => {
@@ -46,16 +69,12 @@ const History = () => {
                     const [historyTask] = await Promise.all([
                         getTaskHistory(taskId, token, model),
                     ]);
-
                     setData(historyTask.history)
-                }
-                else {
-                        const [historyTask] = await Promise.all([
-                            getRecurringTaskHistory(taskId, token, model),
-                        ]);
-    
-                        setData(historyTask.history)
-                    
+                } else {
+                    const [historyTask] = await Promise.all([
+                        getRecurringTaskHistory(taskId, token, model),
+                    ]);
+                    setData(historyTask.history)
                 }
             } catch (err) {
                 alert(err.response?.data?.message || 'שגיאה בטעינת ההיסטוריה');
@@ -66,9 +85,16 @@ const History = () => {
     }, []);
 
     return (
-        <div>
-            <h2>היסטוריה</h2>
-            <SimpleAgGrid rowData={data} columnDefs={columns} />
+        <div className="history-page-wrapper">
+            <div className="history-header">
+                    <Clock className="title-icon" size={20}/>
+                
+                <h2 className="history-title">היסטורייה</h2>
+            </div>
+
+            <div className="history-grid-container">
+                <SimpleAgGrid rowData={data} columnDefs={columns} />
+            </div>
         </div>
     );
 };

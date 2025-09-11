@@ -5,18 +5,11 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import './SimpleAgGrid.css'
 
 const SimpleAgGrid = ({ rowData, columnDefs }) => {
-
     const defaultColDef = {
-        filter: 'agTextColumnFilter', 
+        filter: 'agTextColumnFilter',
         sortable: true,
         resizable: true,
         editable: false,
-        filterParams: {
-            defaultOption: 'contains', // רק "מכיל"
-            caseSensitive: false,
-            debounceMs: 0, 
-            suppressAndOrCondition: true 
-        },
         filterParams: {
             filterOptions: ['contains'],
             debounceMs: 0,
@@ -26,12 +19,12 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         },
         enableRowGroup: true,
         suppressMovable: true,
-        cellClass: 'copyable-cell', 
+        cellClass: 'copyable-cell',
         suppressKeyboardEvent: false,
     };
-     // הגדרות Localization לעברית
-     const localeText = {
-        // Pagination
+
+    // הגדרות Localization לעברית
+    const localeText = {
         page: 'עמוד',
         more: 'עוד',
         to: 'עד',
@@ -41,27 +34,16 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         first: 'ראשון',
         previous: 'קודם',
         loadingOoo: 'טוען...',
-
-        // Filter
         pageSizeSelectorLabel: 'גודל עמוד',
-        filterOoo: 'סנן...',     
+        filterOoo: 'סנן...',    
         searchOoo: 'סינון...',
         clearFilter: 'נקה',
         contains: 'מכיל',
-
-        // Filter Conditions
         andCondition: 'וגם',
         orCondition: 'או',
-
-        // Menu
         selectAll: 'בחר הכל',
-        searchOoo: 'חפש...',
         blanks: 'ריקים',
-
-        // Columns
         columns: 'עמודות',
-
-        // Tool Panel
         pivotMode: 'מצב Pivot',
         groups: 'קבוצות',
         values: 'ערכים',
@@ -69,25 +51,49 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         valueColumns: 'עמודות ערך',
         pivotColumns: 'עמודות Pivot',
         toolPanelButton: 'לוח כלים',
-
-        // Other
         noRowsToShow: 'אין שורות להצגה',
         rowGroupColumnsEmptyMessage: 'גרור כאן עמודות כדי לקבץ',
     };
 
+    const gridOptions = {
+        onGridReady: (params) => {
+            // מתחים את הטבלה לרוחב מלא
+            params.api.sizeColumnsToFit();
+        },
+        onFirstDataRendered: (params) => {
+            // מתחים את הטבלה לרוחב מלא
+            params.api.sizeColumnsToFit();
+        },
+        onGridSizeChanged: (params) => {
+            // מתחים את הטבלה כשהגודל משתנה
+            params.api.sizeColumnsToFit();
+        }
+    };
 
     return (
         <div
             className="ag-theme-quartz custom-grid-rtl"
-            style={{ height: '500px', width: '100%' }}
+            style={{ 
+                height: '600px', 
+                width: '100%'
+            }}
             dir="rtl"
-        >            <AgGridReact
+        >            
+            <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
                 pagination={true}
-                localeText={localeText} 
                 paginationPageSize={15}
+                paginationNumberFormatter={(params) => params.value.toLocaleString('he-IL')}
+                localeText={localeText}
+                gridOptions={gridOptions}
+                suppressHorizontalScroll={false}
+                enableRtl={true}
+                rowHeight={40}
+                headerHeight={40}
+                suppressPaginationPanel={false}
+                paginationAutoPageSize={false}
             />
         </div>
     );
