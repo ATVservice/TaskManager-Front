@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import axios from "axios";
 import { getUserNames } from "../../services/userService";
 import { AuthContext } from "../../context/AuthContext";
 import { createGoal } from "../../services/goalService";
