@@ -54,47 +54,42 @@ export default function ResetPassword() {
 
   return (
     <div className="reset-password-wrapper">
-      <div className="eset-password-container">
-        <h2 className="reset-password-title">איפוס סיסמה</h2>
-
-        {error && (
-          <div className="message-box error">{error}</div>
-        )}
-
-        {success ? (
-          <div className="message-box success">{success}</div>
-        ) : (
-          <form onSubmit={handleSubmit}>
-            <label className="reset-password-form">סיסמה חדשה</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="הכנס סיסמה חדשה"
-              disabled={loading}
-            />
-
-            <label>אישור סיסמה</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="הכנס שוב את הסיסמה"
-              disabled={loading}
-            />
-
-            <button
-              type="submit"
-              className="reset-password-button"
-              disabled={loading}
-            >
-              {loading ? "שולח..." : "אפס סיסמה"}
-            </button>
-
-            <p className="info-text" >הקישור תקף ל-30 דקות בלבד.</p>
-          </form>
-        )}
-      </div>
+    <div className="reset-password-container">
+      <h2 className="reset-password-title">איפוס סיסמה</h2>
+  
+      {error && <div className="message-box error">{error}</div>}
+  
+      {success ? (
+        <div className="message-box success">{success}</div>
+      ) : (
+        <form className="reset-password-form" onSubmit={handleSubmit}>
+          <label>סיסמה חדשה</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="הכנס סיסמה חדשה"
+            disabled={loading}
+          />
+  
+          <label>אישור סיסמה</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="הכנס שוב את הסיסמה"
+            disabled={loading}
+          />
+  
+          <button type="submit" className="reset-password-button" disabled={loading}>
+            {loading ? "שולח..." : "אפס סיסמה"}
+          </button>
+  
+          <p className="info-text">הקישור תקף ל-30 דקות בלבד.</p>
+        </form>
+      )}
     </div>
+  </div>
+  
   );
 }

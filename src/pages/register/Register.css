@@ -24,7 +24,7 @@ html {
   font-size: 24px;
 }
 
-.close-drawer {
+.close-form {
   position: absolute;
   top: 60px;
   left: 30px;
@@ -35,7 +35,7 @@ html {
   color: #e74c3c;
   transition: color 0.3s;
 }
-.close-drawer:hover {
+.close-form:hover {
   color: #999;
 }
 

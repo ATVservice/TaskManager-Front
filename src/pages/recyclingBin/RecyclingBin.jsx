@@ -9,6 +9,8 @@ import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import { useNavigate } from 'react-router-dom';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { getMoreDetails } from '../../services/taskService.js';
+import toast from 'react-hot-toast';
+
 
 
 
@@ -34,7 +36,7 @@ const RecyclingBin = () => {
             cellRenderer: (params) => (
                 <div className='recycle iconButton' title='צפה בהיסטוריה'>
                     <Recycle size={17} color="black" title="שחזר משימה"
-                    onClick={() => toRestoreTask(params.data._id)} />
+                        onClick={() => toRestoreTask(params.data._id)} />
                 </div>
             )
         },
@@ -115,7 +117,6 @@ const RecyclingBin = () => {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
-            alert("הבעיה פה");
             alert(error.response?.data?.message);
         }
     };
@@ -139,8 +140,9 @@ const RecyclingBin = () => {
 
         if (!isConfirmed) return;
         try {
-            fetchRestoreTask(token, password, taskId)
-            alert("שוחזר בהצלחה!")
+            await fetchRestoreTask(token, password, taskId)
+            toast.success("משימה שוחזרה בהצלחה!", { duration: 3000 });
+            // toast.error("שגיאה בעדכון המשימה");
             setData(prev => prev.filter(task => task._id !== taskId));
 
 

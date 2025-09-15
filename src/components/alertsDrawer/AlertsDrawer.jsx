@@ -3,17 +3,20 @@ import './AlertsDrawer.css';
 import { fetchUserAlerts, markAlertsRead } from '../../services/alertService';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import he from 'date-fns/locale/he';
+import { useNavigate } from 'react-router-dom';
 
 const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(false);
     const markedOnce = useRef(false);
+    const navigate = useNavigate();
+
 
     const loadAlerts = async () => {
         if (!token) return;
         setLoading(true);
         try {
-            const data = await fetchUserAlerts(token, { limit: 6, sortBy: 'createdAt', order: 'desc' });
+            const data = await fetchUserAlerts(token, { limit: 10, sortBy: 'createdAt', order: 'desc' });
             let list = data.alerts || [];
             list.sort((a, b) => {
                 if (a.resolved === b.resolved) {
@@ -39,34 +42,49 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     }, [open]);
 
 
-const markAllAsRead = async () => {
-    if (!token) return;
-    const toMark = alerts.filter(a => !a.resolved).map(a => a._id);
-    if (toMark.length === 0) return;
+    const markAllAsRead = async () => {
+        if (!token) return;
+        const toMark = alerts.filter(a => !a.resolved).map(a => a._id);
+        if (toMark.length === 0) return;
 
-    try {
-        await markAlertsRead(token, toMark);
-        setAlerts(prev => prev.map(a => toMark.includes(a._id) ? { ...a, resolved: true } : a));
-        if (onMarkedRead) onMarkedRead();
-    } catch (err) {
-        alert(err.response?.data?.message || 'שגיאה בסימון התרעה');
-        console.error('Failed to mark alerts read', err);
+        try {
+            await markAlertsRead(token, toMark);
+            setAlerts(prev => prev.map(a => toMark.includes(a._id) ? { ...a, resolved: true } : a));
+            if (onMarkedRead) onMarkedRead();
+        } catch (err) {
+            alert(err.response?.data?.message || 'שגיאה בסימון התרעה');
+            console.error('Failed to mark alerts read', err);
+        }
+    };
+
+    const handleClose = () => {
+        markAllAsRead();
+        onClose();
+    };
+
+    const seeAllAlerts = () => {
+        handleClose()
+        navigate('/allAlerts', { target: '_blank' });
     }
-};
-
-const handleClose = () => {
-    markAllAsRead();
-    onClose();
-};
 
 
-    const unreadCount = alerts.filter(a => !a.resolved).length;
 
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
             <div className="alerts-header">
-                <h3>התרעות ({unreadCount})</h3>
-                <button className="close-drawer"  onClick={handleClose}>X</button>
+                <h3>התרעות</h3>
+                <a
+                    onClick={(e) => {
+                        e.preventDefault();
+                        seeAllAlerts();
+                    }}
+                    className='allAlerts'
+                   
+                    href="#"
+                >
+                    לכל ההתרעות
+                </a>
+                <button className="close-drawer" onClick={handleClose}>X</button>
             </div>
 
             <div className="alerts-list">
@@ -75,22 +93,23 @@ const handleClose = () => {
 
                 {alerts.map((a) => {
                     const task = a.task || {};
-                    const titleLine = `משימה ${task.taskId || ''} - ${task.title || '—'}`;
+
                     const typeLine = a.type || '';
                     const timeAgo = a.createdAt ? formatDistanceToNowStrict(parseISO(a.createdAt), { locale: he, addSuffix: true }) : '';
 
                     return (
                         <div key={a._id} className={`alert-item ${a.resolved ? 'read' : 'unread'}`}>
                             <div className="left-indicator">
-                                <div className="avatar-circle">{(task.taskId || '?') % 100}</div>
+                                {task.taskId && <div className="avatar-circle">{(task.taskId || '?') % 100}</div>}
                             </div>
                             <div className="alert-body">
                                 <div className="alert-top">
-                                    <span className="alert-title">{titleLine}</span>
+                                    <span className="alert-title">{task.title || ''}</span>
                                     <span className="alert-time">{timeAgo}</span>
                                 </div>
                                 <div className="alert-type">{typeLine}</div>
                                 {a.details && <div className="alert-details">{a.details}</div>}
+
                             </div>
                         </div>
                     );

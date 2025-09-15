@@ -17,6 +17,7 @@ import ResetPassword from '../pages/resetPassword/ResetPassword';
 import EmployeeManagement from '../pages/employeeManagement/EmployeeManagement';
 import AdminDashboard from '../pages/adminDashboard/AdminDashboard';
 import Report from '../pages/report/report/Report';
+import AlertsPage from '../pages/alertsPage/AlertsPage';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
@@ -38,6 +39,9 @@ const AppRoutes = () => {
             <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
             <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
             <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+            <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
+
+
 
             {user.role === 'מנהל' && (
               <>

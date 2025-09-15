@@ -15,7 +15,7 @@ const NavBar = () => {
   const loadUnreadCount = async () => {
     if (!user) return;
     try {
-      const data = await fetchUserAlerts(user.token, { limit: 50 });
+      const data = await fetchUserAlerts(user.token, { limit: 100 });
       const unread = data.alerts ? data.alerts.filter(a => !a.resolved).length : 0;
       setUnreadCount(unread);
     } catch (err) {
@@ -82,8 +82,6 @@ const NavBar = () => {
         }}
         token={user?.token}
         onMarkedRead={loadUnreadCount} />
-
-
     </>
   );
 };

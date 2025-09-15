@@ -56,7 +56,7 @@ const Register = ({ onClose, onSubmit, existingUser }) => {
   return (
     <div className="login-box">
       <h2>{existingUser ? 'עריכת עובד' : 'הוספת עובד'}</h2>
-      <button className="close-drawer" onClick={handleClose}>X</button>
+      <button className="close-form" onClick={handleClose}>X</button>
       <form onSubmit={handleSubmit}>
         <div className="user-box">
           <input type="text"

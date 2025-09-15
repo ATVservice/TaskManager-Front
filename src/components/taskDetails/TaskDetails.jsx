@@ -20,7 +20,7 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                 return (
                     <p>
                         <strong>
-                            {details.frequencyDetails?.includingFriday ? "ימים א'-ו" : "ימים א'-ה"}
+                            {details.frequencyDetails?.includingFriday ? "'ימים א'-ו" : "'ימים א'-ה"}
                         </strong>
                     </p>
                 );

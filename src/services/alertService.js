@@ -1,7 +1,7 @@
 import axios from 'axios';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
-export const fetchUserAlerts = async (token, { limit = 10, skip = 0, sortBy = 'createdAt', order = 'desc', resolved } = {}) => {
+export const fetchUserAlerts = async (token, { limit = 30, skip = 0, sortBy = 'createdAt', order = 'desc', resolved } = {}) => {
   const params = new URLSearchParams();
   if (resolved !== undefined) params.append('resolved', resolved);
   params.append('limit', limit);

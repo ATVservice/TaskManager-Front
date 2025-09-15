@@ -26,9 +26,45 @@ import { fetchAddProject } from '../../services/projectService.js';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
+const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString('he-IL');
+};
 // ✨ פונקציה לחיפוש חכם
 const enrichTasksWithSearchText = (tasks) => {
     return tasks.map(task => {
+        const frequencyParts = [];
+        if (task.frequencyType) {
+            frequencyParts.push(task.frequencyType);
+            if (task.frequencyDetails) {
+                switch (task.frequencyType) {
+                    case 'יומי':
+                        frequencyParts.push(task.frequencyDetails?.includingFriday ? "'א'-ו" : "'א'-ה");
+                        break;
+                    case 'יומי פרטני':
+                        if (task.frequencyDetails.days?.length) {
+                            const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+                            frequencyParts.push(...task.frequencyDetails.days.map(d => daysOfWeek[d]));
+                        }
+                        break;
+                    case 'חודשי':
+                        if (task.frequencyDetails.dayOfMonth)
+                            frequencyParts.push(`יום בחודש ${task.frequencyDetails.dayOfMonth}`);
+                        break;
+                        case 'שנתי':
+                            const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+                                            'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+                            if (task.frequencyDetails.day)
+                                frequencyParts.push(`יום ${task.frequencyDetails.day}`);
+                            if (task.frequencyDetails.month)
+                                frequencyParts.push(`חודש ${months[task.frequencyDetails.month - 1]}`);
+                            break;
+                        
+                    default:
+                        break;
+                }
+            }
+        }
         const searchParts = [
             task.taskId,
             task.title,
@@ -36,13 +72,22 @@ const enrichTasksWithSearchText = (tasks) => {
             task.project?.name,
             task.status,
             task.statusNote,
+            task.daysOpen,
             task.failureReason,
             task.importance,
             task.subImportance,
+            task.dueDate,
+            task.cancelReason,
+            task.failureReason?.option,
+            task.failureReason?.customText,
+            formatDate(task.dueDate),
+            formatDate(task.finalDeadline),
             task.creator?.userName,
+            task.frequencyType,
             task.mainAssignee?.userName,
             ...(task.assignees?.map(a => a.userName) || []),
-            task.organization?.name
+            task.organization?.name,
+            ...frequencyParts,
         ];
         return {
             ...task,
@@ -314,15 +359,17 @@ const Tasks = () => {
                 headerName: "מס'",
                 field: 'taskId',
                 maxWidth: 100,
+                flex: 0, // עמודה קבועה
                 cellStyle: () => ({
                     color: 'rgb(15, 164, 157)',
                     fontWeight: '600'
                 })
             },
-            // 2. כותרת
+            // 2. כותרת - תקבל יותר מקום
             {
                 headerName: 'כותרת',
                 field: 'title',
+                flex: 2, // תקבל פי 2 יותר מקום מעמודות רגילות
                 cellStyle: () => ({
                     color: 'rgb(29, 136, 163)',
                     fontWeight: '500'
@@ -332,6 +379,7 @@ const Tasks = () => {
             {
                 headerName: 'אחראי ראשי',
                 valueGetter: (params) => params.data.mainAssignee?.userName || '',
+                flex: 1,
                 cellStyle: () => ({
                     color: 'rgb(86, 54, 161)',
                     fontWeight: '500'
@@ -341,18 +389,21 @@ const Tasks = () => {
             {
                 headerName: 'עמותה',
                 valueGetter: (params) => params.data.organization?.name || '',
+                flex: 1,
                 cellStyle: () => ({
                     color: 'rgb(29, 51, 163)',
                     fontWeight: '500'
                 })
             }
         ];
-
+    
         // 5. הוספת עמודת סטטוס (רק אם לא recurring)
         if (activeTab !== 'recurring') {
             baseColumns.push({
                 headerName: 'סטטוס',
                 field: 'status',
+                flex: 1,
+                maxWidth: 120,
                 editable: () => activeTab !== 'recurring',
                 cellEditor: 'agSelectCellEditor',
                 cellEditorParams: {
@@ -392,42 +443,45 @@ const Tasks = () => {
                 }
             });
         }
-
+    
         // 6. פרטים
         baseColumns.push({
             headerName: 'פרטים',
             field: 'details',
-            maxWidth: 100,
+            width: 100,
+            flex: 0,
             cellRenderer: (params) => (
                 <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>
                     לפרטים
                 </button>
             )
         });
-
+    
         // 7. שכפול
         baseColumns.push({
-                        headerName: "", 
-                        field: "duplicate", 
-                        width: 50,
-                        minWidth: 50,
-                        maxWidth: 50,
-                        suppressSizeToFit: true,
-                        sortable: false,
-                        filter: false,
-                        resizable: false,
-                        cellRenderer: (params) => (
-                            <div className='copy iconButton' title='שכפל משימה'>
-                                <Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} />
-                            </div>
-                        )
-                    });
+            headerName: "", 
+            field: "duplicate", 
+            width: 50,
+            flex: 0,
+            minWidth: 50,
+            maxWidth: 50,
+            suppressSizeToFit: true,
+            sortable: false,
+            filter: false,
+            resizable: false,
+            cellRenderer: (params) => (
+                <div className='copy iconButton' title='שכפל משימה'>
+                    <Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} />
+                </div>
+            )
+        });
 
         // 8. היסטוריה
         baseColumns.push({
             headerName: "",
             field: "history",
             width: 50,
+            flex: 0,
             minWidth: 50,
             maxWidth: 50,
             suppressSizeToFit: true,
@@ -439,13 +493,14 @@ const Tasks = () => {
                     <History size={17} color="black" onClick={() => toHistory(params.data)} />
                 </div>
             )
-        },);
+        });
 
         // 9. מחיקה
         baseColumns.push({
             headerName: "",
             field: "delete",
             width: 50,
+            flex: 0,
             minWidth: 50,
             maxWidth: 50,
             suppressSizeToFit: true,
@@ -462,21 +517,22 @@ const Tasks = () => {
         // 10. עדכון (רק אם לא today tabs)
         if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
             baseColumns.push({
-                            headerName: "", 
-                            field: "edit", 
-                            width: 50,
-                            minWidth: 50,
-                            maxWidth: 50,
-                            suppressSizeToFit: true,
-                            sortable: false,
-                            filter: false,
-                            resizable: false,
-                            cellRenderer: (params) => (
-                                <div className='pencil iconButton' title='ערוך משימה'>
-                                    <Pencil size={17} color="black" onClick={() => toEdit(params.data)} />
-                                </div>
-                            )
-                        });
+                headerName: "", 
+                field: "edit", 
+                width: 50,
+                flex: 0,
+                minWidth: 50,
+                maxWidth: 50,
+                suppressSizeToFit: true,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <div className='pencil iconButton' title='ערוך משימה'>
+                        <Pencil size={17} color="black" onClick={() => toEdit(params.data)} />
+                    </div>
+                )
+            });
         }
 
         return baseColumns;
