@@ -1,0 +1,184 @@
+/* SimpleAgGrid.css - Clean Professional Style */
+
+.custom-grid-rtl {
+    font-family: "Segoe UI", "Alef", sans-serif !important;
+    direction: rtl;
+    text-align: right;
+    border-radius: 12px;
+    overflow: hidden;
+    overflow-x: auto;   
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* Header Styling */
+.custom-grid-rtl .ag-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-bottom: none !important;
+}
+
+.custom-grid-rtl .ag-header-cell {
+    background: transparent !important;
+    border-left: 1px solid rgba(255,255,255,0.2) !important;
+    border-right: none !important;
+}
+
+.custom-grid-rtl .ag-header-cell:first-child {
+    border-right: none !important;
+}
+
+.custom-grid-rtl .ag-header-cell:last-child {
+    border-left: none !important;
+}
+
+.custom-grid-rtl .ag-header-cell-label {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 14px;
+    color: white !important;
+    height: 100% !important;
+    align-items: center;
+    display: flex !important;
+}
+
+.custom-grid-rtl .ag-header-cell-text {
+    color: white !important;
+}
+
+.custom-grid-rtl .ag-icon {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+/* Cell Styling */
+.custom-grid-rtl .ag-cell {
+    text-align: right !important;
+    font-size: 13px;
+    color: #4a5568 !important;
+    padding: 10px !important;
+    border-left: 1px solid #e2e8f0 !important;
+    border-right: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.custom-grid-rtl .ag-cell:first-child {
+    border-right: none !important;
+}
+
+.custom-grid-rtl .ag-cell:last-child {
+    border-left: none !important;
+}
+
+/* Row Styling */
+.custom-grid-rtl .ag-row {
+    border: none !important;
+    transition: background-color 0.2s ease;
+    height: 40px !important;
+    line-height: 40px !important;
+}
+
+.custom-grid-rtl .ag-row:nth-child(even) {
+    background-color: #f8fafc !important;
+}
+
+.custom-grid-rtl .ag-row:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08)) !important;
+}
+
+.custom-grid-rtl .ag-row:nth-child(even):hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12)) !important;
+}
+
+
+/* Pagination */
+.custom-grid-rtl .ag-paging-panel {
+    background: #f8fafc !important;
+    border-top: 2px solid #e2e8f0 !important;
+    padding: 12px !important;
+    direction: rtl;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    height: 40px !important;
+
+}
+
+.custom-grid-rtl .ag-paging-button {
+    color: #4a5568 !important;
+    font-weight: 500;
+    background: #6ea7e0 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    padding: 8px 12px !important;
+    min-width: 36px !important;
+    /* height: 90% !important; */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.custom-grid-rtl .ag-paging-button:not(.ag-disabled):hover {
+    background: rgba(102, 126, 234, 0.1) !important;
+    border-color: #667eea !important;
+    color: #667eea !important;
+}
+
+.custom-grid-rtl .ag-paging-button.ag-disabled {
+    background: #6ea7e0 !important;
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+    border-color: #e5e7eb !important;
+}
+
+.custom-grid-rtl .ag-paging-description {
+    color: #4a5568 !important;
+    font-weight: 500;
+    margin: 0 15px !important;
+    background: rgba(21, 46, 158, 0.1) !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(102, 126, 234, 0.2) !important;
+    
+}
+
+/* Show pagination buttons */
+.custom-grid-rtl .ag-paging-button[ref="btFirst"],
+.custom-grid-rtl .ag-paging-button[ref="btPrevious"],
+.custom-grid-rtl .ag-paging-button[ref="btNext"],
+.custom-grid-rtl .ag-paging-button[ref="btLast"] {
+    display: flex !important;
+}
+
+/* Filter */
+.custom-grid-rtl .ag-filter-toolpanel-search,
+.custom-grid-rtl .ag-text-field-input {
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+/* Selection and copying */
+.custom-grid-rtl .copyable-cell {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+}
+
+/* Root wrapper */
+.custom-grid-rtl .ag-root-wrapper {
+    border: none !important;
+}
+
+/* Fix for text visibility */
+.custom-grid-rtl .ag-cell-value {
+    overflow: visible !important;
+    text-overflow: visible !important;
+    white-space: nowrap !important;
+}
+
+.custom-grid-rtl .ag-center-cols-container {
+    overflow: visible !important;
+}
+

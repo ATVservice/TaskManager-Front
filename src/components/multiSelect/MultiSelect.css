@@ -1,0 +1,76 @@
+.select-multiple {
+    position: relative;
+    font-family: sans-serif;
+    width: 300px;
+  }
+  
+  .active-area {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    cursor: pointer;
+    background-color: #fff;
+  }
+  
+  .active-area .selected-tag {
+    background: #eee;
+    border-radius: 4px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+  }
+  
+  .active-area .selected-tag button {
+    background: transparent;
+    border: none;
+    margin-left: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+  }
+  
+  .placeholder {
+    color: #aaa;
+    font-size: 14px;
+  }
+  
+  .arrow {
+    margin-left: auto;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #333;
+  }
+  
+  .options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ccc;
+    border-top: none;
+    z-index: 5;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .options li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .options li:hover {
+    background-color: #f0f0f0;
+  }
+  

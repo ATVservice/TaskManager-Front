@@ -1,0 +1,68 @@
+/* TaskDetails.css */
+.side-popup {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+    direction: rtl;
+}
+
+.side-popup.hidden {
+    transform: translateX(100%);
+}
+
+.side-popup h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.2em;
+    border-bottom: 2px solid #042486;
+    padding-bottom: 10px;
+}
+
+.side-popup p {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    color: #444;
+}
+
+.side-popup p strong {
+    color: #042486;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #042486;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+    background: #0a3aa0;
+}
+
+/* עבור מובייל */
+@media (max-width: 768px) {
+    .side-popup {
+        width: 100%;
+    }
+}

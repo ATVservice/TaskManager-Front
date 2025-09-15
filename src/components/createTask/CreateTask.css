@@ -1,0 +1,355 @@
+:root {
+    --primary-bg-color: #f0f2f5; /* גוון אפור בהיר לרקע כללי */
+    --secondary-bg-color: #ffffff; /* לבן לרקע של טפסים/כרטיסים */
+    --text-color: #333333; /* אפור כהה לטקסט רגיל */
+    --header-color: #0d47a1; /* כחול כהה לכותרות */
+    --accent-color: #42a5f5; /* כחול בהיר להדגשות/כפתורים */
+    --border-color: #cccccc; /* אפור בהיר לגבולות */
+    --input-bg-color: #ffffff; /* רקע לשדות קלט */
+    --focus-border-color: #0d47a1; /* גבול כחול בפוקוס */
+    --button-bg-color: #0d47a1; /* רקע כפתור כחול כהה */
+    --button-text-color: #ffffff; /* טקסט כפתור לבן */
+    --error-color: #d32f2f; /* אדום לשגיאות */
+  }
+  
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--primary-bg-color);
+    margin: 0;
+    padding: 0;
+    direction: rtl; /* יישור לימין עבור עברית */
+  }
+ 
+  .create-task-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 3px;
+    background-color: var(--secondary-bg-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color);
+  }
+  
+  .title-h4 {
+    text-align: center;
+    color: var(--header-color);
+    margin-bottom: 30px;
+    font-size: 1.2em;
+    font-weight: 600;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 10px;
+    display: inline-block;
+    width: 100%;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .form-row {
+    display: flex;
+    flex-wrap: wrap; /* מאפשר שבירת שורות */
+    gap: 20px; /* רווח בין הקבוצות באותה שורה */
+    justify-content: flex-start; /* יישור לשמאל בדף RTL */
+  }
+  
+  /* כלל חדש: קביעת רוחב קבוע לכל form-group בתוך form-row */
+  /* זה יפתור את בעיית "הימרחות" השדות כשאחרים נעלמים */
+  .form-row .form-group {
+    flex: 0 0 calc(33.333% - 20px); /* רוחב קבוע לשלושה בשורה */
+    /* flex-grow: 0 - מונע מהאלמנט לגדול ולמלא מקום פנוי */
+    /* flex-shrink: 0 - מונע מהאלמנט להתכווץ פחות מ-flex-basis */
+    position: relative;
+    margin-bottom: 15px;
+    min-width: 150px;
+  }
+  
+  /* למען אחידות עם form-group הכללי */
+  .form-group {
+    position: relative;
+    margin-bottom: 15px; /* רווח בין קבוצות באותה עמודה במידה ויש שדות בודדים */
+    min-width: 280px; /* רוחב מינימלי למניעת הצטמקות יתר */
+  }
+  
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 1em;
+  }
+  
+  .form-group input[type="text"],
+  .form-group input[type="date"],
+  .form-group select,
+  .form-group input:not([type="checkbox"]) {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-bg-color);
+    font-size: 1em;
+    color: var(--text-color);
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--focus-border-color);
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.2);
+    outline: none;
+  }
+  
+  /* Float label effect for input fields and select */
+  .form-group input:not([type="checkbox"]) + label,
+  .form-group input[type="date"] + label,
+  .form-group select + label {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    color: var(--text-color);
+    pointer-events: none;
+    transition: all 0.2s ease-out;
+    font-size: 1em;
+    background-color: transparent;
+    padding: 0 5px;
+  }
+  
+  .form-group input:focus:not([type="checkbox"]) + label,
+  .form-group input:not([type="checkbox"]):valid + label,
+  .form-group input[type="date"]:valid + label,
+  .form-group select:focus + label,
+  .form-group select:valid + label {
+    top: -10px;
+    right: 10px;
+    font-size: 0.8em;
+    color: var(--focus-border-color);
+    background-color: var(--secondary-bg-color);
+    padding: 0 5px;
+  }
+  
+  /* --- סגנונות ספציפיים לרכיב ה-MultiSelect שלך --- */
+  
+  /* הקונטיינר הראשי של MultiSelect */
+  .form-group .select-multiple {
+    width: 100%; /* חשוב! ודא שהוא ממלא את הרוחב של ה-form-group */
+    /* נסיר כאן margin auto ו-width קבוע שמתנגש */
+    /* margin: 0; */
+    /* auto-width: unset; */
+    font-family: inherit; /* יורש את הגופן מה-body */
+    position: relative; /* נשאר, חשוב לרשימה הנפתחת */
+    /* margin-bottom: 15px; */ /* ה-form-group כבר מטפל בזה */
+  }
+  
+  /* האזור הפעיל (תיבת הבחירה עצמה) */
+  .form-group .select-multiple .active-area {
+    border: 1px solid var(--border-color); /* משתמש בצבע הגבול הכללי */
+    border-radius: 6px; /* פינות מעוגלות אחידות */
+    padding: 8px 12px; /* פאדינג אחיד */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px; /* גובה מינימלי אחיד לשדות קלט */
+    cursor: pointer;
+    background-color: var(--input-bg-color); /* רקע אחיד לשדות קלט */
+    box-sizing: border-box; /* וודא שהפאדינג לא מגדיל את הרוחב */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease; /* אנימציה בפוקוס */
+  }
+  
+  /* הוספת סגנונות לפוקוס על ה-MultiSelect */
+  .form-group .select-multiple .active-area:focus-within { /* כאשר אלמנט פנימי בפוקוס */
+    border-color: var(--focus-border-color);
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.2);
+    outline: none;
+  }
+  
+  
+  /* תגיות הבחירה שנבחרו בתוך התיבה */
+  .form-group .select-multiple .selected-tag {
+    background: #e0e0e0; /* גוון אפור בהיר יותר, קלאסי */
+    color: var(--text-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    display: flex;
+    align-items: center;
+    font-size: 0.9em; /* גודל פונט מעט קטן יותר */
+  }
+  
+  .form-group .select-multiple .selected-tag button {
+    background: transparent;
+    border: none;
+    margin-left: 0; /* ביטול מרווח שמאלה */
+    cursor: pointer;
+    font-size: 1.1em; /* כפתור סגירה גדול יותר וברור */
+    line-height: 1;
+    color: #666; /* צבע אפור לכפתור הסגירה */
+  }
+  .form-group .select-multiple .selected-tag button:hover {
+      color: #333;
+  }
+  
+  
+  /* טקסט placeholder */
+  .form-group .select-multiple .placeholder {
+    color: #888; /* גוון אפור ביניים, יותר קלאסי */
+    font-size: 1em; /* גודל פונט אחיד לשדות קלט */
+    padding-right: 4px; /* רווח קטן מתחילת השדה */
+  }
+  
+  /* חץ הרשימה הנפתחת */
+  .form-group .select-multiple .arrow {
+    margin-right: auto; /* דוחף את החץ ימינה ב-RTL */
+    margin-left: 0; /* מבטל מרווח שמאלה מקורי */
+    width: 0;
+    height: 0;
+    border-right: 6px solid transparent; /* היפוך כיוון החץ */
+    border-left: 6px solid transparent;
+    border-top: 6px solid var(--text-color); /* צבע החץ */
+  }
+  
+  /* רשימת האפשרויות הנפתחת */
+  .form-group .select-multiple .options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--secondary-bg-color); /* רקע לבן אחיד */
+    border: 1px solid var(--border-color); /* גבול אחיד */
+    border-top: none;
+    z-index: 10; /* Z-index גבוה כדי שיופיע מעל אלמנטים אחרים */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-bottom-left-radius: 6px; /* פינות מעוגלות גם לרשימה הנפתחת */
+    border-bottom-right-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* צל עדין */
+  }
+  
+  .form-group .select-multiple .options li {
+    padding: 10px 15px; /* פאדינג אחיד כמו שדות הקלט */
+    cursor: pointer;
+    color: var(--text-color);
+  }
+  
+  .form-group .select-multiple .options li:hover {
+    background-color: var(--primary-bg-color); /* רקע בהיר בהדגשה */
+  }
+  
+  /* --- סוף סגנונות MultiSelect --- */
+  
+  
+  .form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  
+  .form-group label[for="isRecurring"] {
+    display: inline-block;
+    margin-bottom: 0;
+  }
+  
+  /* סגנון לכפתורים */
+  button[type="submit"] {
+    display: block;
+    width: 200px;
+    padding: 15px 25px;
+    margin: 3px auto 1px auto;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  button[type="submit"]:hover {
+    background-color: var(--accent-color);
+    transform: translateY(-2px);
+  }
+  
+  button[type="submit"]:active {
+    transform: translateY(0);
+  }
+  
+  /* סגנונות ספציפיים לפרטי תדירות */
+  /* הוספתי קלאס עוטף ל frequencyDetails - ראה הערה ב-HTML */
+  .frequency-details-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 1px dashed var(--border-color);
+  }
+  
+  .frequency-details-section label {
+    font-size: 0.9em;
+    color: #555;
+  }
+  
+  /* רספונסיביות */
+  @media (max-width: 992px) {
+    .form-row .form-group {
+      flex: 0 0 calc(50% - 20px); /* 2 עמודות בטאבלטים */
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .create-task-container {
+      margin: 20px;
+      padding: 20px;
+    }
+  
+    h4 {
+      font-size: 1.8em;
+    }
+  
+    .form-row .form-group {
+      flex: 0 0 100%; /* עמודה אחת במובייל */
+      margin-bottom: 20px;
+    }
+  
+    .form-row {
+      flex-direction: column; /* שדות אחד מתחת לשני במובייל */
+      gap: 0;
+    }
+  
+    button[type="submit"] {
+      width: 100%;
+      padding: 2px 4px;
+      font-size: 1em;
+    }
+  }
+  
+  /* התאמות ל RTL */
+  .form-group input:not([type="checkbox"]) + label,
+  .form-group input[type="date"] + label,
+  .form-group select + label {
+    right: 15px;
+    left: auto;
+  }
+  
+  .form-group input:focus:not([type="checkbox"]) + label,
+  .form-group input:not([type="checkbox"]):valid + label,
+  .form-group input[type="date"]:valid + label,
+  .form-group select:focus + label,
+  .form-group select:valid + label {
+    top: -10px;
+    right: 10px;
+    left: auto;
+  }
