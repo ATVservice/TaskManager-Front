@@ -115,6 +115,8 @@ const Association = () => {
   };
 
   return (
+    <div className="association-page-wrapper">
+
     <div className="association-container">
       <h2>רשימת עמותות</h2>
       <button className="association-btn primary add-btn" onClick={() => setOpenAddPopup(true)}>
@@ -233,6 +235,8 @@ const Association = () => {
         </div>
       )}
     </div>
+    </div>
+
   );
 };
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../src/context/AuthContext';
@@ -12,19 +12,17 @@ export default function useSessionManager() {
 
   function logoutUser() {
     logout();
-    // navigate('/login', { state: { message: 'החיבור פג עקב חוסר פעילות' } });
     navigate('/login?message=timeout');
-
   }
 
-  function resetInactivityTimer() {
+  const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current);
     }
     inactivityTimer.current = setTimeout(() => {
       logoutUser();
     }, SIX_HOURS);
-  }
+  }, [logout, navigate]);
 
   useEffect(() => {
     const events = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart'];
@@ -41,7 +39,7 @@ export default function useSessionManager() {
       });
       if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
     };
-  }, []);
+  }, [resetInactivityTimer]);
 
   return null;
 }

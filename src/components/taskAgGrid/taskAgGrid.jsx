@@ -2,23 +2,25 @@ import React, { useRef } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
+import { motion } from "framer-motion";
+
 import './taskAgGrid.css'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
+const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
     const gridRef = useRef();
 
     const defaultColDef = {
-        filter: 'agTextColumnFilter', 
+        filter: 'agTextColumnFilter',
         sortable: true,
         resizable: true,
         editable: false,
         filterParams: {
             defaultOption: 'contains', // רק "מכיל"
             caseSensitive: false,
-            debounceMs: 0, 
-            suppressAndOrCondition: true 
+            debounceMs: 0,
+            suppressAndOrCondition: true
         },
         filterParams: {
             filterOptions: ['contains'],
@@ -29,7 +31,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
         },
         enableRowGroup: true,
         suppressMovable: true,
-        cellClass: 'copyable-cell', 
+        cellClass: 'copyable-cell',
         suppressKeyboardEvent: false,
     };
 
@@ -48,7 +50,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
 
         // Filter
         pageSizeSelectorLabel: 'גודל עמוד',
-        filterOoo: 'סנן...',     
+        filterOoo: 'סנן...',
         searchOoo: 'סינון...',
         clearFilter: 'נקה',
         contains: 'מכיל',
@@ -81,24 +83,33 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
 
     return (
         <div className="ag-theme-alpine">
-             <AgGridReact
-                    ref={gridRef}
-                    rowData={rowData}
-                    columnDefs={columnDefs}
-                    defaultColDef={defaultColDef}
-                    pagination={true}
-                    enableRtl={true}
-                    paginationPageSize={20}
-                    domLayout="autoHeight"
-                    animateRows={true}
-                    onCellValueChanged={onCellValueChanged}
-                    singleClickEdit={true}
-                    localeText={localeText} 
-                    rowClassRules={{
-                        'drawer-task': params => params.data.importance === 'מגירה'
-                    }}
-                    
-                />
+            <motion.div
+                key={rowData?.length} // כדי שיכיר בשינויי נתונים
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                style={{ height: "100%", width: "100%" }}
+            >
+            <AgGridReact
+                ref={gridRef}
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                pagination={true}
+                enableRtl={true}
+                paginationPageSize={20}
+                domLayout="autoHeight"
+                animateRows={true}
+                onCellValueChanged={onCellValueChanged}
+                singleClickEdit={true}
+                localeText={localeText}
+                rowClassRules={{
+                    'drawer-task': params => params.data.importance === 'מגירה'
+                }}
+
+            />
+            </motion.div>
         </div>
     );
 };

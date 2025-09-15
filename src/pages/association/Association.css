@@ -1,15 +1,24 @@
 html, body {
     min-height: 100%;
   }
-.association-container {
+  .association-page-wrapper {
+    display: flex;
+    justify-content: center; 
+    align-items: center;   
+    min-height: 80vh;      
+    padding: 1rem;           
+    background: #f0f2f5;   
+  }
+  
+  .association-container {
+    width: 100%;
     max-width: 900px;
-    margin: 0 auto;
     padding: 30px 20px;
-    font-family: Arial, sans-serif;
-    direction: rtl;
     background: #f9f9f9;
     border-radius: 10px;
-}
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  
 
 .association-container h2 {
     text-align: center;
