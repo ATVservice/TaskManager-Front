@@ -11,14 +11,10 @@ import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { getMoreDetails } from '../../services/taskService.js';
 import toast from 'react-hot-toast';
 
-
-
-
 const RecyclingBin = () => {
     const navigate = useNavigate();
 
     const { user } = useContext(AuthContext);
-
     const [data, setData] = useState([]);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
@@ -28,7 +24,6 @@ const RecyclingBin = () => {
         { status: "הושלם", color: 'green' },
         { status: "בוטלה", color: 'red' },
     ];
-
 
     const [columnDefs] = useState([
         {
@@ -96,12 +91,11 @@ const RecyclingBin = () => {
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
-            alert(error.response?.data?.message);
+            toast.error(toast.error(error.response?.data?.message)|| 'שגיאה בהתחברות', { duration: 3000 });
             console.error('Error getting more details:', error);
         }
     };
     const toHistory = async (task) => {
-        console.log("tttt", task);
         let model;
         if (task.frequencyType) {
             model = "RecurringTask";
@@ -117,7 +111,7 @@ const RecyclingBin = () => {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
-            alert(error.response?.data?.message);
+            toast.error(error.response?.data?.message || 'אין אפשרות לצפות בהיסטוריה', { duration: 3000 });
         }
     };
 
@@ -142,17 +136,13 @@ const RecyclingBin = () => {
         try {
             await fetchRestoreTask(token, password, taskId)
             toast.success("משימה שוחזרה בהצלחה!", { duration: 3000 });
-            // toast.error("שגיאה בעדכון המשימה");
             setData(prev => prev.filter(task => task._id !== taskId));
 
-
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בשחזור משימה');
+            toast.error(err.response?.data?.message || 'המשימה לא ניתנת לשחזור כרגע', { duration: 3000 });
             console.error('שגיאה בשחזור משימה', err);
         }
     }
-
-
 
     useEffect(() => {
         if (!user?.token) return;
@@ -160,16 +150,12 @@ const RecyclingBin = () => {
             try {
                 const deletedTasks = await fetchGetDeletedTasks(user.token);
                 setData(deletedTasks);
-                console.log("סל מחזור---", deletedTasks)
-
             } catch (err) {
-                alert(err.response?.data?.message || 'שגיאה בטעינת המשימות המחוקות');
                 console.error('שגיאה בטעינת משימות מחוקות', err);
             }
         };
         GetDeletedTasks();
     }, [user]);
-
 
     return (
         <div className='RecyclingBin-page-wrapper'>
@@ -182,7 +168,6 @@ const RecyclingBin = () => {
                 <TaskAgGrid
                     rowData={data}
                     columnDefs={columnDefs}
-
                 />
                 <TaskDetails
                     details={details}

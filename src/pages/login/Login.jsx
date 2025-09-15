@@ -1,12 +1,14 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { forgotPassword, loginUser } from '../../services/authService';
-import './Login.css';
 import { LockKeyhole, User, Eye, EyeOff } from 'lucide-react';
-
 import { TbWashDryP } from 'react-icons/tb';
 import { useSearchParams } from 'react-router-dom';
+import './Login.css';
+import Swal from 'sweetalert2';
+import toast from 'react-hot-toast';
+
 
 const Login = () => {
 
@@ -15,8 +17,8 @@ const Login = () => {
 
   useEffect(() => {
     if (message === 'timeout') {
-      console.log("&&&&&");
-      alert('החיבור פג עקב חוסר פעילות');
+      alert();
+      Swal.fire("החיבור פג עקב חוסר פעילות");
     }
   }, [message]);
 
@@ -25,8 +27,6 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [forget, setForget] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -35,6 +35,8 @@ const Login = () => {
 
     try {
       const data = await loginUser(username, password);
+      toast.success("התחברת בהצלחה!", { duration: 2000 });
+
       const userData = {
         ...data.user,
         token: data.token
@@ -42,15 +44,12 @@ const Login = () => {
 
       login(userData);
 
-      if (userData.role === 'admin') {
-        navigate('/association');
-      } else {
-        navigate('/tasks');
-      }
-
+      navigate('/tasks');
+      
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || 'שגיאה בהתחברות');
+      toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 });
+
     }
   };
   const isForgotPassword = async () => {
@@ -60,10 +59,12 @@ const Login = () => {
     setForget(false);
     try {
       await forgotPassword(email);
-      alert("קישור איפוס נשלח לאימייל שלך")
+      toast.success("קישור לאיפוס נשלח לאימייל שלך", { duration: 3000 });
+
     } catch (error) {
       console.error(error);
-      alert(error.response?.data?.message || 'כרגע אין אפשרות לשלוח קישור לאיפוס');
+      toast.error(error.response?.data?.message || 'כרגע אין אפשרות לשלוח קישור לאיפוס', { duration: 3000 });
+
     }
   }
 

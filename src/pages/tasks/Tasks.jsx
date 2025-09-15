@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
@@ -6,23 +6,19 @@ import { getMoreDetails, getTasks } from '../../services/taskService';
 import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
-import { FilterContext } from '../../context/FilterContext';
 import { duplicateTask } from '../../services/taskService';
-import './Tasks.css';
-import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
-import { getUserNames } from '../../services/userService';
-import { fetchAllAssociations } from '../../services/associationService';
 import { fetchDeleteTask } from '../../services/deleteTaskService.js';
 import TrashWithRecycleIcon from '../../components/trashWithRecycleIcon/TrashWithRecycleIcon.jsx';
 import { updateRecurringStatus, updateTaskStatus } from '../../services/updateService.js';
-import { getTaskHistory } from '../../services/historyService.js';
 import EditTask from '../../components/editTask/EditTask.jsx';
 import { useNavigate } from 'react-router-dom';
 import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
+import toast from 'react-hot-toast';
+import './Tasks.css';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -30,7 +26,7 @@ const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('he-IL');
 };
-// ✨ פונקציה לחיפוש חכם
+//   לחיפוש חכם
 const enrichTasksWithSearchText = (tasks) => {
     return tasks.map(task => {
         const frequencyParts = [];
@@ -51,15 +47,15 @@ const enrichTasksWithSearchText = (tasks) => {
                         if (task.frequencyDetails.dayOfMonth)
                             frequencyParts.push(`יום בחודש ${task.frequencyDetails.dayOfMonth}`);
                         break;
-                        case 'שנתי':
-                            const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-                                            'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
-                            if (task.frequencyDetails.day)
-                                frequencyParts.push(`יום ${task.frequencyDetails.day}`);
-                            if (task.frequencyDetails.month)
-                                frequencyParts.push(`חודש ${months[task.frequencyDetails.month - 1]}`);
-                            break;
-                        
+                    case 'שנתי':
+                        const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+                            'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+                        if (task.frequencyDetails.day)
+                            frequencyParts.push(`יום ${task.frequencyDetails.day}`);
+                        if (task.frequencyDetails.month)
+                            frequencyParts.push(`חודש ${months[task.frequencyDetails.month - 1]}`);
+                        break;
+
                     default:
                         break;
                 }
@@ -113,6 +109,7 @@ const Tasks = () => {
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
     const [activeTab, setActiveTab] = useState('today-recurring');
+
     const [activeType, setActiveType] = useState('today-recurring');
     const [ShowEditModal, setShowEditModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
@@ -121,7 +118,6 @@ const Tasks = () => {
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Debounced search
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
@@ -156,8 +152,6 @@ const Tasks = () => {
             return newIndex;
         });
     };
-
-    const gridRef = useRef();
 
     const fetchTasks = useCallback(async (tab) => {
         setIsLoading(true);
@@ -196,35 +190,39 @@ const Tasks = () => {
             const enriched = enrichTasksWithSearchText(data);
             setAllTasks(enriched);
         } catch (error) {
-            alert(error.response?.data?.message || 'שגיאה בשליפת המשימות');
+            toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 }, { id: 'unique-error' });
+
             console.error('Error getting tasks:', error);
         } finally {
             setIsLoading(false);
         }
     }, [user]);
 
-    const filteredTasks = allTasks.filter(task =>
-        task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())
-    );
+    const filteredTasks = useMemo(() =>
+        allTasks.filter(task =>
+            task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())
+        ), [allTasks, debouncedSearchTerm]);
+
 
     const [version, setVersion] = useState(0);
 
     const refreshTasks = () => setVersion(v => v + 1);
 
     useEffect(() => {
-        if (activeTab === "today") {
-            setActiveTab("today-recurring");
-            setActiveType("today-recurring");
-            return;
-        }
-        fetchTasks(activeTab);
-    }, [activeTab, version]);
+        if (!user?.token) return;
 
-    useEffect(() => {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) return;
-        fetchTasks(activeTab);
-    }, [activeTab, fetchTasks]);
+        const loadTasks = async () => {
+            try {
+                await fetchTasks(activeTab);
+            } catch (err) {
+                toast.error(err.response?.data?.message || 'שגיאה בטעינת משימות', { id: 'fetch-tasks-error' });
+                console.error('Error fetching tasks:', err);
+            }
+        };
+
+        loadTasks();
+    }, [activeTab, user, version, fetchTasks]);
+
 
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
@@ -249,7 +247,7 @@ const Tasks = () => {
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
-            alert(error.response?.data?.message);
+            toast.error(error.response?.data?.message || 'פרטים נוספים לא זמינים כרגע', { duration: 3000 });
             console.error('Error getting more details:', error);
         }
     };
@@ -258,10 +256,11 @@ const Tasks = () => {
         const token = user?.token;
         try {
             await duplicateTask(taskId, token);
-            alert("משימה שוכפלה בהצלחה!");
+            toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
+
             refreshTasks();
         } catch (error) {
-            alert(error.response?.data?.message);
+            toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
         }
     };
 
@@ -279,7 +278,6 @@ const Tasks = () => {
     };
 
     const toHistory = async (task) => {
-        console.log("tttt", task);
         let model;
         if (task.frequencyType) {
             model = "RecurringTask";
@@ -295,8 +293,7 @@ const Tasks = () => {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
-            alert("הבעיה פה");
-            alert(error.response?.data?.message);
+            toast.error(error.response?.data?.message || 'אין אפשרות לצפות בהיסטוריה', { duration: 3000 });
         }
     };
 
@@ -322,10 +319,10 @@ const Tasks = () => {
 
         try {
             await fetchDeleteTask(token, password, taskId);
-            alert("המשימה נמחקה בהצלחה");
+            toast.success('המשימה נמחקה בהצלחה', { duration: 3000 });
             refreshTasks();
         } catch (error) {
-            alert(error.response?.data?.message || 'שגיאה במחיקה');
+            toast.error(error.response?.data?.message || 'שגיאה במחיקת משימה', { duration: 3000 });
         }
     };
 
@@ -344,38 +341,33 @@ const Tasks = () => {
             else {
                 setTaskType("single");
             }
-            console.log("המשימה לעריכה:", task);
         }
         else {
-            alert("אין לך הרשאה לערוך משימה זו!");
+            toast.error("אין לך הרשאה לערוך משימה זו!", { duration: 3000 });
         }
     };
 
-    // פונקציה מתוקנת להגדרת עמודות - סדר: מס, כותרת, אחראי ראשי, עמותה, סטטוס, פרטים, שכפול, הסטוריה, מחיקה, עדכון
     const getColumnDefs = () => {
         const baseColumns = [
-            // 1. מספר משימה
             {
                 headerName: "מס'",
                 field: 'taskId',
                 maxWidth: 100,
-                flex: 0, // עמודה קבועה
+                flex: 0,
                 cellStyle: () => ({
                     color: 'rgb(15, 164, 157)',
                     fontWeight: '600'
                 })
             },
-            // 2. כותרת - תקבל יותר מקום
             {
                 headerName: 'כותרת',
                 field: 'title',
-                flex: 2, // תקבל פי 2 יותר מקום מעמודות רגילות
+                flex: 2,
                 cellStyle: () => ({
                     color: 'rgb(29, 136, 163)',
                     fontWeight: '500'
                 })
             },
-            // 3. אחראי ראשי
             {
                 headerName: 'אחראי ראשי',
                 valueGetter: (params) => params.data.mainAssignee?.userName || '',
@@ -385,7 +377,6 @@ const Tasks = () => {
                     fontWeight: '500'
                 })
             },
-            // 4. עמותה
             {
                 headerName: 'עמותה',
                 valueGetter: (params) => params.data.organization?.name || '',
@@ -396,8 +387,7 @@ const Tasks = () => {
                 })
             }
         ];
-    
-        // 5. הוספת עמודת סטטוס (רק אם לא recurring)
+
         if (activeTab !== 'recurring') {
             baseColumns.push({
                 headerName: 'סטטוס',
@@ -443,8 +433,7 @@ const Tasks = () => {
                 }
             });
         }
-    
-        // 6. פרטים
+
         baseColumns.push({
             headerName: 'פרטים',
             field: 'details',
@@ -456,11 +445,10 @@ const Tasks = () => {
                 </button>
             )
         });
-    
-        // 7. שכפול
+
         baseColumns.push({
-            headerName: "", 
-            field: "duplicate", 
+            headerName: "",
+            field: "duplicate",
             width: 50,
             flex: 0,
             minWidth: 50,
@@ -476,7 +464,6 @@ const Tasks = () => {
             )
         });
 
-        // 8. היסטוריה
         baseColumns.push({
             headerName: "",
             field: "history",
@@ -495,7 +482,6 @@ const Tasks = () => {
             )
         });
 
-        // 9. מחיקה
         baseColumns.push({
             headerName: "",
             field: "delete",
@@ -514,11 +500,10 @@ const Tasks = () => {
             )
         });
 
-        // 10. עדכון (רק אם לא today tabs)
         if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
             baseColumns.push({
-                headerName: "", 
-                field: "edit", 
+                headerName: "",
+                field: "edit",
                 width: 50,
                 flex: 0,
                 minWidth: 50,
@@ -564,13 +549,14 @@ const Tasks = () => {
                     if (isConfirmed) {
                         await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content);
                         params.node.setDataValue(params.colDef.field, newStatus);
-                        alert("עודכן בהצלחה");
+                        toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
+
                     } else {
                         suppressedChangeNodesRef.current.add(params.node.id);
                         params.node.setDataValue(params.colDef.field, oldStatus);
                     }
                 } catch (error) {
-                    alert(error.response?.data?.message || 'שגיאה בעדכון משימה קבועה');
+                    toast.error(error.response?.data?.message || 'עדכון המשימה נכשל', { duration: 3000 });
                     suppressedChangeNodesRef.current.add(params.node.id);
                     params.node.setDataValue(params.colDef.field, oldStatus);
                 }
@@ -582,7 +568,7 @@ const Tasks = () => {
                 if (!allowed) {
                     suppressedChangeNodesRef.current.add(params.node.id);
                     params.node.setDataValue(params.colDef.field, oldStatus);
-                    alert('רק האחראי הראשי, מקים המשימה או המנהל יכולים לבטל משימה.');
+                    toast.error('רק האחראי הראשי, מקים המשימה או המנהל יכולים לבטל משימה.', { duration: 3000 });
                     return;
                 }
             }
@@ -602,12 +588,11 @@ const Tasks = () => {
                 } else {
                     await updateTaskStatus(taskId, newStatus, token);
                 }
-
-                alert("עודכן בהצלחה");
+                toast.error('משימה עודכנה בהצלחה', { duration: 2000 });
 
             } catch (error) {
+                toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
                 console.log("!", error.response?.data?.message || error.message || 'שגיאה לא ידועה');
-                alert(error.response?.data?.message || error.message || 'שגיאה לא ידועה');
                 suppressedChangeNodesRef.current.add(params.node.id);
                 params.node.setDataValue(params.colDef.field, oldStatus);
             }
@@ -644,9 +629,10 @@ const Tasks = () => {
 
         try {
             await fetchAddProject(formValues.name, formValues.isActive, token);
-            await alert("נוסף בהצלחה!");
+            toast.success('פרויקט נוסף', { duration: 2000 });
+
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בהוספת פרויקט');
+            toast.error(err.response?.data?.message || 'לא ניתן להוסיף פרויקט כרגע', { duration: 3000 });
             console.error('שגיאה בהוספת פרויקט', err);
         }
     };
