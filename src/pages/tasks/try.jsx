@@ -245,7 +245,7 @@ const Tasks = () => {
         else {
             model = "Task";
         }
-
+        
         try {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
@@ -306,177 +306,196 @@ const Tasks = () => {
         }
     };
 
-    // פונקציה מתוקנת להגדרת עמודות - סדר: מס, כותרת, אחראי ראשי, עמותה, סטטוס, פרטים, שכפול, הסטוריה, מחיקה, עדכון
+    // פונקציה משופרת להגדרת עמודות עם עיצוב מתקדם
     const getColumnDefs = () => {
         const baseColumns = [
-            // 1. מספר משימה
             {
-                headerName: "מס'",
-                field: 'taskId',
-                maxWidth: 100,
-                cellStyle: () => ({
-                    color: 'rgb(15, 164, 157)',
-                    fontWeight: '600'
-                })
+                headerName: "", 
+                field: "duplicate", 
+                width: 50,
+                minWidth: 50,
+                maxWidth: 50,
+                pinned: 'right',
+                suppressSizeToFit: true,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <div className='copy iconButton' title='שכפל משימה'>
+                        <Copy size={16} color="white" onClick={() => toDuplicateTask(params.data._id)} />
+                    </div>
+                )
             },
-            // 2. כותרת
             {
-                headerName: 'כותרת',
+                headerName: "מס'", 
+                field: 'taskId', 
+                width: 90,
+                minWidth: 80,
+                maxWidth: 120,
+                pinned: 'left',
+                sort: 'desc',
+                cellStyle: { 
+                    color: 'rgb(15, 164, 157)', 
+                    fontWeight: '700',
+                    background: 'rgba(15, 131, 163, 0.08)',
+                    borderRadius: '6px'
+                }
+            },
+            {
+                headerName: 'כותרת', 
                 field: 'title',
-                cellStyle: () => ({
-                    color: 'rgb(29, 136, 163)',
-                    fontWeight: '500'
-                })
+                minWidth: 200,
+                flex: 2,
+                cellStyle: { 
+                    color: 'rgb(29, 136, 163)', 
+                    fontWeight: '600',
+                    textAlign: 'right',
+                    paddingRight: '16px',
+                    justifyContent: 'flex-start'
+                },
+                tooltipField: 'title'
             },
-            // 3. אחראי ראשי
-            {
-                headerName: 'אחראי ראשי',
-                valueGetter: (params) => params.data.mainAssignee?.userName || '',
-                cellStyle: () => ({
-                    color: 'rgb(86, 54, 161)',
-                    fontWeight: '500'
-                })
-            },
-            // 4. עמותה
             {
                 headerName: 'עמותה',
                 valueGetter: (params) => params.data.organization?.name || '',
-                cellStyle: () => ({
-                    color: 'rgb(29, 51, 163)',
-                    fontWeight: '500'
-                })
+                minWidth: 150,
+                flex: 1,
+                cellStyle: { 
+                    color: 'rgb(29, 51, 163)', 
+                    fontWeight: '600' 
+                },
+                tooltipValueGetter: (params) => params.data.organization?.name || ''
+            },
+            {
+                headerName: 'אחראי ראשי',
+                valueGetter: (params) => params.data.mainAssignee?.userName || '',
+                minWidth: 140,
+                flex: 1,
+                cellStyle: { 
+                    color: 'rgb(86, 54, 161)', 
+                    fontWeight: '600' 
+                },
+                tooltipValueGetter: (params) => params.data.mainAssignee?.userName || ''
+            },
+            {
+                headerName: 'פרטים', 
+                field: 'details', 
+                width: 90,
+                minWidth: 80,
+                maxWidth: 100,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <button 
+                        className='details' 
+                        onClick={() => MoreDetails(params.data._id)} 
+                        title='פרטים נוספים'
+                    >
+                        לפרטים
+                    </button>
+                )
+            },
+            {
+                headerName: "", 
+                field: "history", 
+                width: 50,
+                minWidth: 50,
+                maxWidth: 50,
+                pinned: 'right',
+                suppressSizeToFit: true,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <div className='history iconButton' title='צפה בהיסטוריה'>
+                        <History size={16} color="white" onClick={() => toHistory(params.data)} />
+                    </div>
+                )
+            },
+            {
+                headerName: "", 
+                field: "delete", 
+                width: 50,
+                minWidth: 50,
+                maxWidth: 50,
+                pinned: 'right',
+                suppressSizeToFit: true,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <div className='trash iconButton' title='מחק משימה'>
+                        <Trash size={16} color="white" onClick={() => toDelete(params.data._id)} />
+                    </div>
+                )
             }
         ];
 
-        // 5. הוספת עמודת סטטוס (רק אם לא recurring)
-        if (activeTab !== 'recurring') {
+        // הוספת עמודת עריכה לטאבים המתאימים
+        if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
             baseColumns.push({
-                headerName: 'סטטוס',
-                field: 'status',
-                editable: () => activeTab !== 'recurring',
-                cellEditor: 'agSelectCellEditor',
-                cellEditorParams: {
-                    values: statusOptions.map(x => x.status)
-                },
-                valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
-                valueSetter: (params) => {
-                    if (params.newValue !== params.oldValue) {
-                        if (params.data.personalDetails) {
-                            params.data.personalDetails.status = params.newValue;
-                        } else {
-                            params.data.status = params.newValue;
-                        }
-                        return true;
-                    }
-                    return false;
-                },
-                cellRenderer: (params) => {
-                    const status = params.value;
-                    const option = statusOptions.find(opt => opt.status === status);
-                    const color = option?.color || 'gray';
-                    return (
-                        <span style={{
-                            backgroundColor: color,
-                            width: '60px',
-                            color: 'black',
-                            padding: '2px 8px',
-                            display: 'inline-block',
-                            borderRadius: '4px',
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            fontWeight: '600'
-                        }}>
-                            {status}
-                        </span>
-                    );
-                }
+                headerName: "", 
+                field: "edit", 
+                width: 50,
+                minWidth: 50,
+                maxWidth: 50,
+                pinned: 'right',
+                suppressSizeToFit: true,
+                sortable: false,
+                filter: false,
+                resizable: false,
+                cellRenderer: (params) => (
+                    <div className='pencil iconButton' title='ערוך משימה'>
+                        <Pencil size={16} color="white" onClick={() => toEdit(params.data)} />
+                    </div>
+                )
             });
         }
 
-        // 6. פרטים
-        baseColumns.push({
-            headerName: 'פרטים',
-            field: 'details',
-            maxWidth: 100,
-            cellRenderer: (params) => (
-                <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>
-                    לפרטים
-                </button>
-            )
-        });
-
-        // 7. שכפול
-        baseColumns.push({
-                        headerName: "", 
-                        field: "duplicate", 
-                        width: 50,
-                        minWidth: 50,
-                        maxWidth: 50,
-                        suppressSizeToFit: true,
-                        sortable: false,
-                        filter: false,
-                        resizable: false,
-                        cellRenderer: (params) => (
-                            <div className='copy iconButton' title='שכפל משימה'>
-                                <Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} />
-                            </div>
-                        )
-                    });
-
-        // 8. היסטוריה
-        baseColumns.push({
-            headerName: "",
-            field: "history",
-            width: 50,
-            minWidth: 50,
-            maxWidth: 50,
-            suppressSizeToFit: true,
-            sortable: false,
-            filter: false,
-            resizable: false,
-            cellRenderer: (params) => (
-                <div className='history iconButton' title='צפה בהיסטוריה'>
-                    <History size={17} color="black" onClick={() => toHistory(params.data)} />
-                </div>
-            )
-        },);
-
-        // 9. מחיקה
-        baseColumns.push({
-            headerName: "",
-            field: "delete",
-            width: 50,
-            minWidth: 50,
-            maxWidth: 50,
-            suppressSizeToFit: true,
-            sortable: false,
-            filter: false,
-            resizable: false,
-            cellRenderer: (params) => (
-                <div className='trash iconButton' title='מחק משימה'>
-                    <Trash size={17} color="black" onClick={() => toDelete(params.data._id)} />
-                </div>
-            )
-        });
-
-        // 10. עדכון (רק אם לא today tabs)
-        if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
-            baseColumns.push({
-                            headerName: "", 
-                            field: "edit", 
-                            width: 50,
-                            minWidth: 50,
-                            maxWidth: 50,
-                            suppressSizeToFit: true,
-                            sortable: false,
-                            filter: false,
-                            resizable: false,
-                            cellRenderer: (params) => (
-                                <div className='pencil iconButton' title='ערוך משימה'>
-                                    <Pencil size={17} color="black" onClick={() => toEdit(params.data)} />
-                                </div>
-                            )
-                        });
+        // הוספת עמודת סטטוס לטאבים שאינם קבועים
+        if (activeTab !== 'recurring') {
+            const statusColumn ={
+            
+                    headerName: 'סטטוס',
+                    field: 'status',
+                    editable: () => activeTab !== 'recurring',
+                    cellEditor: 'agSelectCellEditor',
+                    cellEditorParams: {
+                        values: statusOptions.map(x => x.status)
+                    },
+                    valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
+                    valueSetter: (params) => {
+                        if (params.newValue !== params.oldValue) {
+                            if (params.data.personalDetails) {
+                                params.data.personalDetails.status = params.newValue;
+                            } else {
+                                params.data.status = params.newValue;
+                            }
+                            return true;
+                        }
+                        return false;
+                    },
+                    cellRenderer: (params) => {
+                        const status = params.value;
+                        const option = statusOptions.find(opt => opt.status === status);
+                        const color = option?.color || 'gray';
+                        return (
+                            <span style={{
+                                backgroundColor: color,
+                                width: '60px',
+                                color: 'black',
+                                padding: '2px 8px',
+                                display: 'inline-block'
+                            }}>
+                                {status}
+                            </span>
+                        );
+                    }
+                
+            };
+            const detailsIndex = baseColumns.findIndex(c => c.field === "details");
+            baseColumns.splice(detailsIndex, 0, statusColumn);
         }
 
         return baseColumns;
@@ -665,7 +684,7 @@ const Tasks = () => {
                     </div>
                 </div>
             )}
-
+            
             {ShowEditModal && (
                 <div className="popup-overlay">
                     <div className="popup-content">

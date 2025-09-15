@@ -60,3 +60,4 @@ export const deleteUser = async (id, token) => {
 
   return response.data;
 };
+

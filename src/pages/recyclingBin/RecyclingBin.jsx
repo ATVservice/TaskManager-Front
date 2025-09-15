@@ -10,17 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { getMoreDetails } from '../../services/taskService.js';
 
-const IconCellButton = ({ title, onClick, children }) => (
-    <button
-        type="button"
-        className="icon-cell-btn"
-        title={title}
-        aria-label={title}
-        onClick={(e) => { e.stopPropagation(); onClick?.(e); }} // מונע בחירת שורה בטעות
-    >
-        {children}
-    </button>
-);
+
 
 const RecyclingBin = () => {
     const navigate = useNavigate();
@@ -42,12 +32,10 @@ const RecyclingBin = () => {
         {
             headerName: "", field: "restore", maxWidth: 50,
             cellRenderer: (params) => (
-                <IconCellButton
-                    title="שחזר משימה"
-                    onClick={() => toRestoreTask(params.data._id)}
-                >
-                    <Recycle size={20} color="#042486" />
-                </IconCellButton>
+                <div className='recycle iconButton' title='צפה בהיסטוריה'>
+                    <Recycle size={17} color="black" title="שחזר משימה"
+                    onClick={() => toRestoreTask(params.data._id)} />
+                </div>
             )
         },
         { headerName: "מס'", field: 'taskId', maxWidth: 100 },
@@ -89,12 +77,9 @@ const RecyclingBin = () => {
         {
             headerName: "", field: "history", maxWidth: 50,
             cellRenderer: (params) => (
-                <IconCellButton
-                    title=" צפה בהיסטוריה"
-                    onClick={() => toHistory(params.data._id)}
-                >
-                    <History size={20} color="#042486" />
-                </IconCellButton>
+                <div className='history iconButton' title='צפה בהיסטוריה'>
+                    <History size={17} color="black" onClick={() => toHistory(params.data)} />
+                </div>
             )
         },
 
@@ -113,11 +98,24 @@ const RecyclingBin = () => {
             console.error('Error getting more details:', error);
         }
     };
-    const toHistory = async (taskId) => {
+    const toHistory = async (task) => {
+        console.log("tttt", task);
+        let model;
+        if (task.frequencyType) {
+            model = "RecurringTask";
+        }
+        else if (task.taskModel) {
+            model = "TodayTask";
+        }
+        else {
+            model = "Task";
+        }
+
         try {
-            navigate(`/history/${taskId}`, { target: '_blank' });
+            navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
+            alert("הבעיה פה");
             alert(error.response?.data?.message);
         }
     };

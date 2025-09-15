@@ -88,7 +88,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged}) => {
                     defaultColDef={defaultColDef}
                     pagination={true}
                     enableRtl={true}
-                    paginationPageSize={10}
+                    paginationPageSize={20}
                     domLayout="autoHeight"
                     animateRows={true}
                     onCellValueChanged={onCellValueChanged}
