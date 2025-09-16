@@ -1,5 +1,5 @@
 import axios from 'axios';
-const API_URL = 'https://taskmanager-back-production.up.railway.app'
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 
 export const loginUser = async (username, password) => {
