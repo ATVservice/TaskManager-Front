@@ -20,6 +20,8 @@ const EmployeeManagement = () => {
     const [keyword, setKeyword] = useState('');
     const [showRegister, setShowRegister] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
+    const [editingEmployeeId, setEditingEmployeeId] = useState(null);
+
 
 
 
@@ -91,32 +93,32 @@ const EmployeeManagement = () => {
             minWidth: 50,
             flex: 1,
 
-            cellRenderer: (params) => <div className='Target iconBtn' title='צפייה ביעדים'><Target  size={17} color="black" onClick={() => toTarget(params.data._id)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='Target iconBtn' title='צפייה ביעדים'><Target size={17} color="black" onClick={() => toTarget(params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
-     
+
         {
-            headerName: "", field: "edit", 
+            headerName: "", field: "edit",
             maxWidth: 50,
             minWidth: 50,
             flex: 1,
 
-            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil  size={17} color="black" onClick={() => toEdit(params.data)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data, params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
-      
+
         {
-            headerName: "", field: "delete", 
+            headerName: "", field: "delete",
             maxWidth: 50,
             minWidth: 50,
             flex: 1,
-            cellRenderer: (params) => <div className='Trash iconBtn' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }}/></div>
+            cellRenderer: (params) => <div className='Trash iconBtn' title='מחק'><Trash size={17} color="black" onClick={() => toDelete(params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
-     
-   
-    
+
+
+
 
 
     ]);
-    const toEdit = (employee) => {
+    const toEdit = (employee, employeeId) => {
         console.log('toEditDirect called with employee:', employee);
 
         if (!employee) {
@@ -125,6 +127,8 @@ const EmployeeManagement = () => {
         }
 
         setEditingEmployee(employee);
+        setEditingEmployeeId(employeeId);
+
         setShowRegister(true);
     };
 
@@ -184,7 +188,7 @@ const EmployeeManagement = () => {
         try {
             if (editingEmployee) {
                 console.log('Going to UPDATE mode');
-                await updateUser(editingEmployee._id, formData, token);
+                await updateUser(editingEmployeeId, formData, token);
                 alert('העובד עודכן בהצלחה!');
             } else {
                 console.log('Going to ADD mode');
@@ -202,6 +206,7 @@ const EmployeeManagement = () => {
 
             setShowRegister(false);
             setEditingEmployee(null);
+            setEditingEmployeeId(null)
             await fetchEmployees();
         } catch (err) {
             console.error(err);
@@ -222,14 +227,23 @@ const EmployeeManagement = () => {
                         className="search-input"
                     />
                 </div>
+                <div className='empBTN'>
 
-                <button className="add-task-button1"
-                    onClick={() => {
-                        setShowRegister(true);
-                    }}
-                >
-                    <Plus size={20} color="#fafafa" /> הוסף עובד
-                </button>
+                    <button className="add-task-button1"
+                        onClick={() => {
+                            setShowRegister(true);
+                        }}
+                    >
+                        <Plus size={20} color="#fafafa" /> הוסף עובד
+                    </button>
+                    <button className="add-task-button1"
+                        onClick={() => {
+                            const user = JSON.parse(localStorage.getItem("user"));
+                            toEdit(user,user?.id);
+                        }}                    >
+                        <Pencil size={20} color="#fafafa" /> פרטים אישיים
+                    </button>
+                </div>
 
             </div>
             <div>
@@ -240,11 +254,12 @@ const EmployeeManagement = () => {
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <Register
-                            key={editingEmployee ? editingEmployee._id : 'new'}
+                            key={editingEmployee ? editingEmployeeId : 'new'}
                             existingUser={editingEmployee}
                             onClose={() => {
                                 setShowRegister(false);
                                 setEditingEmployee(null);
+                                setEditingEmployeeId(null)
                             }}
                             onSubmit={handleSubmitUser}
                         />

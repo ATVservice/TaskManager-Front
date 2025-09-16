@@ -1,4 +1,8 @@
-
+.empBTN{
+  display: flex;
+  gap: 2%;
+  margin: 7px;
+}
 .search-input:focus {
   border-color: #042486;
 }
