@@ -225,7 +225,6 @@ const EmployeeManagement = () => {
 
                 <button className="add-task-button1"
                     onClick={() => {
-                        setEditingEmployee(null);
                         setShowRegister(true);
                     }}
                 >

@@ -49,7 +49,7 @@ const AlertsPage = () => {
 
     return (
         <div className="alerts-container">
-            <h1>כל ההתרעות</h1>
+            <h1>כל ההתראות</h1>
             <ul className="alerts-all">
                 {currentAlerts.map(alert => (
                     <li key={alert._id} className={`alert-single ${alert.resolved ? 'resolved' : ''}`}>

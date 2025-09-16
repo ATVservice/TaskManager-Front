@@ -74,10 +74,11 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         <div
             className="ag-theme-quartz custom-grid-rtl"
             style={{ 
-                height: '600px', 
+                height: '100vh', 
                 width: '100%',
                 
             }}
+
             dir="rtl"
         >            
             <AgGridReact

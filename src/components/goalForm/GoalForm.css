@@ -1,53 +1,180 @@
+/* Container עיקרי */
+.association-page-wrapper {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+}
+
+/* הטופס הראשי */
 .goal-form {
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 55px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    background-color: #fafafa;
-    font-family: Arial, sans-serif;
+  width: 100%;
+  max-width: 450px;
+  max-height: 90vh;
+  background: #ffffff;
+  padding: 25px 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e1e8ed;
+  overflow-y: auto;
+}
+
+/* כותרת */
+.goal-form h3 {
+  text-align: center;
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+/* תוויות */
+.goal-form label {
+  display: block;
+  margin: 10px 0 5px 0;
+  font-weight: 500;
+  font-size: 14px;
+  color: #34495e;
+  text-align: right;
+}
+
+/* שדות קלט וסלקטים */
+.goal-form__select,
+.goal-form__input {
+  width: 100%;
+  padding: 10px 15px;
+  margin-bottom: 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  background-color: #ffffff;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  direction: rtl;
+  text-align: right;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.goal-form__select:focus,
+.goal-form__input:focus {
+  border-color: #3498db;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background-color: #fdfdfd;
+}
+
+.goal-form__select:hover,
+.goal-form__input:hover {
+  border-color: #bdc3c7;
+}
+
+/* כפתור שמירה */
+.goal-form__button {
+  width: 100%;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 15px;
+  letter-spacing: 0.5px;
+}
+
+.goal-form__button:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.goal-form__button:active {
+  transform: translateY(0);
+}
+
+/* אנימציות חלקות */
+.goal-form__select,
+.goal-form__input {
+  transform: translateZ(0);
+}
+
+/* עבור מסכים קטנים */
+@media (max-height: 700px) {
+  .association-page-wrapper {
+    padding: 10px;
+  }
+  
+  .goal-form {
+    padding: 25px 20px;
+  }
+  
+  .goal-form h3 {
+    font-size: 22px;
+    margin-bottom: 20px;
   }
   
   .goal-form__select,
   .goal-form__input {
-    width: 100%;
-    padding: 8px 10px;
-    margin: 10px 0 20px 0;
-    border: 1px solid #bbb;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease;
-  }
-  
-  .goal-form__select:focus,
-  .goal-form__input:focus {
-    border-color: #4a90e2;
-    outline: none;
-    background-color: #fff;
-  }
-  
-  .goal-form__label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 14px;
-    color: #333;
+    padding: 10px 12px;
+    margin-bottom: 12px;
   }
   
   .goal-form__button {
-    background-color: #4a90e2;
-    color: white;
-    border: none;
     padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.3s ease;
+    margin-top: 15px;
+  }
+}
+
+/* עבור מסכים רחבים מאוד */
+@media (min-width: 1200px) {
+  .goal-form {
+    max-width: 550px;
+    padding: 50px 40px;
+  }
+}
+
+/* עבור מובייל */
+@media (max-width: 480px) {
+  .association-page-wrapper {
+    padding: 15px;
   }
   
-  .goal-form__button:hover {
-    background-color: #357abd;
+  .goal-form {
+    padding: 30px 20px;
   }
   
+  .goal-form h3 {
+    font-size: 20px;
+  }
+}
+
+/* סגנון מיוחד לאופציות ריקות */
+.goal-form__select option:first-child {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+/* עיצוב מיוחד לשדה מספר */
+.goal-form__input[type="number"] {
+  text-align: center;
+  font-weight: 500;
+}
+
+/* הוספת חץ אחיד לסלקטים */
+.goal-form__select {
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M7 10l5 5 5-5H7z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: left 12px center;
+  background-size: 16px;
+  padding-left: 35px;
+}

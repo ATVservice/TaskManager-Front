@@ -68,7 +68,7 @@ const NavBar = () => {
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
           <div className='bell'>
-            <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התרעות" title='התרעות'>
+            <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התראות" title='התראות'>
               <Bell />
               {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
             </button>

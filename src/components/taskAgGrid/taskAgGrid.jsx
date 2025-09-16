@@ -80,6 +80,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 style={{ height: "100%", width: "100%" }}
+                
             >
                 <AgGridReact
                     ref={gridRef}

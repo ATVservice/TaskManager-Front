@@ -17,7 +17,7 @@ export const fetchUserAlerts = async (token, { limit = 30, skip = 0, sortBy = 'c
 };
 
 export const markAlertsRead = async (token, alertIds = []) => {
-  if (!Array.isArray(alertIds) || alertIds.length === 0) return "אין התרעות";
+  if (!Array.isArray(alertIds) || alertIds.length === 0) return "אין התראות";
   const res = await axios.post(`${API_URL}/api/alert/markRead`, { alertIds }, {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true

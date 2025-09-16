@@ -26,7 +26,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
             });
             setAlerts(list);
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בטעינת התרעות');
+            alert(err.response?.data?.message || 'שגיאה בטעינת התראות');
             console.error('Error loading alerts', err);
         } finally {
             setLoading(false);
@@ -72,7 +72,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
             <div className="alerts-header">
-                <h3>התרעות</h3>
+                <h3>התראות</h3>
                 <a
                     onClick={(e) => {
                         e.preventDefault();
@@ -82,14 +82,14 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                    
                     href="#"
                 >
-                    לכל ההתרעות
+                    לכל התראות
                 </a>
                 <button className="close-drawer" onClick={handleClose}>X</button>
             </div>
 
             <div className="alerts-list">
                 {loading && <div className="alerts-loading">טוען...</div>}
-                {!loading && alerts.length === 0 && <div className="no-alerts">אין התרעות</div>}
+                {!loading && alerts.length === 0 && <div className="no-alerts">אין התראות</div>}
 
                 {alerts.map((a) => {
                     const task = a.task || {};
