@@ -3,7 +3,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 
 export const loginUser = async (username, password) => {
-  const response = await axios.post(`${API_URL}/api/auth/login`, { userName: username, password },
+  const response = await axios.post(`https://taskmanager-back-production.up.railway.app/api/auth/login`, { userName: username, password },
 
     {
       method: 'POST',
