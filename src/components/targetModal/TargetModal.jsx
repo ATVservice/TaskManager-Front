@@ -7,7 +7,6 @@ const TargetModal = ({ employeeId, onClose }) => {
     const [goals, setGoals] = useState([]);
     const { user } = useContext(AuthContext);
 
-
     useEffect(() => {
         console.log("employeeId",employeeId)
         if (!employeeId) return;

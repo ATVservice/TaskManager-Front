@@ -3,6 +3,7 @@ import { getUserNames } from "../../services/userService";
 import { AuthContext } from "../../context/AuthContext";
 import { createGoal } from "../../services/goalService";
 import './GoalForm.css'
+import toast from "react-hot-toast";
 
 export default function GoalForm() {
     const { user } = useContext(AuthContext);
@@ -28,14 +29,13 @@ export default function GoalForm() {
             try {
                 const users = await getUserNames(token);
                 setEmployees(users);
-                console.log("allUsers", users);
             } catch (err) {
                 console.error("שגיאה בשליפת משתמשים:", err);
                 if (err.response?.status === 401) {
-                    alert("הגישה נדחתה. אנא התחבר שוב.");
+                    toast.error("הגישה נדחתה. אנא התחבר שוב.", { duration: 3000 });
+
                 } else {
                     console.error("שגיאה בלתי צפויה:", err);
-                    alert("אירעה שגיאה בשליפת המשתמשים.");
                 }
             }
         }
@@ -59,7 +59,7 @@ export default function GoalForm() {
         }
         try {
             await createGoal(dataToSend, token)
-            alert("היעד נשמר בהצלחה!");
+            toast.success("היעד נשמר בהצלחה", { duration: 2000 });
             setFormData({
                 targetType: "",
                 importance: "",
@@ -71,7 +71,7 @@ export default function GoalForm() {
 
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.message || 'שגיאה בשמירת היעד');
+            toast.error(err.response?.data?.message || "לא ניתן לשמור יעד כרגע", { duration: 3000 });
         }
     };
 

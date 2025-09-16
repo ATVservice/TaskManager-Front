@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 
 const PageWrapper = ({ children }) => {
+  //כניסה רכה בכל העמודים
   return (
     <motion.div
       initial={{ opacity: 0.6, y: 10 }}

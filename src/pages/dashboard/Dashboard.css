@@ -6,7 +6,6 @@
   padding: 20px;
 }
 
-
 .dashboard-header {
   margin-bottom: 20px;
 }
@@ -87,7 +86,7 @@
   background: #f0f0f0;
 }
 
-/* סטיילים חדשים למסילות התקדמות */
+/*   מסילות התקדמות */
 
 .progress-bars-container {
   margin-top: 20px;
@@ -211,23 +210,22 @@
 }
 
 .dashboard-card.half-width {
-  grid-column: span 1; /* כל חצי */
+  grid-column: span 1; 
 }
 
 .dashboard-card.full-width1 {
-  grid-column: span 2; /* יתפרס על כל הרוחב */
+  grid-column: span 2; 
 }
 
-/* ריספונסיביות: במסכים קטנים כולם אחד מתחת לשני */
 @media (max-width: 768px) {
   .dashboard-sections {
     display: grid;
-    grid-template-columns: 1fr; /* עמודה אחת */
+    grid-template-columns: 1fr; 
     gap: 20px;
   }
 
   .dashboard-card.half-width,
   .dashboard-card.full-width1 {
-    grid-column: span 1; /* כולם לוקחים שורה מלאה */
+    grid-column: span 1; 
   }
 }

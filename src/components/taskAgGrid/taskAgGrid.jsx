@@ -15,7 +15,6 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
         sortable: true,
         resizable: true,
         editable: false,
-        // הוספת flex במקום width קבוע כדי שהעמודות ימלאו את המסך
         flex: 1,
         minWidth: 100,
         filterParams: {
@@ -32,9 +31,8 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
         suppressKeyboardEvent: false,
     };
 
-    // הגדרות Localization לעברית
+    // הגדרות  לעברית
     const localeText = {
-        // Pagination
         page: 'עמוד',
         more: 'עוד',
         to: 'עד',
@@ -44,21 +42,16 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
         first: 'ראשון',
         previous: 'קודם',
         loadingOoo: 'טוען...',
-        // Filter
         pageSizeSelectorLabel: 'גודל עמוד',
         filterOoo: 'סנן...',
         searchOoo: 'סינון...',
         clearFilter: 'נקה',
         contains: 'מכיל',
-        // Filter Conditions
         andCondition: 'וגם',
         orCondition: 'או',
-        // Menu
         selectAll: 'בחר הכל',
         blanks: 'ריקים',
-        // Columns
         columns: 'עמודות',
-        // Tool Panel
         pivotMode: 'מצב Pivot',
         groups: 'קבוצות',
         values: 'ערכים',
@@ -66,7 +59,6 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
         valueColumns: 'עמודות ערך',
         pivotColumns: 'עמודות Pivot',
         toolPanelButton: 'לוח כלים',
-        // Other
         noRowsToShow: 'אין שורות להצגה',
         rowGroupColumnsEmptyMessage: 'גרור כאן עמודות כדי לקבץ',
     };
@@ -80,7 +72,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 style={{ height: "100%", width: "100%" }}
-                
+
             >
                 <AgGridReact
                     ref={gridRef}
@@ -95,9 +87,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
                     onCellValueChanged={onCellValueChanged}
                     singleClickEdit={true}
                     localeText={localeText}
-                    // הוספת אפשרות לעמודות למלא את הרוחב
                     suppressSizeToFit={false}
-                    // הבטחת שהטבלה תמלא את הרוחב
                     onFirstDataRendered={(params) => {
                         params.api.sizeColumnsToFit();
                     }}

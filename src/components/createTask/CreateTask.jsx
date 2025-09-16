@@ -6,6 +6,7 @@ import { createTask } from '../../services/taskService';
 import "./CreateTask.css";
 import { AuthContext } from "../../context/AuthContext";
 import { fetchGetAllProjectNames } from "../../services/projectService";
+import toast from "react-hot-toast";
 
 const CreateTask = ({ onClose, onTaskCreated }) => {
     const { user } = useContext(AuthContext);
@@ -38,8 +39,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         { label: "אוקטובר", value: 10 },
         { label: "נובמבר", value: 11 },
         { label: "דצמבר", value: 12 },
-
-
     ];
     const [form, setForm] = useState({
         title: "",
@@ -61,23 +60,21 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
         },
     });
 
-
     useEffect(() => {
         const token = user?.token;
 
         async function fetchUsers() {
             try {
                 const users = await getUserNames(token);
-                console.log("!!!!!", users);
                 setAllUsers(users);
-                console.log("allUsers", users);
             } catch (err) {
                 console.error("שגיאה בשליפת משתמשים:", err);
                 if (err.response?.status === 401) {
-                    alert("הגישה נדחתה. אנא התחבר שוב.");
+                    toast.error("הגישה נדחתה. אנא התחבר שוב.", { duration: 3000 });
+
                 } else {
+                    toast.error(err.response?.data?.message, { duration: 3000 });
                     console.error("שגיאה בלתי צפויה:", err);
-                    alert("אירעה שגיאה בשליפת המשתמשים.");
                 }
             }
         }
@@ -91,6 +88,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 const data = await fetchAllAssociations(token);
                 setAssociations(data);
             } catch (error) {
+                toast.error(error.response?.data?.message, { duration: 3000 });
                 console.error('Error fetching associations:', error);
             }
         };
@@ -105,6 +103,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 const projects = await fetchGetAllProjectNames(token);
                 setAllProjects(projects);
             } catch (err) {
+                toast.error(err.response?.data?.message, { duration: 3000 });
                 console.error("שגיאה בשליפת פרויקטים:", err);
             }
         };
@@ -137,11 +136,12 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 delete preparedForm.project;
             }
             await createTask(preparedForm, token);
-            alert("משימה נוצרה בהצלחה!");
+            toast.success("משימה נוצרה בהצלחה", { duration: 2000 });
+
             onTaskCreated();
             onClose();
         } catch (error) {
-            alert(error.response?.data?.message || 'שגיאה ביצירת המשימה');
+            toast.error(error.response?.data?.message || 'שגיאה ביצירת המשימה', { duration: 3000 });
             console.error('Error adding task:', error);
         }
 

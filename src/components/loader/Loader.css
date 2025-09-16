@@ -4,7 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255,255,255,0.6); /* אם רוצים לחסום אינטראקציה */
+    background: rgba(255,255,255,0.6); 
     z-index: 9999;
     pointer-events: all;
   }

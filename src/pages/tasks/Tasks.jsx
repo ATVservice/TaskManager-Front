@@ -588,7 +588,7 @@ const Tasks = () => {
                 } else {
                     await updateTaskStatus(taskId, newStatus, token);
                 }
-                toast.error('משימה עודכנה בהצלחה', { duration: 2000 });
+                toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
 
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });

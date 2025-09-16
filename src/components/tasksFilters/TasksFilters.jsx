@@ -19,7 +19,6 @@ const TasksFilters = ({ filters, updateFilter }) => {
         <option value="open">פתוח</option>
         <option value="closed">סגור</option>
       </Select>
-      {/* אפשר להמשיך עם שאר הסינונים פה */}
       <DatePicker
         label="מתאריך"
         value={filters.dateFrom}

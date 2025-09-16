@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { forgotPassword, loginUser } from '../../services/authService';
 import { LockKeyhole, User, Eye, EyeOff } from 'lucide-react';
-import { TbWashDryP } from 'react-icons/tb';
 import { useSearchParams } from 'react-router-dom';
 import './Login.css';
-import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 
 
@@ -17,8 +15,7 @@ const Login = () => {
 
   useEffect(() => {
     if (message === 'timeout') {
-      alert();
-      Swal.fire("החיבור פג עקב חוסר פעילות");
+      toast.info("החיבור פג עקב חוסר פעילות");
     }
   }, [message]);
 

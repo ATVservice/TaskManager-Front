@@ -23,7 +23,7 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         suppressKeyboardEvent: false,
     };
 
-    // הגדרות Localization לעברית
+    // הגדרות לעברית
     const localeText = {
         page: 'עמוד',
         more: 'עוד',
@@ -35,7 +35,7 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
         previous: 'קודם',
         loadingOoo: 'טוען...',
         pageSizeSelectorLabel: 'גודל עמוד',
-        filterOoo: 'סנן...',    
+        filterOoo: 'סנן...',
         searchOoo: 'סינון...',
         clearFilter: 'נקה',
         contains: 'מכיל',
@@ -57,15 +57,12 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
 
     const gridOptions = {
         onGridReady: (params) => {
-            // מתחים את הטבלה לרוחב מלא
             params.api.sizeColumnsToFit();
         },
         onFirstDataRendered: (params) => {
-            // מתחים את הטבלה לרוחב מלא
             params.api.sizeColumnsToFit();
         },
         onGridSizeChanged: (params) => {
-            // מתחים את הטבלה כשהגודל משתנה
             params.api.sizeColumnsToFit();
         }
     };
@@ -73,14 +70,14 @@ const SimpleAgGrid = ({ rowData, columnDefs }) => {
     return (
         <div
             className="ag-theme-quartz custom-grid-rtl"
-            style={{ 
-                height: '100vh', 
+            style={{
+                height: '100vh',
                 width: '100%',
-                
+
             }}
 
             dir="rtl"
-        >            
+        >
             <AgGridReact
                 rowData={rowData}
                 columnDefs={columnDefs}

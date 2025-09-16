@@ -1,4 +1,3 @@
-/* עמוד ההתחברות בלבד */
 .login-page {
     font-family: 'Source Sans Pro', sans-serif;
     background: linear-gradient(to bottom right, #50a3a2, #0d47a1);
@@ -10,7 +9,6 @@
     box-sizing: border-box;
   }
   
-  /* כרטיס התחברות */
   .login-page .login-card {
     background: #fff;
     padding: 40px 30px;
@@ -22,7 +20,6 @@
     animation: fadeIn 0.6s ease-in-out;
   }
   
-  /* כותרת */
   .login-page .login-card h1 {
     font-size: 26px;
     font-weight: 600;
@@ -30,7 +27,6 @@
     color: #0d47a1;
   }
   
-  /* עטיפת אינפוט */
   .login-page .input-wrapper {
     position: relative;
     width: 100%;
@@ -65,7 +61,6 @@
     font-size: 18px;
   }
   
-  /* כפתור התחברות */
   .login-page #login-button {
     width: 100%;
     padding: 12px;

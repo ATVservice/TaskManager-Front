@@ -35,7 +35,6 @@
     border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* התאמות למובייל */
 @media (max-width: 768px) {
     .history-page-wrapper {
         padding: 1rem;

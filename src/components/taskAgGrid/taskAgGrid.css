@@ -9,7 +9,6 @@
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
-/* תיקון העיקרי - הבטחת התאמת העמודות לרוחב המסך */
 .ag-theme-alpine .ag-body-viewport {
   overflow-x: hidden !important;
 }

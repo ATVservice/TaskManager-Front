@@ -11,7 +11,6 @@ const NavBar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
-
   const loadUnreadCount = async () => {
     if (!user) return;
     try {
@@ -29,7 +28,6 @@ const NavBar = () => {
 
 
   if (!user) return null;
-
   return (
     <>
 

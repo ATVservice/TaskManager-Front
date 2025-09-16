@@ -4,6 +4,7 @@ import { getNames } from '../../services/userService';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import './Association.css'
 import { Plus, UserPlus, Users } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Association = () => {
   const { user } = useContext(AuthContext);
@@ -14,7 +15,6 @@ const Association = () => {
   const [openAssignPopup, setOpenAssignPopup] = useState(false);
   const [associatedEmployees, setAssociatedEmployees] = useState([])
   const [openAssociatedEmployees, setOpenAssociatedEmployees] = useState(false);
-
   const [openAddPopup, setOpenAddPopup] = useState(false);
   const [newAssociation, setNewAssociation] = useState({ name: '', description: '' });
 
@@ -25,7 +25,8 @@ const Association = () => {
       const data = await fetchAllAssociations(user?.token);
       setAssociations(data);
     } catch (error) {
-      alert(error.response?.data?.message || 'שגיאה בשליפת העמותות');
+      toast.error(error.response?.data?.message || "שגיאה, אנא נסע מאוחר יותר", { duration: 3000 });
+      console.log(error)
     }
   };
   useEffect(() => {
@@ -38,9 +39,9 @@ const Association = () => {
     try {
       const dataE = await fetchGetAssociatedEmployees(associationId, token);
       setAssociatedEmployees(dataE);
-      console.log("employees", associatedEmployees);
       setOpenAssociatedEmployees(true);
     } catch (error) {
+      toast.error(error.response?.data?.message || "לא ניתן לצפות בעובידם משוייכים כרגע", { duration: 3000 });
       console.error('Error fetching associations:', error);
     }
   }
@@ -53,22 +54,21 @@ const Association = () => {
   const loadUsers = async () => {
     try {
       const data = await getNames(user?.token);
-      console.log("למה לא מוצג שמות?", data)
       setAllUsers(data);
     } catch (err) {
-      alert(err.response?.data?.message || 'שגיאה בשליפת העובדים');
+      toast.error(err.response?.data?.message || 'שגיאה, אנא נסה מאוחר יותר', { duration: 3000 });
       console.error("שגיאה בשליפת עובדים:", err);
     }
   };
 
-  // פתיחת פופאפ שיוך
+  //  פופאפ שיוך
   const openAssignEmployees = async (associationId) => {
     setSelectedAssociation(associationId);
     await loadUsers();
 
     // שליפת עובדים שכבר שייכים לעמותה
     const employees = await fetchGetAssociatedEmployees(associationId, user?.token);
-    setCheckedUsers(employees.map(e => e._id)); // כברירת מחדל מסומן
+    setCheckedUsers(employees.map(e => e._id)); 
     setOpenAssignPopup(true);
   };
 
@@ -87,30 +87,30 @@ const Association = () => {
         userIds: checkedUsers,
         associationId: selectedAssociation
       }, user?.token);
-
-      alert("השיוך נשמר בהצלחה");
+      toast.success("נשמר בהצלחה", { duration: 3000 });
       setOpenAssignPopup(false);
       setCheckedUsers([]);
       setSelectedAssociation(null);
     } catch (err) {
-      alert(err.response?.data?.message || 'שגיאה בשיוך עובדים ');
+      toast.error(err.response?.data?.message ||"שגיאה, אנא נסה מאוחר יותר", { duration: 3000 });
       console.error("שגיאה בשמירת שיוך:", err);
     }
   };
   // שמירת עמותה חדשה
   const handleAddAssociation = async () => {
     if (!newAssociation.name) {
-      alert("נא למלא שם עמותה");
+      toast.error("אנא מלא שם עמותה", { duration: 3000 });
       return;
     }
     try {
       await createAssociation(newAssociation.name, newAssociation.description, user?.token);
-      alert("עמותה נוספה בהצלחה!");
+      toast.success('עמותה נוספה בהצלחה', { duration: 3000 });
       setOpenAddPopup(false);
       setNewAssociation({ name: '', description: '' });
       getAssociations();
     } catch (err) {
-      alert(err.response?.data?.message || 'שגיאה בהוספת עמותה');
+      toast.error(err.response?.data?.message || 'לא ניתן להוסיף עמותה כרגע', { duration: 3000 });
+      console.log(err)
     }
   };
 
@@ -167,11 +167,7 @@ const Association = () => {
               value={newAssociation.name}
               onChange={(e) => setNewAssociation({ ...newAssociation, name: e.target.value })}
             />
-            {/* <textarea
-              placeholder="תיאור"
-              value={newAssociation.description}
-              onChange={(e) => setNewAssociation({ ...newAssociation, description: e.target.value })}
-            /> */}
+
             <div className="popup-actions">
               <button
                 className="association-btn primary"

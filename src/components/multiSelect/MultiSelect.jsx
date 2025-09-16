@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./MultiSelect.css"; // אם יש לך קובץ עיצוב
+import "./MultiSelect.css"; 
 
 export default function MultiSelect({ placeholder = "בחר", options = [], selected = [], onChange }) {
   const [open, setOpen] = useState(false);

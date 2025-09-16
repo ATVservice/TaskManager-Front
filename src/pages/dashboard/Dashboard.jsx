@@ -1,7 +1,7 @@
 import './Dashboard.css';
 import React, { useContext, useEffect, useState } from 'react';
 import {
-  BarChart, PieChart, Pie, Cell, Tooltip, Legend,
+  BarChart,Cell, Tooltip, Legend,
   LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer,
   Bar
 } from 'recharts';
@@ -9,6 +9,7 @@ import { getPerformance } from '../../services/dashboardService';
 import { AuthContext } from '../../context/AuthContext';
 import TargetModal from '../../components/targetModal/TargetModal';
 import { CheckCheck, TrendingUp } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const COLORS = ['#FF4C4C', '#8B8B8B', '#4C91FF', '#A3C78B', '#C9B59B'];
 const STATUS_COLORS = {
@@ -18,7 +19,6 @@ const STATUS_COLORS = {
   "מגירה": "#8B8B8B",
   "מיידי": "#FF4C4C",
 };
-
 
 const importanceLabels = {
   מיידי: 'מיידי',
@@ -82,8 +82,9 @@ const Dashboard = ({ employeeId }) => {
   }, [data]);
 
 
-  if (!data)
-    return <div>טוען...</div>;
+  if (!data){
+    return <div>טוען...</div>; 
+  }
 
   const goalPercent = data.overallPercentAchieved;
   const completedCount = data.completedCount;
@@ -101,14 +102,6 @@ const Dashboard = ({ employeeId }) => {
     percentage: totalTasks > 0 ? Math.round((value / totalTasks) * 100) : 0,
     color: STATUS_COLORS[importanceLabels[key]] || '#ccc'
   }));
-
-  //פאי
-  // const pieData = Object.entries(data.byImportance || {}).map(([key, value]) => ({
-  //   name: importanceLabels[key] || key,
-  //   value
-  // }));
-
-
 
   const progressData = data.progress
     .map(item => ({
@@ -185,44 +178,6 @@ const Dashboard = ({ employeeId }) => {
           </div>
         </div>
 
-
-
-        {/* פאי פילוח חשיבות */}
-        {/* <div className="dashboard-card">
-          <h3>פילוח משימות שהושלמו</h3>
-          <div>
-            <button className="goal-btn" onClick={() => targetViewing()}>
-              <TrendingUp size={18} className="goal-icon" />
-              צפייה ביעדים אישיים
-            </button>
-            <div>✅ מספר משימות שהושלמו: {completedCount} </div>
-            <div>🎯 עמידה ביעדים: {goalPercent}% </div>
-          </div>
-          <PieChart width={300} height={300}>
-            <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={90}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-
-
-            >
-              {pieData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={STATUS_COLORS[entry.name] || '#ccc'} // ברירת מחדל אפור
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-
-
-        </div> */}
         {selectedEmployee && (
           <TargetModal
             employeeId={selectedEmployee}
@@ -251,8 +206,6 @@ const Dashboard = ({ employeeId }) => {
             {`${diffSign}${diffPercent}%`}
           </div>
         </div>
-
-
 
 
         {/* גרף התקדמות */}

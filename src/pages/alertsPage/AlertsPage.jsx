@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { fetchUserAlerts, markAlertsRead } from '../../services/alertService';
 import './AlertsPage.css';
 import { AuthContext } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const AlertsPage = () => {
     const { user } = useContext(AuthContext);
@@ -23,6 +24,7 @@ const AlertsPage = () => {
                 });
                 setAlerts(list);
             } catch (err) {
+                toast.error(err.response?.data?.message, { duration: 3000 });
                 console.error(err);
             }
         };
@@ -32,11 +34,12 @@ const AlertsPage = () => {
     // פונקציה לסימון התרעה בודדת כנקראה
     const markAsRead = async (alertId) => {
         try {
-            await markAlertsRead(user.token, [alertId]); // קריאה לשרת
+            await markAlertsRead(user.token, [alertId]); 
             setAlerts(prev =>
                 prev.map(a => (a._id === alertId ? { ...a, resolved: true } : a))
             );
         } catch (err) {
+            toast.error(err.response?.data?.message, { duration: 3000 });
             console.error('Failed to mark alert as read', err);
         }
     };
@@ -55,7 +58,6 @@ const AlertsPage = () => {
                     <li key={alert._id} className={`alert-single ${alert.resolved ? 'resolved' : ''}`}>
                         <div className="alert-type">{alert.type}</div>
 
-                        {/* בדיקה אם יש בכלל task */}
                         {alert.task ? (
                             alert.task.taskId ? (
                                 <div className="alert-task">
@@ -89,7 +91,6 @@ const AlertsPage = () => {
 
             </ul>
 
-            {/* Pagination */}
             <div className="pagination">
                 {Array.from({ length: totalPages }, (_, i) => (
                     <button

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { resetPassword } from "../../services/authService";
 import './ResetPassword.css'
+import toast from "react-hot-toast";
 
 export default function ResetPassword() {
   const { token } = useParams();
@@ -18,8 +19,8 @@ export default function ResetPassword() {
       setError("אנא מלא/י את כל השדות");
       return false;
     }
-    if (newPassword.length < 8) {
-      setError("הסיסמה חייבת להכיל לפחות 8 תווים");
+    if (newPassword.length < 6) {
+      setError("הסיסמה חייבת להכיל לפחות 6 תווים");
       return false;
     }
     if (newPassword !== confirmPassword) {
@@ -45,7 +46,7 @@ export default function ResetPassword() {
         navigate("/login", { state: { message: "הסיסמה שונתה. התחברי בעזרת הסיסמה החדשה." } });
       }, 1800);
     } catch (err) {
-        alert(err.response?.data?.message || 'שגיאה ביצירת סיסמא חדשה');
+      toast.error(err.response?.data?.message || 'אין אפשרות ליצור סיסמא חדשה כרגע, אנא נסה מאוחר יותר', { duration: 3000 });
       setError(err.message);
     } finally {
       setLoading(false);

@@ -91,7 +91,7 @@ const RecyclingBin = () => {
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
-            toast.error(toast.error(error.response?.data?.message)|| 'שגיאה בהתחברות', { duration: 3000 });
+            toast.error(toast.error(error.response?.data?.message)|| 'שגיאה, אנא נסה מאוחר יותר', { duration: 3000 });
             console.error('Error getting more details:', error);
         }
     };
@@ -111,7 +111,7 @@ const RecyclingBin = () => {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {
-            toast.error(error.response?.data?.message || 'אין אפשרות לצפות בהיסטוריה', { duration: 3000 });
+            toast.error(error.response?.data?.message || 'אין אפשרות כרגע לצפות בהיסטוריה', { duration: 3000 });
         }
     };
 

@@ -1,7 +1,6 @@
 body {
     direction: rtl;
   }
-/* עיצוב AG Grid */
 .ag-theme-alpine {
     width: 100% !important;
     height: 100%;
@@ -12,9 +11,6 @@ body {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
 }
 
-
-
-/* גלילה יפה לטבלה */
 .ag-body-viewport::-webkit-scrollbar {
     width: 8px;
     height: 8px;

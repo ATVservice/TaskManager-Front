@@ -7,11 +7,10 @@ import { AuthContext } from "../../context/AuthContext";
 import "../createTask/CreateTask.css";
 import { fetchGetAllProjectNames } from "../../services/projectService";
 import Swal from "sweetalert2";
-
+import toast from "react-hot-toast";
 
 const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
   const { user } = useContext(AuthContext);
-
   const [allUsers, setAllUsers] = useState([]);
   const [associations, setAssociations] = useState([]);
   const [form, setForm] = useState(null);
@@ -21,23 +20,18 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
   const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
   const allStatus = ['לביצוע', 'בטיפול', 'הושלם', 'בוטלה'];
 
-
-
-
   function removeUnchangedFields(preparedForm, originalTask) {
     const cleaned = { ...preparedForm };
     for (const key in preparedForm) {
       const newVal = preparedForm[key];
       const oldVal = originalTask[key];
 
-      // השוואה פשוטה של ערכים, אפשר להרחיב לפי סוג (date, array וכו')
       if (JSON.stringify(newVal) === JSON.stringify(oldVal)) {
         delete cleaned[key];
       }
     }
     return cleaned;
   }
-
 
   useEffect(() => {
     const token = user?.token;
@@ -52,6 +46,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
         const projects = await fetchGetAllProjectNames(token);
         setAllProjects(projects);
       } catch (err) {
+        toast.error(err.response?.data?.message, { duration: 3000 });
         console.error("שגיאה בשליפת פרויקטים:", err);
       }
     };
@@ -108,10 +103,6 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
   }, [taskToEdit, allUsers]);
 
 
-
-
-
-  // אם importance שונה שלא "מיידי" - נמחק לחלוטין את שדה ה-subImportance מה-state
   useEffect(() => {
     if (!form) return;
     if (form.importance !== "מיידי" && Object.prototype.hasOwnProperty.call(form, 'subImportance')) {
@@ -140,7 +131,6 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       });
       return;
     }
-
 
     setForm(prev => ({ ...prev, [name]: value }));
   };
@@ -192,7 +182,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
         cancelButtonText: 'ביטול'
       });
 
-      if (!result) return; // בוטל
+      if (!result) return;
 
       setForm(prev => ({
         ...prev,
@@ -244,7 +234,6 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
 
         if (key === "isRecurring") continue;
 
-        // frequency fields נשלחים רק אם משימה חוזרת
         if (["frequencyType", "frequencyDetails"].includes(key)) {
           const isTaskRecurring =  taskToEdit.frequencyType || taskToEdit.frequencyDetails;
           if (!isTaskRecurring) continue;
@@ -252,7 +241,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
           continue;
         }
 
-        // המרה מיוחדת לתאריכים
+        // המרה לתאריכים
         if (key === "dueDate" || key === "finalDeadline") {
           if (formatDateStr(value) !== formatDateStr(original)) preparedForm[key] = value;
           continue;
@@ -279,13 +268,13 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
           continue;
         }
 
-        // recurring
+        // קבועות
         if (["isRecurring", "frequencyType"].includes(key)) {
           if (!isEqual(value, original)) preparedForm[key] = value;
           continue;
         }
 
-        // subImportance
+        // תת חשיבות
         if (key === "subImportance") {
           if (form.importance === "מיידי" && value && value.trim() !== "" && !isEqual(value, original)) {
             preparedForm.subImportance = value;
@@ -299,23 +288,21 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
 
       console.log("Prepared payload for updateTask:", preparedForm);
 
-      // שליחה לשרת
       if (taskType === "recurring") {
         await updateRecurringTask(taskToEdit._id, preparedForm, token);
       } else {
         await updateTask(taskToEdit._id, preparedForm, token);
       }
 
-      alert("המשימה עודכנה בהצלחה!");
+      toast.success("המשימה עודכנה בהצלחה", { duration: 2000 });
       onTaskUpdated();
       onClose();
 
     } catch (error) {
+      toast.error(error.response?.data?.message || "לא ניתן לערוך משימה כרגע", { duration: 3000 });
       console.error("Update error:", error);
-      alert(error.response?.data?.message || "שגיאה בעדכון המשימה");
     }
   };
-
  
   if (!form) return <div>טוען...</div>;
 

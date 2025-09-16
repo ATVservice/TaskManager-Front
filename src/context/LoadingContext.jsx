@@ -14,7 +14,6 @@ export const LoadingProvider = ({ children, showDelay = 120, minShow = 300 }) =>
   const showLoading = useCallback(() => {
     countRef.current += 1;
     if (countRef.current === 1) {
-      // דיליי קטן לפני הצגה (מונע פלאש לקריאות זעירות)
       showTimerRef.current = setTimeout(() => {
         startTimeRef.current = Date.now();
         setIsLoading(true);
@@ -28,13 +27,11 @@ export const LoadingProvider = ({ children, showDelay = 120, minShow = 300 }) =>
     countRef.current = Math.max(0, countRef.current - 1);
 
     if (countRef.current === 0) {
-      // אם עדיין ממתין להצגה — בטל אותה
       if (showTimerRef.current) {
         clearTimeout(showTimerRef.current);
         showTimerRef.current = null;
         return;
       }
-      // דאג ל־minShow זמן מינימלי של הצגה למניעת פלאש
       const elapsed = Date.now() - startTimeRef.current;
       const remaining = Math.max(0, minShow - elapsed);
       setTimeout(() => {
@@ -43,7 +40,6 @@ export const LoadingProvider = ({ children, showDelay = 120, minShow = 300 }) =>
     }
   }, [minShow]);
 
-  // רישום ההנדלרים לשימוש מחוץ ל־React (loadingService)
   useEffect(() => {
     setLoadingHandlers(showLoading, hideLoading);
     return () => setLoadingHandlers(()=>{}, ()=>{});

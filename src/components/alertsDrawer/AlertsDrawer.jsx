@@ -4,13 +4,13 @@ import { fetchUserAlerts, markAlertsRead } from '../../services/alertService';
 import { formatDistanceToNowStrict, parseISO } from 'date-fns';
 import he from 'date-fns/locale/he';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     const [alerts, setAlerts] = useState([]);
     const [loading, setLoading] = useState(false);
     const markedOnce = useRef(false);
     const navigate = useNavigate();
-
 
     const loadAlerts = async () => {
         if (!token) return;
@@ -20,19 +20,18 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
             let list = data.alerts || [];
             list.sort((a, b) => {
                 if (a.resolved === b.resolved) {
-                    return new Date(b.createdAt) - new Date(a.createdAt); // חדש קודם
+                    return new Date(b.createdAt) - new Date(a.createdAt);
                 }
-                return a.resolved ? 1 : -1; // לא נקראים לפני נקראים
+                return a.resolved ? 1 : -1;
             });
             setAlerts(list);
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בטעינת התראות');
+            toast.error(err.response?.data?.message || 'לא ניתן לטעון התרעות כרגע', { duration: 3000 });
             console.error('Error loading alerts', err);
         } finally {
             setLoading(false);
         }
     };
-
 
     useEffect(() => {
         if (open) {
@@ -52,7 +51,6 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
             setAlerts(prev => prev.map(a => toMark.includes(a._id) ? { ...a, resolved: true } : a));
             if (onMarkedRead) onMarkedRead();
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בסימון התרעה');
             console.error('Failed to mark alerts read', err);
         }
     };
@@ -67,8 +65,6 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
         navigate('/allAlerts', { target: '_blank' });
     }
 
-
-
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
             <div className="alerts-header">
@@ -79,7 +75,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                         seeAllAlerts();
                     }}
                     className='allAlerts'
-                   
+
                     href="#"
                 >
                     לכל התראות

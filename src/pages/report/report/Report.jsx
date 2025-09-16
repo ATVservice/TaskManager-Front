@@ -1,18 +1,18 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import html2canvas from "html2canvas";
-
 import ReportsFilters from "../reportFilter/ReportsFilters.jsx";
 import { getAllEmployees } from "../../../services/userService.js";
 import { fetchAllAssociations } from "../../../services/associationService.js";
 import { fetchReportData } from "../../../services/reportTypeService.js";
 import { AuthContext } from "../../../context/AuthContext.jsx";
-import "./Report.css";
 import { fetchLoadSavedFilter, fetchResetFilter } from "../../../services/reportFiltersService.js";
 import { Download } from "lucide-react";
+import "./Report.css";
+import toast from "react-hot-toast";
+
 
 const Reports = () => {
     const { user } = useContext(AuthContext);
@@ -36,7 +36,6 @@ const Reports = () => {
     const [periodType, setPeriodType] = useState('month');
     const [responsibilityType, setResponsibilityType] = useState('all');
 
-    // פונקציה עזר למיפוי reportType ל-screenType
     const getScreenTypeByReportType = (reportType) => {
         const mapping = {
             'openTasksByEmployee': 'openTasks',
@@ -49,7 +48,7 @@ const Reports = () => {
     };
 
 
-    // פונקציה חדשה לטעינת פילטר שמור
+    // פונקציה  לטעינת פילטר שמור
     const loadSavedFilter = useCallback(async (screenType) => {
         try {
             console.log(`Loading filter for screen: ${screenType}`);
@@ -76,16 +75,14 @@ const Reports = () => {
             if (!user?.token) return;
 
             try {
-                console.log('🔄 Loading employees and associations...');
                 const [emps, assos] = await Promise.all([
                     getAllEmployees(user.token),
                     fetchAllAssociations(user.token),
                 ]);
                 setEmployees(emps);
                 setAssociations(assos);
-                console.log('✅ Basic data loaded');
             } catch (err) {
-                console.error("❌ Error loading basic data:", err);
+                console.error(" Error loading basic data:", err);
             }
         };
 
@@ -95,12 +92,11 @@ const Reports = () => {
     useEffect(() => {
         if (user?.token && employees.length > 0) {
             const screenType = getScreenTypeByReportType(reportType);
-            console.log(`📋 Report type changed to: ${reportType} (${screenType})`);
             loadSavedFilter(screenType);
         }
-    }, [reportType, employees.length, loadSavedFilter]); // רק כשמשתנה סוג הדוח
+    }, [reportType, employees.length, loadSavedFilter]); 
 
-    // **useEffect 3: טעינת דוחות כשמשתנים פילטרים**
+    // טעינת דוחות כשמשתנים פילטרים
     useEffect(() => {
         const loadReport = async () => {
             if (!user?.token) return;
@@ -119,11 +115,10 @@ const Reports = () => {
                     responsibilityType: responsibilityType
                 });
 
-                console.log('📈 Report loaded successfully');
                 setReportData(res);
 
             } catch (err) {
-                console.error("❌ Error loading report:", err);
+                console.error("Error loading report:", err);
                 setReportData(null);
             }
         };
@@ -134,9 +129,6 @@ const Reports = () => {
 
     }, [filters, periodType, responsibilityType, reportType, user?.token]);
 
-
-
-    
     // פונקציות עיבוד הנתונים לכל סוג דוח
     const getTableDataByReportType = () => {
         if (!reportData?.data) {
@@ -312,7 +304,6 @@ const Reports = () => {
              period?.byImportance?.['תאריך'] || 0,
              period?.byImportance?.['מיידי'] || 0,
              period?.byImportance?.['מגירה'] || 0,
-
             // `${period?.completionRate || 0}%`
         ]);
 
@@ -335,8 +326,6 @@ const Reports = () => {
         ]);
         return { headers, rows };
     };
-
-
 
     // ייצוא ל-Excel עם תיקון כיוון RTL
     const exportExcel = () => {
@@ -441,11 +430,11 @@ const Reports = () => {
             XLSX.writeFile(workbook, `${reportNames[reportType]}.xlsx`);
         } catch (error) {
             console.error("שגיאה בייצוא Excel:", error);
-            alert("שגיאה בייצוא קובץ Excel");
+            toast.error("אין אפשרות לייצא כרגע", { duration: 3000 });
         }
     };
 
-    // פתרון PDF עם HTML2Canvas (עברית מושלמת)
+    // פתרון PDF עם HTML2Canvas (עברית )
     const exportPDFWithCanvas = async () => {
         let tableData;
         if (reportType === "overdueTasks") {
@@ -539,14 +528,14 @@ const Reports = () => {
 
         } catch (error) {
             console.error("שגיאה ב-HTML2Canvas:", error);
-            alert("שגיאה בייצוא PDF עברית. מנסה פתרון חלופי...");
+            toast.error("שגיאה בייצוא, מנסה פתרון חילופי...", { duration: 3000 });
             exportPDFEnglish();
         } finally {
             setIsExporting(false);
         }
     };
 
-    // פתרון PDF באנגלית (תמיד עובד)
+    // פתרון PDF באנגלית)
     const exportPDFEnglish = () => {
         const tableData = getTableDataByReportType();
         if (!tableData.rows.length) return;
@@ -635,7 +624,7 @@ const Reports = () => {
 
         } catch (error) {
             console.error("שגיאה בPDF אנגלית:", error);
-            alert("שגיאה בייצוא PDF");
+            toast.error("אין אפשרות לייצא כרגע", { duration: 3000 });
         }
     };
 
@@ -656,11 +645,8 @@ const Reports = () => {
                     />
                 </div>
 
-                {/* דיב של הטבלה וכל שאר התוכן */}
                 <div className="reports-content">
 
-
-                    {/* כפתורי ייצוא */}
                     <div className="export-buttons">
                         <button
                             onClick={exportExcel}

@@ -10,6 +10,7 @@ import { BarChart3, X } from 'lucide-react';
 import Dashboard from '../dashboard/Dashboard';
 import { getNames } from '../../services/userService';
 import Select from "react-select";
+import toast from 'react-hot-toast';
 
 const STATUS_COLORS = {
   "תאריך": "#FFD700",
@@ -34,7 +35,6 @@ const AdminDashboard = () => {
 
   const timeRanges = ['יום', 'שבוע', 'חודש', 'שנה', 'טווח תאריכים מותאם'];
 
-  // פונקציה להמרת טקסט עברי ל-filterType באנגלית
   const getFilterType = (hebrewRange) => {
     const mapping = {
       'יום': 'day',
@@ -55,15 +55,14 @@ const AdminDashboard = () => {
         filterType: getFilterType(rangeType)
       };
 
-      // אם זה טווח מותאם, נוסיף את התאריכים
       if (rangeType === 'טווח תאריכים מותאם') {
         filterOptions.startDate = fromDate;
         filterOptions.endDate = toDate;
       }
-
       const result = await fetchGeneralSummary(user.token, filterOptions);
       setData(result);
     } catch (error) {
+      toast.error(error.response?.data?.message, { duration: 3000 });
       console.error('שגיאה בטעינת נתונים:', error);
     } finally {
       setLoading(false);
@@ -91,7 +90,7 @@ const AdminDashboard = () => {
 
   // טעינת נתונים כשמשתנה הסינון
   useEffect(() => {
-    // אם זה טווח מותאם, נחכה שיבחרו תאריכים
+    // אם זה טווח מותאם, מחכה שיבחרו תאריכים
     if (rangeType === 'טווח תאריכים מותאם' && (!fromDate || !toDate)) {
       return;
     }
@@ -115,7 +114,6 @@ const AdminDashboard = () => {
 
         <div className="admin-dashboard-card">
           <h3>פילוח לפי חשיבות</h3>
-          {/* 🔹 כפתורי סינון */}
           <div className="filter-section">
             <div className="range-buttons">
               {timeRanges.map(r => (
@@ -197,17 +195,6 @@ const AdminDashboard = () => {
           </p>
         </div>
 
-        {/* <div className="admin-dashboard-card">
-          <h3>יעדים כלליים</h3>
-          <ul className="goals-list">
-            {data.goalsSummary.map((g) => (
-              <li key={g.goalId} className={`goal-item ${g.status.replace(/\s/g, '')}`}>
-                {g.importance}: {g.completedCount}/{g.targetCount} ({g.percent}%)
-              </li>
-            ))}
-          </ul>
-        </div> */}
-
         <div className="admin-dashboard-card full-width">
           <h3>ביצועי עובדים</h3>
           <p><strong> עמידה ביעדים אישים:</strong>  % {data.overallGeneralGoals} | <strong>עמידה ביעדים כלליים: </strong> % {data.overallPersonalGoals}</p>
@@ -263,7 +250,6 @@ const AdminDashboard = () => {
                         onClick={() => setSelectedEmployee(emp)}
                         title="צפה בדשבורד העובד"
                       >
-                        {/* 📊 */}
                         <BarChart3 className='barChart' size={20} />
                       </button>
                     </td>

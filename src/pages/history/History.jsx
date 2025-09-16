@@ -6,6 +6,7 @@ import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import './History.css';
 import { Clock } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const History = () => {
     const { taskId, model } = useParams();
@@ -54,9 +55,7 @@ const History = () => {
                 });
             }
         },
-   
-    
-     
+
    
     ]);
 
@@ -77,7 +76,8 @@ const History = () => {
                     setData(historyTask.history)
                 }
             } catch (err) {
-                alert(err.response?.data?.message || 'שגיאה בטעינת ההיסטוריה');
+                toast.error(err.response?.data?.message ||"שגיאה, נסה מאוחר יותר", { duration: 3000 });
+                console.log(err)
             }
         };
 

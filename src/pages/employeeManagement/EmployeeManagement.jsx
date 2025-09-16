@@ -8,12 +8,11 @@ import Register from '../register/Register.jsx';
 import TargetModal from '../../components/targetModal/TargetModal.jsx';
 import { registerUser } from '../../services/authService.js';
 import './EmployeeManagement.css';
-
+import toast from 'react-hot-toast';
 
 const EmployeeManagement = () => {
 
     const { user } = useContext(AuthContext);
-
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [data, setData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
@@ -21,10 +20,6 @@ const EmployeeManagement = () => {
     const [showRegister, setShowRegister] = useState(false);
     const [editingEmployee, setEditingEmployee] = useState(null);
     const [editingEmployeeId, setEditingEmployeeId] = useState(null);
-
-
-
-
 
     const [columns] = useState([
         {
@@ -115,14 +110,10 @@ const EmployeeManagement = () => {
 
 
 
-
-
     ]);
     const toEdit = (employee, employeeId) => {
-        console.log('toEditDirect called with employee:', employee);
-
         if (!employee) {
-            alert('לא נמצא עובד לעריכה.');
+            toast.success("עובד לא נמצא", { duration: 3000 });
             return;
         }
 
@@ -134,14 +125,17 @@ const EmployeeManagement = () => {
 
     const toDelete = async (id) => {
         const token = user?.token;
-        if (!token) return alert('אין טוקן');
+        if (!token) {
+            return toast.error("עלייך להתחבר מחדש", { duration: 3000 });
+        }
+
         try {
             await deleteUser(id, token);
-            alert('העובד נמחק בהצלחה!');
+            toast.success("נמחק בהצלחה", { duration: 3000 });
             await fetchEmployees();
         }
         catch (err) {
-            alert(err.response?.data?.message || 'שגיאה במחיקת עובד');
+            toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
             console.error('שגיאה במחיקת עובד', err);
         }
 
@@ -158,7 +152,7 @@ const EmployeeManagement = () => {
             setData(allEmployees);
             setFilteredData(allEmployees);
         } catch (err) {
-            alert(err.response?.data?.message || 'שגיאה בטעינת עובדים');
+            toast.error(err.response?.data?.message || "שגיאה בטעינת עובדים", { duration: 3000 });
             console.error('שגיאה בטעינת עובדים ', err);
         }
     };
@@ -183,13 +177,15 @@ const EmployeeManagement = () => {
         console.log('formData:', formData);
 
         const token = user?.token;
-        if (!token) return alert('אין טוקן');
+        if (!token) {
+            return toast.error("עלייך להתחבר מחדש", { duration: 3000 });
+        }
 
         try {
             if (editingEmployee) {
                 console.log('Going to UPDATE mode');
                 await updateUser(editingEmployeeId, formData, token);
-                alert('העובד עודכן בהצלחה!');
+                toast.success("עודכן בהצלחה", { duration: 3000 });
             } else {
                 console.log('Going to ADD mode');
                 await registerUser(
@@ -201,7 +197,7 @@ const EmployeeManagement = () => {
                     formData.role,
                     token
                 );
-                alert('עובד נוסף בהצלחה!');
+                toast.success("נוסף בהצלחה", { duration: 3000 });
             }
 
             setShowRegister(false);
@@ -210,7 +206,7 @@ const EmployeeManagement = () => {
             await fetchEmployees();
         } catch (err) {
             console.error(err);
-            alert(err.response?.data?.message || 'שגיאה בשמירת עובד');
+            toast.error(err.response?.data?.message || "שגיאה בטעינת עובד", { duration: 3000 });
         }
     };
 
@@ -239,7 +235,7 @@ const EmployeeManagement = () => {
                     <button className="add-task-button1"
                         onClick={() => {
                             const user = JSON.parse(localStorage.getItem("user"));
-                            toEdit(user,user?.id);
+                            toEdit(user, user?.id);
                         }}                    >
                         <Pencil size={20} color="#fafafa" /> פרטים אישיים
                     </button>
