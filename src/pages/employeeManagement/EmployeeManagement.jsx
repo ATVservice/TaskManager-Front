@@ -188,7 +188,6 @@ const EmployeeManagement = () => {
                 await updateUser(editingEmployeeId, formData, token);
                 toast.success("עודכן בהצלחה", { duration: 3000 });
             } else {
-                console.log('Going to ADD mode');
                 await registerUser(
                     formData.userName,
                     formData.firstName,
