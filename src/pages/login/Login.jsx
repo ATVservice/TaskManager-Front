@@ -39,7 +39,6 @@ const Login = () => {
       };
 
       login(userData);
-
       navigate('/tasks');
 
     } catch (error) {

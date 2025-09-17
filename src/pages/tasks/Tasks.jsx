@@ -30,6 +30,7 @@ const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('he-IL');
 };
+
 //   לחיפוש חכם
 const enrichTasksWithSearchText = (tasks) => {
     return tasks.map(task => {
@@ -107,6 +108,7 @@ const Tasks = () => {
     const navigate = useNavigate();
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
+    
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
         { key: 'future', label: 'משימות עתידיות' },
@@ -115,12 +117,23 @@ const Tasks = () => {
         { key: 'cancelled', label: 'משימות שבוטלו' },
         { key: 'drawer', label: 'משימות מגירה' },
     ];
+
     const [allTasks, setAllTasks] = useState([]);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
-    const [activeTab, setActiveTab] = useState(tabs[0].key);
-    const [activeType, setActiveType] = useState('today-recurring');
+    
+    // קריאת הטאב השמור מ-sessionStorage או ברירת מחדל
+    const [activeTab, setActiveTab] = useState(() => {
+        const savedTab = sessionStorage.getItem('activeTaskTab');
+        return savedTab && tabs.some(tab => tab.key === savedTab) ? savedTab : tabs[0].key;
+    });
+    
+    const [activeType, setActiveType] = useState(() => {
+        const savedType = sessionStorage.getItem('activeTaskType');
+        return savedType || 'today-recurring';
+    });
+    
     const [ShowEditModal, setShowEditModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -128,7 +141,26 @@ const Tasks = () => {
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    
+    // חישוב האינדקס הפעיל בהתבסס על הטאב השמור
+    const [activeIndex, setActiveIndex] = useState(() => {
+        const savedTab = sessionStorage.getItem('activeTaskTab');
+        const index = tabs.findIndex(tab => tab.key === savedTab);
+        return index !== -1 ? index : 0;
+    });
+
     const wrapperRef = useRef(null);
+
+    // שמירת הטאב הפעיל ב-sessionStorage בכל פעם שהוא משתנה
+    useEffect(() => {
+        sessionStorage.setItem('activeTaskTab', activeTab);
+    }, [activeTab]);
+
+    // שמירת הסוג הפעיל ב-sessionStorage בכל פעם שהוא משתנה
+    useEffect(() => {
+        sessionStorage.setItem('activeTaskType', activeType);
+    }, [activeType]);
+
     useEffect(() => {
         function handleClickOutside(e) {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
@@ -146,10 +178,6 @@ const Tasks = () => {
 
         return () => clearTimeout(timer);
     }, [searchTerm]);
-
-
-
-    const [activeIndex, setActiveIndex] = useState(0);
 
     const handleNextTab = () => {
         setActiveIndex((prev) => {
@@ -205,7 +233,6 @@ const Tasks = () => {
             setAllTasks(enriched);
         } catch (error) {
             toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 }, { id: 'unique-error' });
-
             console.error('Error getting tasks:', error);
         } finally {
             setIsLoading(false);
@@ -217,9 +244,7 @@ const Tasks = () => {
             task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())
         ), [allTasks, debouncedSearchTerm]);
 
-
     const [version, setVersion] = useState(0);
-
     const refreshTasks = () => setVersion(v => v + 1);
 
     useEffect(() => {
@@ -236,7 +261,6 @@ const Tasks = () => {
 
         loadTasks();
     }, [activeTab, user, version, fetchTasks]);
-
 
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
@@ -268,31 +292,28 @@ const Tasks = () => {
 
     const toDuplicateTask = async (taskId) => {
         const token = user?.token;
-            await Swal.fire({
-                title: "אתה בטוח שברצונך לשכפל משימה זו?",
-                showDenyButton: true,
-                showCancelButton: false,
-                cancelButtonText: 'ביטול',
-                confirmButtonText: "כן",
-                denyButtonText: "לא",
-                confirmButtonColor: "blue",  
-                denyButtonColor: "gray" 
-            }).then(async(result) => {
-                if (result.isConfirmed) {
-                    try{
-                        await duplicateTask(taskId, token);
-                        toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
-            
-                        refreshTasks();
-                    }
-                    catch(error)
-                    {
-                        toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
-
-                    }
+        await Swal.fire({
+            title: "אתה בטוח שברצונך לשכפל משימה זו?",
+            showDenyButton: true,
+            showCancelButton: false,
+            cancelButtonText: 'ביטול',
+            confirmButtonText: "כן",
+            denyButtonText: "לא",
+            confirmButtonColor: "blue",  
+            denyButtonColor: "gray" 
+        }).then(async(result) => {
+            if (result.isConfirmed) {
+                try{
+                    await duplicateTask(taskId, token);
+                    toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
+                    refreshTasks();
                 }
-            });
-
+                catch(error)
+                {
+                    toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
+                }
+            }
+        });
     };
 
     const closeDetailsDiv = () => {
@@ -779,8 +800,6 @@ const Tasks = () => {
                     </div>
                 )}
 
-
-
                 {openDetails && createPortal(
                     <TaskDetails
                         details={details}
@@ -789,7 +808,6 @@ const Tasks = () => {
                     />,
                     document.body
                 )}
-
 
                 <TaskAgGrid
                     rowData={filteredTasks}

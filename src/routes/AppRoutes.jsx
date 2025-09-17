@@ -3,7 +3,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { AnimatePresence } from "framer-motion";
 import PageWrapper from "../components/PageWrapper";
-
 import Login from '../pages/login/Login';
 import Tasks from '../pages/tasks/Tasks';
 import Association from '../pages/association/Association';
@@ -31,22 +30,19 @@ const AppRoutes = () => {
           <>
             <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
             <Route path="/ResetEmail" element={<PageWrapper><ResetEmailForm /></PageWrapper>} />
-
-            <Route path="*" element={<PageWrapper><Navigate to="/login" replace /></PageWrapper>} />
             <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         ) : (
           <>
-            <Route path="*" element={<PageWrapper><Navigate to="/login" replace /></PageWrapper>} />
+            <Route path="/" element={<Navigate to="/tasks" replace />} />
+            
             <Route path="/createTask" element={<PageWrapper><CreateTask /></PageWrapper>} />
             <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
             <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
             <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
-            {/* <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} /> */}
             <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
-
-
-
+            
             {user.role === 'מנהל' && (
               <>
                 <Route path="/association" element={<PageWrapper><Association /></PageWrapper>} />
@@ -57,14 +53,14 @@ const AppRoutes = () => {
                 <Route path="/reports" element={<PageWrapper><Report /></PageWrapper>} />
               </>
             )}
-
+            
             {user.role === 'עובד' && (
               <>
                 <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
               </>
             )}
-            <Route path="*" element={<PageWrapper><Navigate to="/login" replace /></PageWrapper>} />
-
+            
+            <Route path="*" element={<Navigate to="/tasks" replace />} />
           </>
         )}
       </Routes>
