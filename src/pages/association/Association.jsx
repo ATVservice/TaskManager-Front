@@ -122,10 +122,13 @@ const Association = () => {
       <div className="association-page-wrapper">
 
         <div className="association-container">
-          <h2>רשימת עמותות</h2>
-          <button className="association-btn primary add-btn" onClick={() => setOpenAddPopup(true)}>
-            <Plus size={18} /> הוספת עמותה
-          </button>
+          <div className='head'>
+            <h3>רשימת עמותות</h3>
+            <button className="association-btn primary add-btn" onClick={() => setOpenAddPopup(true)}>
+              <Plus size={18} /> הוספת עמותה
+            </button>
+          </div>
+
 
           <table className="association-table">
             <thead>
@@ -146,7 +149,7 @@ const Association = () => {
                       <Users color="#050505" />
                     </button>
                   </td>
-                  <td>
+                  <td >
                     <button className="association-btn primary"
                       onClick={() => openAssignEmployees(asso._id)}
                       title='שיוך עובדים'>
@@ -226,7 +229,7 @@ const Association = () => {
                     </label>
                   </div>
                 ))}
-                <div style={{ marginTop: '15px', textAlign: 'center' }}>
+                <div style={{ marginTop: '15px', textAlign: 'center', display:'flex'}}>
                   <button className="association-btn primary" onClick={saveAssociationUsers}>שמור</button>
                   <button className="association-btn secondary" onClick={() => setOpenAssignPopup(false)}>סגור</button>
                 </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import SimpleAgGrid from '../../components/simpleAgGrid/SimpleAgGrid.jsx'
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { Pencil, Plus, Search, Target, Trash } from 'lucide-react';
+import { Pencil, Plus, Search, Target, Trash, UserRoundPen } from 'lucide-react';
 import { useContext } from 'react';
 import { deleteUser, getAllEmployees, updateUser } from '../../services/userService.js';
 import Register from '../register/Register.jsx';
@@ -98,7 +98,7 @@ const EmployeeManagement = () => {
             minWidth: 50,
             flex: 1,
 
-            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><Pencil size={17} color="black" onClick={() => toEdit(params.data, params.data._id)} style={{ cursor: "pointer" }} /></div>
+            cellRenderer: (params) => <div className='Pencil iconBtn' title='ערוך'><UserRoundPen size={17} color="black" onClick={() => toEdit(params.data, params.data._id)} style={{ cursor: "pointer" }} /></div>
         },
 
         {
