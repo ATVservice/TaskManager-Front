@@ -18,6 +18,7 @@ import EmployeeManagement from '../pages/employeeManagement/EmployeeManagement';
 import AdminDashboard from '../pages/adminDashboard/AdminDashboard';
 import Report from '../pages/report/report/Report';
 import AlertsPage from '../pages/alertsPage/AlertsPage';
+import ResetEmailForm from '../pages/resetEmailForm/resetEmailForm';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
@@ -29,6 +30,8 @@ const AppRoutes = () => {
         {!user ? (
           <>
             <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+            <Route path="/ResetEmail" element={<PageWrapper><ResetEmailForm /></PageWrapper>} />
+
             <Route path="*" element={<PageWrapper><Navigate to="/login" replace /></PageWrapper>} />
             <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
           </>
@@ -39,7 +42,7 @@ const AppRoutes = () => {
             <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
             <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
             <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
-            <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+            {/* <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} /> */}
             <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
 
 

@@ -22,8 +22,6 @@ const Login = () => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [email, setEmail] = useState('');
-  const [forget, setForget] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -51,19 +49,7 @@ const Login = () => {
     }
   };
   const isForgotPassword = async () => {
-    setForget(true);
-  }
-  const sendEmail = async () => {
-    setForget(false);
-    try {
-      await forgotPassword(email);
-      toast.success("קישור לאיפוס נשלח לאימייל שלך", { duration: 3000 });
-
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || 'כרגע אין אפשרות לשלוח קישור לאיפוס', { duration: 3000 });
-
-    }
+    navigate('/ResetEmail');
   }
 
   return (
@@ -105,21 +91,6 @@ const Login = () => {
 
               <button type="submit" id="login-button">התחבר</button>
               <a onClick={isForgotPassword} className='forgot'>שכחת סיסמא?</a>
-              {forget && (
-                <>
-                  <div className="input-wrapper">
-
-                    <input
-                      type="text"
-                      placeholder="הכנס אימייל"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <button type="button" className='sendLink' onClick={sendEmail}>שלח קישור</button>
-                </>
-              )}
-
 
             </form>
           </div>
