@@ -4,11 +4,14 @@ import AppRoutes from './routes/AppRoutes';
 import useSessionManager from './sessionManager.js'
 import { Toaster } from 'react-hot-toast';
 import { HeadProvider } from 'react-head';  
+import useSession from './session.js';
 
 
 
 const App = () => {
   useSessionManager()
+  // useSession()
+
 
   return (
 

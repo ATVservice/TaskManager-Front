@@ -18,7 +18,7 @@ import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
 import toast from 'react-hot-toast';
-import { createRoot }from 'react-dom/client'; // לשורש של האפליקציה
+import { createRoot } from 'react-dom/client'; // לשורש של האפליקציה
 import { createPortal } from 'react-dom';      // לפורטלים (popups, modals)
 
 import './Tasks.css';
@@ -268,14 +268,31 @@ const Tasks = () => {
 
     const toDuplicateTask = async (taskId) => {
         const token = user?.token;
-        try {
-            await duplicateTask(taskId, token);
-            toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
+            await Swal.fire({
+                title: "אתה בטוח שברצונך לשכפל משימה זו?",
+                showDenyButton: true,
+                showCancelButton: false,
+                cancelButtonText: 'ביטול',
+                confirmButtonText: "כן",
+                denyButtonText: "לא",
+                confirmButtonColor: "blue",  
+                denyButtonColor: "gray" 
+            }).then(async(result) => {
+                if (result.isConfirmed) {
+                    try{
+                        await duplicateTask(taskId, token);
+                        toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
+            
+                        refreshTasks();
+                    }
+                    catch(error)
+                    {
+                        toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
 
-            refreshTasks();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
-        }
+                    }
+                }
+            });
+
     };
 
     const closeDetailsDiv = () => {
@@ -743,7 +760,9 @@ const Tasks = () => {
                             <button onClick={handleClosePopup} className="close-btn">×</button>
                             <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
                         </div>
-                    </div>
+                    </div>,
+                     document.body
+
                 )}
 
                 {ShowEditModal && (
