@@ -18,6 +18,9 @@ import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
 import toast from 'react-hot-toast';
+import { createRoot }from 'react-dom/client'; // לשורש של האפליקציה
+import { createPortal } from 'react-dom';      // לפורטלים (popups, modals)
+
 import './Tasks.css';
 import { Title } from 'react-head';
 
@@ -104,13 +107,19 @@ const Tasks = () => {
     const navigate = useNavigate();
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
-
+    const tabs = [
+        { key: 'today', label: 'משימות להיום' },
+        { key: 'future', label: 'משימות עתידיות' },
+        { key: 'recurring', label: 'משימות קבועות' },
+        { key: 'completed', label: 'משימות שבוצעו' },
+        { key: 'cancelled', label: 'משימות שבוטלו' },
+        { key: 'drawer', label: 'משימות מגירה' },
+    ];
     const [allTasks, setAllTasks] = useState([]);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
-    const [activeTab, setActiveTab] = useState('today-recurring');
-
+    const [activeTab, setActiveTab] = useState(tabs[0].key);
     const [activeType, setActiveType] = useState('today-recurring');
     const [ShowEditModal, setShowEditModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
@@ -118,6 +127,17 @@ const Tasks = () => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [open, setOpen] = useState(false);
+    const wrapperRef = useRef(null);
+    useEffect(() => {
+        function handleClickOutside(e) {
+            if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -127,14 +147,7 @@ const Tasks = () => {
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
-    const tabs = [
-        { key: 'today', label: 'משימות להיום' },
-        { key: 'future', label: 'משימות עתידיות' },
-        { key: 'recurring', label: 'משימות קבועות' },
-        { key: 'completed', label: 'משימות שבוצעו' },
-        { key: 'cancelled', label: 'משימות שבוטלו' },
-        { key: 'drawer', label: 'משימות מגירה' },
-    ];
+
 
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -662,32 +675,36 @@ const Tasks = () => {
                         <div className="main-tabs">
                             <button className="tab-button arrows" onClick={handlePreviousTab}>
                                 <ChevronRight size={16} />
-                                הקודם
                             </button>
+
                             <div className="tab-dropdown-wrapper">
                                 <button className={`tab-button active`}
-                                    onClick={() => setActiveTab(tabs[activeIndex].key)}>
+                                    onClick={() => setOpen(prev => !prev)}
+                                >
                                     {tabs[activeIndex].label}
                                 </button>
 
-                                <div className="tab-dropdown">
-                                    {tabs.map((tab, index) => (
-                                        <div
-                                            key={tab.key}
-                                            className={`tab-dropdown-item ${activeIndex === index ? "selected" : ""}`}
-                                            onClick={() => {
-                                                setActiveIndex(index);
-                                                setActiveTab(tab.key);
-                                            }}
-                                        >
-                                            {tab.label}
-                                        </div>
-                                    ))}
-                                </div>
+                                {open && (
+                                    <div className="tab-dropdown">
+                                        {tabs.map((tab, index) => (
+                                            <div
+                                                key={tab.key}
+                                                className={`tab-dropdown-item ${activeTab === tab.key ? "selected" : ""}`}
+                                                onClick={() => {
+                                                    setActiveTab(tab.key);
+                                                    setActiveIndex(index);
+                                                    setOpen(false);
+                                                }}
+                                            >
+                                                {tab.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                             </div>
 
                             <button className="tab-button arrows ChevronLeft" onClick={handleNextTab}>
-                                הבא
                                 <ChevronLeft size={16} />
                             </button>
                         </div>
@@ -720,7 +737,7 @@ const Tasks = () => {
                     </div>
                 </div>
 
-                {showCreatePopup && (
+                {showCreatePopup && createPortal(
                     <div className="popup-overlay">
                         <div className="popup-content">
                             <button onClick={handleClosePopup} className="close-btn">×</button>
@@ -743,11 +760,17 @@ const Tasks = () => {
                     </div>
                 )}
 
-                <TaskDetails
-                    details={details}
-                    isOpen={openDetails}
-                    onClose={closeDetailsDiv}
-                />
+
+
+                {openDetails && createPortal(
+                    <TaskDetails
+                        details={details}
+                        isOpen={openDetails}
+                        onClose={closeDetailsDiv}
+                    />,
+                    document.body
+                )}
+
 
                 <TaskAgGrid
                     rowData={filteredTasks}

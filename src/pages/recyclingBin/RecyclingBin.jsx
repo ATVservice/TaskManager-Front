@@ -30,8 +30,8 @@ const RecyclingBin = () => {
         {
             headerName: "", field: "restore", maxWidth: 50,
             cellRenderer: (params) => (
-                <div className='recycle iconButton' title='צפה בהיסטוריה'>
-                    <Recycle size={17} color="black" title="שחזר משימה"
+                <div className='recycle iconButton' title='שיחזור משימה'>
+                    <Recycle size={17} color="black" title="שיחזור משימה"
                         onClick={() => toRestoreTask(params.data._id)} />
                 </div>
             )
@@ -119,10 +119,10 @@ const RecyclingBin = () => {
     const toRestoreTask = async (taskId) => {
         const token = user?.token;
         const { value: password, isConfirmed } = await Swal.fire({
-            title: 'אימות סיסמה למחיקת משימה',
+            title: 'אימות סיסמה לשיחזור משימה',
             input: 'password',
             inputLabel: 'הכנס/י סיסמה',
-            inputPlaceholder: 'סיסמה נדרשת למחיקה',
+            inputPlaceholder: 'סיסמה נדרשת לשיחזור',
             confirmButtonText: 'אשר',
             cancelButtonText: 'ביטול',
             showCancelButton: true,

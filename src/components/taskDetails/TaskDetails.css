@@ -59,6 +59,7 @@
     background: #0a3aa0;
 }
 
+/* עבור מובייל */
 @media (max-width: 768px) {
     .side-popup {
         width: 100%;

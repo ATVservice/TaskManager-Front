@@ -21,7 +21,7 @@ import AlertsPage from '../pages/alertsPage/AlertsPage';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
-  const location = useLocation(); 
+  const location = useLocation();
 
   return (
     <AnimatePresence mode="wait">
@@ -31,6 +31,7 @@ const AppRoutes = () => {
             <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
             <Route path="*" element={<PageWrapper><Navigate to="/login" replace /></PageWrapper>} />
             <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+            
           </>
         ) : (
           <>
@@ -46,7 +47,7 @@ const AppRoutes = () => {
             {user.role === 'מנהל' && (
               <>
                 <Route path="/association" element={<PageWrapper><Association /></PageWrapper>} />
-                <Route path="*" element={<PageWrapper><Navigate to="/tasks" /></PageWrapper>} />
+                <Route index element={<PageWrapper><Tasks /></PageWrapper>} />
                 <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
                 <Route path="/goals" element={<PageWrapper><GoalForm /></PageWrapper>} />
                 <Route path="/employee" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
@@ -57,10 +58,12 @@ const AppRoutes = () => {
 
             {user.role === 'עובד' && (
               <>
-                <Route path="*" element={<PageWrapper><Navigate to="/tasks" /></PageWrapper>} />
+                <Route index element={<PageWrapper><Tasks /></PageWrapper>} />
                 <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
               </>
             )}
+            <Route path="*" element={<Navigate to="/tasks" replace />} />
+
           </>
         )}
       </Routes>
