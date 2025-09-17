@@ -10,7 +10,7 @@ import useSession from './session.js';
 
 const App = () => {
   useSessionManager()
-  // useSession()
+  useSession()
 
 
   return (
