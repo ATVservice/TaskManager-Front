@@ -5,7 +5,7 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 import { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import './History.css';
-import { Clock } from 'lucide-react';
+import { CircleArrowRight, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Title } from 'react-head';
 
@@ -90,6 +90,7 @@ const History = () => {
             <Title>היסטוריה</Title>
 
             <div className="history-page-wrapper">
+
                 <div className="history-header">
                     <Clock className="title-icon" size={20} />
 
@@ -97,6 +98,13 @@ const History = () => {
                 </div>
 
                 <div className="history-grid-container">
+                    <CircleArrowRight
+                        onClick={() => window.history.back()}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <title>חזרה למשימה</title>
+                    </CircleArrowRight>
+
                     <SimpleAgGrid rowData={data} columnDefs={columns} />
                 </div>
             </div>
