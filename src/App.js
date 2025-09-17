@@ -3,17 +3,21 @@ import NavBar from './components/navBar/NavBar';
 import AppRoutes from './routes/AppRoutes';
 import useSessionManager from './sessionManager.js'
 import { Toaster } from 'react-hot-toast';
+import { HeadProvider } from 'react-head';  
+
 
 
 const App = () => {
   useSessionManager()
 
   return (
-    <>
-      <Toaster  position="top-center" />
+
+    <HeadProvider>
+      <Toaster position="top-center" />
       <NavBar />
       <AppRoutes />
-    </>
+    </HeadProvider>
+
   );
 };
 

@@ -10,6 +10,7 @@ import { AuthContext } from '../../context/AuthContext';
 import TargetModal from '../../components/targetModal/TargetModal';
 import { CheckCheck, TrendingUp } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const COLORS = ['#FF4C4C', '#8B8B8B', '#4C91FF', '#A3C78B', '#C9B59B'];
 const STATUS_COLORS = {
@@ -112,6 +113,9 @@ const Dashboard = ({ employeeId }) => {
 
 
   return (
+    <>
+    <Title>דשבורד</Title>
+
     <div className="dashboard-container">
       <h3 className="dashboard-header">הצג הספקים לפי:</h3>
       <div className="range-buttons">
@@ -238,6 +242,7 @@ const Dashboard = ({ employeeId }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

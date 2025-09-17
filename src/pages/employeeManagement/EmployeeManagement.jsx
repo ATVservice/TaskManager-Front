@@ -9,6 +9,7 @@ import TargetModal from '../../components/targetModal/TargetModal.jsx';
 import { registerUser } from '../../services/authService.js';
 import './EmployeeManagement.css';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const EmployeeManagement = () => {
 
@@ -211,6 +212,9 @@ const EmployeeManagement = () => {
     };
 
     return (
+        <>
+              <Title>ניהול עובדים</Title>
+
         <div>
             <div className="actions-bar">
                 <div className="search-input-container">
@@ -270,6 +274,7 @@ const EmployeeManagement = () => {
                 />
             )}
         </div>
+        </>
     );
 };
 

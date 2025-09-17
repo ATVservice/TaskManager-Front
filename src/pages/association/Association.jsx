@@ -5,6 +5,7 @@ import { AuthContext } from '../../context/AuthContext.jsx';
 import './Association.css'
 import { Plus, UserPlus, Users } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const Association = () => {
   const { user } = useContext(AuthContext);
@@ -68,7 +69,7 @@ const Association = () => {
 
     // שליפת עובדים שכבר שייכים לעמותה
     const employees = await fetchGetAssociatedEmployees(associationId, user?.token);
-    setCheckedUsers(employees.map(e => e._id)); 
+    setCheckedUsers(employees.map(e => e._id));
     setOpenAssignPopup(true);
   };
 
@@ -92,7 +93,7 @@ const Association = () => {
       setCheckedUsers([]);
       setSelectedAssociation(null);
     } catch (err) {
-      toast.error(err.response?.data?.message ||"שגיאה, אנא נסה מאוחר יותר", { duration: 3000 });
+      toast.error(err.response?.data?.message || "שגיאה, אנא נסה מאוחר יותר", { duration: 3000 });
       console.error("שגיאה בשמירת שיוך:", err);
     }
   };
@@ -115,124 +116,127 @@ const Association = () => {
   };
 
   return (
-    <div className="association-page-wrapper">
+    <>
+      <Title>עמותות</Title>
 
-    <div className="association-container">
-      <h2>רשימת עמותות</h2>
-      <button className="association-btn primary add-btn" onClick={() => setOpenAddPopup(true)}>
-        <Plus size={18} /> הוספת עמותה
-      </button>
+      <div className="association-page-wrapper">
 
-      <table className="association-table">
-        <thead>
-          <tr>
-            <th>שם עמותה</th>
-            <th>עובדים משוייכים</th>
-            <th>שיוך עובדים</th>
-          </tr>
-        </thead>
-        <tbody>
-          {associations.map((asso) => (
-            <tr key={asso._id}>
-              <td>{asso.name}</td>
-              <td>
-                <button className="association-btn secondary"
-                  onClick={() => getAssociatedEmployees(asso._id)} 
-                  title='עובדים משוייכים'>
-                  <Users color="#050505" />
-                </button>
-              </td>
-              <td>
-                <button className="association-btn primary"
-                  onClick={() => openAssignEmployees(asso._id)}
-                  title='שיוך עובדים'>
-                  <UserPlus color="#fcfcfc" />
-                </button>
+        <div className="association-container">
+          <h2>רשימת עמותות</h2>
+          <button className="association-btn primary add-btn" onClick={() => setOpenAddPopup(true)}>
+            <Plus size={18} /> הוספת עמותה
+          </button>
 
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <table className="association-table">
+            <thead>
+              <tr>
+                <th>שם עמותה</th>
+                <th>עובדים משוייכים</th>
+                <th>שיוך עובדים</th>
+              </tr>
+            </thead>
+            <tbody>
+              {associations.map((asso) => (
+                <tr key={asso._id}>
+                  <td>{asso.name}</td>
+                  <td>
+                    <button className="association-btn secondary"
+                      onClick={() => getAssociatedEmployees(asso._id)}
+                      title='עובדים משוייכים'>
+                      <Users color="#050505" />
+                    </button>
+                  </td>
+                  <td>
+                    <button className="association-btn primary"
+                      onClick={() => openAssignEmployees(asso._id)}
+                      title='שיוך עובדים'>
+                      <UserPlus color="#fcfcfc" />
+                    </button>
 
-      {/* פופאפ הוספת עמותה */}
-      {openAddPopup && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <button className="popup-close" onClick={() => setOpenAddPopup(false)}>X</button>
-            <h3>הוספת עמותה חדשה</h3>
-            <input
-              type="text"
-              placeholder="שם עמותה"
-              value={newAssociation.name}
-              onChange={(e) => setNewAssociation({ ...newAssociation, name: e.target.value })}
-            />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-            <div className="popup-actions">
-              <button
-                className="association-btn primary"
-                onClick={handleAddAssociation}
-              >
-                שמירה
-              </button>
-              <button
-                className="association-btn secondary"
-                onClick={() => setOpenAddPopup(false)}
-              >
-                ביטול
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {openAssociatedEmployees && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <button
-              className="popup-close"
-              onClick={closeAssociatedEmployees}>X</button>
+          {/* פופאפ הוספת עמותה */}
+          {openAddPopup && (
+            <div className="popup-overlay">
+              <div className="popup">
+                <button className="popup-close" onClick={() => setOpenAddPopup(false)}>X</button>
+                <h3>הוספת עמותה חדשה</h3>
+                <input
+                  type="text"
+                  placeholder="שם עמותה"
+                  value={newAssociation.name}
+                  onChange={(e) => setNewAssociation({ ...newAssociation, name: e.target.value })}
+                />
 
-            <h3>עובדים משויכים</h3>
-            {associatedEmployees.length > 0 ? (
-              <ul className="employee-list">
-                {associatedEmployees.map((emp) => (
-                  <li key={emp._id}>{emp.userName} ({emp.firstName} {emp.lastName})</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="empty-text">אין עובדים משויכים לעמותה זו</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {openAssignPopup && (
-        <div className="popup-overlay">
-          <div className="popup">
-            <h3>שיוך עובדים לעמותה</h3>
-            {allUsers.map(u => (
-              <div key={u._id}>
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={checkedUsers.includes(u._id)}
-                    onChange={() => toggleUserCheck(u._id)}
-                  />
-                  {u.userName} ({u.firstName} {u.lastName})
-                </label>
+                <div className="popup-actions">
+                  <button
+                    className="association-btn primary"
+                    onClick={handleAddAssociation}
+                  >
+                    שמירה
+                  </button>
+                  <button
+                    className="association-btn secondary"
+                    onClick={() => setOpenAddPopup(false)}
+                  >
+                    ביטול
+                  </button>
+                </div>
               </div>
-            ))}
-            <div style={{ marginTop: '15px', textAlign: 'center' }}>
-              <button className="association-btn primary" onClick={saveAssociationUsers}>שמור</button>
-              <button className="association-btn secondary" onClick={() => setOpenAssignPopup(false)}>סגור</button>
             </div>
+          )}
+          {openAssociatedEmployees && (
+            <div className="popup-overlay">
+              <div className="popup">
+                <button
+                  className="popup-close"
+                  onClick={closeAssociatedEmployees}>X</button>
 
-          </div>
+                <h3>עובדים משויכים</h3>
+                {associatedEmployees.length > 0 ? (
+                  <ul className="employee-list">
+                    {associatedEmployees.map((emp) => (
+                      <li key={emp._id}>{emp.userName} ({emp.firstName} {emp.lastName})</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="empty-text">אין עובדים משויכים לעמותה זו</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {openAssignPopup && (
+            <div className="popup-overlay">
+              <div className="popup">
+                <h3>שיוך עובדים לעמותה</h3>
+                {allUsers.map(u => (
+                  <div key={u._id}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={checkedUsers.includes(u._id)}
+                        onChange={() => toggleUserCheck(u._id)}
+                      />
+                      {u.userName} ({u.firstName} {u.lastName})
+                    </label>
+                  </div>
+                ))}
+                <div style={{ marginTop: '15px', textAlign: 'center' }}>
+                  <button className="association-btn primary" onClick={saveAssociationUsers}>שמור</button>
+                  <button className="association-btn secondary" onClick={() => setOpenAssignPopup(false)}>סגור</button>
+                </div>
+
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-    </div>
-
+      </div>
+    </>
   );
 };
 

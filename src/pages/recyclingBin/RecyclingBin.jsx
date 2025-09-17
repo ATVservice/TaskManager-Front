@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { getMoreDetails } from '../../services/taskService.js';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const RecyclingBin = () => {
     const navigate = useNavigate();
@@ -91,7 +92,7 @@ const RecyclingBin = () => {
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
-            toast.error(toast.error(error.response?.data?.message)|| 'שגיאה, אנא נסה מאוחר יותר', { duration: 3000 });
+            toast.error(toast.error(error.response?.data?.message) || 'שגיאה, אנא נסה מאוחר יותר', { duration: 3000 });
             console.error('Error getting more details:', error);
         }
     };
@@ -158,24 +159,28 @@ const RecyclingBin = () => {
     }, [user]);
 
     return (
-        <div className='RecyclingBin-page-wrapper'>
-            <div className="RecyclingBin-header">
-                <Recycle className="title-icon-RecyclingBin" size={20} />
-                <h2 className="RecyclingBin-title">סל המיחזור</h2>
-            </div>
-            <div className="RecyclingBin-grid-container">
+        <>
+            <Title>סל המיחזור</Title>
 
-                <TaskAgGrid
-                    rowData={data}
-                    columnDefs={columnDefs}
-                />
-                <TaskDetails
-                    details={details}
-                    isOpen={openDetails}
-                    onClose={closeDetailsDiv}
-                />
+            <div className='RecyclingBin-page-wrapper'>
+                <div className="RecyclingBin-header">
+                    <Recycle className="title-icon-RecyclingBin" size={20} />
+                    <h2 className="RecyclingBin-title">סל המיחזור</h2>
+                </div>
+                <div className="RecyclingBin-grid-container">
+
+                    <TaskAgGrid
+                        rowData={data}
+                        columnDefs={columnDefs}
+                    />
+                    <TaskDetails
+                        details={details}
+                        isOpen={openDetails}
+                        onClose={closeDetailsDiv}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

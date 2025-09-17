@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import './History.css';
 import { Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const History = () => {
     const { taskId, model } = useParams();
@@ -56,7 +57,7 @@ const History = () => {
             }
         },
 
-   
+
     ]);
 
     useEffect(() => {
@@ -76,7 +77,7 @@ const History = () => {
                     setData(historyTask.history)
                 }
             } catch (err) {
-                toast.error(err.response?.data?.message ||"שגיאה, נסה מאוחר יותר", { duration: 3000 });
+                toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
                 console.log(err)
             }
         };
@@ -85,17 +86,21 @@ const History = () => {
     }, []);
 
     return (
-        <div className="history-page-wrapper">
-            <div className="history-header">
-                    <Clock className="title-icon" size={20}/>
-                
-                <h2 className="history-title">היסטורייה</h2>
-            </div>
+        <>
+            <Title>היסטוריה</Title>
 
-            <div className="history-grid-container">
-                <SimpleAgGrid rowData={data} columnDefs={columns} />
+            <div className="history-page-wrapper">
+                <div className="history-header">
+                    <Clock className="title-icon" size={20} />
+
+                    <h2 className="history-title">היסטורייה</h2>
+                </div>
+
+                <div className="history-grid-container">
+                    <SimpleAgGrid rowData={data} columnDefs={columns} />
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

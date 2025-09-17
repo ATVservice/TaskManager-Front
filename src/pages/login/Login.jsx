@@ -6,6 +6,7 @@ import { LockKeyhole, User, Eye, EyeOff } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import './Login.css';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 
 const Login = () => {
@@ -42,7 +43,7 @@ const Login = () => {
       login(userData);
 
       navigate('/tasks');
-      
+
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 });
@@ -66,65 +67,69 @@ const Login = () => {
   }
 
   return (
-    <div className="wrapper">
-      <div className="login-page">
-        <div className="login-card">
-          <h1>ברוך הבא</h1>
+    <>
+      <Title>כניסה</Title>
 
-          <form className="form" onSubmit={handleLogin}>
-            <div className="input-wrapper">
-              <User className="input-icon" />
-              <input
-                type="text"
-                placeholder="שם משתמש"
-                value={username}
-                required
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <div className="input-wrapper password-box">
-              <LockKeyhole className="input-icon" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="סיסמא"
-                value={password}
-                required
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <span
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </span>
-            </div>
+      <div className="wrapper">
+        <div className="login-page">
+          <div className="login-card">
+            <h1>ברוך הבא</h1>
 
-            <button type="submit" id="login-button">התחבר</button>
-            <a onClick={isForgotPassword} className='forgot'>שכחת סיסמא?</a>
-            {forget && (
-              <>
-                <div className="input-wrapper">
+            <form className="form" onSubmit={handleLogin}>
+              <div className="input-wrapper">
+                <User className="input-icon" />
+                <input
+                  type="text"
+                  placeholder="שם משתמש"
+                  value={username}
+                  required
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              <div className="input-wrapper password-box">
+                <LockKeyhole className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="סיסמא"
+                  value={password}
+                  required
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </span>
+              </div>
 
-                  <input
-                    type="text"
-                    placeholder="הכנס אימייל"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <button type="button" className='sendLink' onClick={sendEmail}>שלח קישור</button>
-              </>
-            )}
+              <button type="submit" id="login-button">התחבר</button>
+              <a onClick={isForgotPassword} className='forgot'>שכחת סיסמא?</a>
+              {forget && (
+                <>
+                  <div className="input-wrapper">
+
+                    <input
+                      type="text"
+                      placeholder="הכנס אימייל"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <button type="button" className='sendLink' onClick={sendEmail}>שלח קישור</button>
+                </>
+              )}
 
 
-          </form>
+            </form>
+          </div>
+
+          <ul className="bg-bubbles">
+            {[...Array(10)].map((_, i) => <li key={i}></li>)}
+          </ul>
         </div>
-
-        <ul className="bg-bubbles">
-          {[...Array(10)].map((_, i) => <li key={i}></li>)}
-        </ul>
       </div>
-    </div>
+    </>
   );
 };
 

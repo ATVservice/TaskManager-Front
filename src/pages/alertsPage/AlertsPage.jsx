@@ -3,6 +3,7 @@ import { fetchUserAlerts, markAlertsRead } from '../../services/alertService';
 import './AlertsPage.css';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
+import { Title } from 'react-head';
 
 const AlertsPage = () => {
     const { user } = useContext(AuthContext);
@@ -34,7 +35,7 @@ const AlertsPage = () => {
     // פונקציה לסימון התרעה בודדת כנקראה
     const markAsRead = async (alertId) => {
         try {
-            await markAlertsRead(user.token, [alertId]); 
+            await markAlertsRead(user.token, [alertId]);
             setAlerts(prev =>
                 prev.map(a => (a._id === alertId ? { ...a, resolved: true } : a))
             );
@@ -51,58 +52,62 @@ const AlertsPage = () => {
     const totalPages = Math.ceil(alerts.length / alertsPerPage);
 
     return (
-        <div className="alerts-container">
-            <h1>כל ההתראות</h1>
-            <ul className="alerts-all">
-                {currentAlerts.map(alert => (
-                    <li key={alert._id} className={`alert-single ${alert.resolved ? 'resolved' : ''}`}>
-                        <div className="alert-type">{alert.type}</div>
+        <>
+            <Title>התראות</Title>
 
-                        {alert.task ? (
-                            alert.task.taskId ? (
-                                <div className="alert-task">
-                                    משימה מס' {alert.task.taskId}: {alert.task.title}
-                                </div>
+            <div className="alerts-container">
+                <h1>כל ההתראות</h1>
+                <ul className="alerts-all">
+                    {currentAlerts.map(alert => (
+                        <li key={alert._id} className={`alert-single ${alert.resolved ? 'resolved' : ''}`}>
+                            <div className="alert-type">{alert.type}</div>
+
+                            {alert.task ? (
+                                alert.task.taskId ? (
+                                    <div className="alert-task">
+                                        משימה מס' {alert.task.taskId}: {alert.task.title}
+                                    </div>
+                                ) : (
+                                    <div className="alert-task">
+                                        משימה: {alert.task.title}
+                                    </div>
+                                )
                             ) : (
-                                <div className="alert-task">
-                                    משימה: {alert.task.title}
+                                <div className="alert-task no-task">
                                 </div>
-                            )
-                        ) : (
-                            <div className="alert-task no-task">
+                            )}
+
+                            <div className="alert-date">
+                                נוצרה: {new Date(alert.createdAt).toLocaleDateString('he-IL')}
                             </div>
-                        )}
 
-                        <div className="alert-date">
-                            נוצרה: {new Date(alert.createdAt).toLocaleDateString('he-IL')}
-                        </div>
+                            {alert.details && <div className="alert-details">{alert.details}</div>}
+                            {!alert.resolved && (
+                                <button
+                                    className="mark-read-btn"
+                                    onClick={() => markAsRead(alert._id)}
+                                >
+                                    סמן כנקראה
+                                </button>
+                            )}
+                        </li>
+                    ))}
 
-                        {alert.details && <div className="alert-details">{alert.details}</div>}
-                        {!alert.resolved && (
-                            <button
-                                className="mark-read-btn"
-                                onClick={() => markAsRead(alert._id)}
-                            >
-                                סמן כנקראה
-                            </button>
-                        )}
-                    </li>
-                ))}
+                </ul>
 
-            </ul>
-
-            <div className="pagination">
-                {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={currentPage === i + 1 ? 'active' : ''}
-                    >
-                        {i + 1}
-                    </button>
-                ))}
+                <div className="pagination">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <button
+                            key={i + 1}
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={currentPage === i + 1 ? 'active' : ''}
+                        >
+                            {i + 1}
+                        </button>
+                    ))}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 

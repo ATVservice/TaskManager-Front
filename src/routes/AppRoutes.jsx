@@ -21,7 +21,7 @@ import AlertsPage from '../pages/alertsPage/AlertsPage';
 
 const AppRoutes = () => {
   const { user } = useContext(AuthContext);
-  const location = useLocation(); // חשוב!
+  const location = useLocation(); 
 
   return (
     <AnimatePresence mode="wait">

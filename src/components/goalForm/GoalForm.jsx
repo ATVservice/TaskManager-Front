@@ -4,6 +4,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { createGoal } from "../../services/goalService";
 import './GoalForm.css'
 import toast from "react-hot-toast";
+import { Title } from "react-head";
 
 export default function GoalForm() {
     const { user } = useContext(AuthContext);
@@ -76,63 +77,67 @@ export default function GoalForm() {
     };
 
     return (
-        <div className="association-page-wrapper">
-            <form onSubmit={handleSubmit} className="goal-form">
-                <h3>הגדרת יעדים</h3>
-                <select name="targetType" value={formData.targetType} onChange={handleChange} required className="goal-form__select">
-                    <option value="">בחר סוג יעד</option>
-                    <option value="עובד בודד">עובד בודד</option>
-                    <option value="כלל העובדים">כלל העובדים</option>
-                </select>
-                {formData.targetType == "עובד בודד" &&
-                    <select name="employee" value={formData.employee} onChange={handleChange} className="goal-form__select">
-                        <option value="">כל העובדים</option>
-                        {employees.map(emp => (
-                            <option key={emp._id} value={emp._id}>
-                                {emp.userName}
-                            </option>
-                        ))}
-                    </select>}
+        <>
+            <Title>הגדרת יעדים</Title>
 
-                <select name="importance" value={formData.importance} onChange={handleChange} className="goal-form__select">
-                    <option value="">בחר רמת חשיבות</option>
-                    {allImportanceOptions.map((opt) => (
-                        <option key={opt} value={opt}>{opt} </option>
-                    ))}
-                </select>
-                {formData.importance === "מיידי" &&
-                    <div>
-                        <select name="subImportance" value={formData.subImportance} onChange={handleChange} className="goal-form__select">
-                            <option value="">בחר תת דירוג</option>
-                            {allSubImportanceOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
+            <div className="association-page-wrapper">
+                <form onSubmit={handleSubmit} className="goal-form">
+                    <h3>הגדרת יעדים</h3>
+                    <select name="targetType" value={formData.targetType} onChange={handleChange} required className="goal-form__select">
+                        <option value="">בחר סוג יעד</option>
+                        <option value="עובד בודד">עובד בודד</option>
+                        <option value="כלל העובדים">כלל העובדים</option>
+                    </select>
+                    {formData.targetType == "עובד בודד" &&
+                        <select name="employee" value={formData.employee} onChange={handleChange} className="goal-form__select">
+                            <option value="">כל העובדים</option>
+                            {employees.map(emp => (
+                                <option key={emp._id} value={emp._id}>
+                                    {emp.userName}
+                                </option>
                             ))}
-                        </select>
-                    </div>
-                }
+                        </select>}
 
-                <select name="frequency" value={formData.frequency} onChange={handleChange} required className="goal-form__select">
-                    <option value="יומי">יומי</option>
-                    <option value="שבועי">שבועי</option>
-                    <option value="חודשי">חודשי</option>
-                </select>
-                <label>בחר כמות יעד</label>
+                    <select name="importance" value={formData.importance} onChange={handleChange} className="goal-form__select">
+                        <option value="">בחר רמת חשיבות</option>
+                        {allImportanceOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt} </option>
+                        ))}
+                    </select>
+                    {formData.importance === "מיידי" &&
+                        <div>
+                            <select name="subImportance" value={formData.subImportance} onChange={handleChange} className="goal-form__select">
+                                <option value="">בחר תת דירוג</option>
+                                {allSubImportanceOptions.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                        </div>
+                    }
 
-                <input
-                    type="number"
-                    name="targetCount"
-                    placeholder="כמות יעד"
-                    value={formData.targetCount}
-                    onChange={handleChange}
-                    min={0}
-                    required
-                    className="goal-form__input"
-                />
+                    <select name="frequency" value={formData.frequency} onChange={handleChange} required className="goal-form__select">
+                        <option value="יומי">יומי</option>
+                        <option value="שבועי">שבועי</option>
+                        <option value="חודשי">חודשי</option>
+                    </select>
+                    <label>בחר כמות יעד</label>
+
+                    <input
+                        type="number"
+                        name="targetCount"
+                        placeholder="כמות יעד"
+                        value={formData.targetCount}
+                        onChange={handleChange}
+                        min={0}
+                        required
+                        className="goal-form__input"
+                    />
 
 
 
-                <button type="submit" className="goal-form__button">שמור יעד</button>
-            </form>
-        </div>
+                    <button type="submit" className="goal-form__button">שמור יעד</button>
+                </form>
+            </div>
+        </>
     );
 }

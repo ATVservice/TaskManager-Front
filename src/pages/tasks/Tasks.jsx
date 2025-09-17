@@ -19,6 +19,7 @@ import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
 import toast from 'react-hot-toast';
 import './Tasks.css';
+import { Title } from 'react-head';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -638,102 +639,106 @@ const Tasks = () => {
     };
 
     return (
-        <div className="page-container">
-            <div className="controls-container">
-                <div className='searchRecycleIcon'>
-                    <div className="search-input-container">
-                        <Search size={16} className="search-icon" />
-                        <input
-                            type="text"
-                            placeholder="חיפוש"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
-                        />
-                    </div>
-                    <TrashWithRecycleIcon />
-                </div>
+        <>
+            <Title>משימות</Title>
 
-                <div className="tabs-container">
-                    <div className="main-tabs">
-                        <button className="tab-button arrows" onClick={handlePreviousTab}>
-                            <ChevronRight size={16} />
-                            הקודם
-                        </button>
-
-                        <button className={`tab-button active`} onClick={() => setActiveTab(tabs[activeIndex].key)}>
-                            {tabs[activeIndex].label}
-                        </button>
-
-                        <button className="tab-button arrows ChevronLeft" onClick={handleNextTab}>
-                            הבא
-                            <ChevronLeft size={16} />
-                        </button>
+            <div className="page-container">
+                <div className="controls-container">
+                    <div className='searchRecycleIcon'>
+                        <div className="search-input-container">
+                            <Search size={16} className="search-icon" />
+                            <input
+                                type="text"
+                                placeholder="חיפוש"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                            />
+                        </div>
+                        <TrashWithRecycleIcon />
                     </div>
 
-                    {activeTab.startsWith('today') && (
-                        <div className="sub-tabs">
-                            <button
-                                className={`filter-btn ${activeType === "today-single" ? "active" : ""}`}
-                                onClick={() => { setActiveType('today-single'); setActiveTab('today-single'); }}
-                            >
-                                שוטפות
+                    <div className="tabs-container">
+                        <div className="main-tabs">
+                            <button className="tab-button arrows" onClick={handlePreviousTab}>
+                                <ChevronRight size={16} />
+                                הקודם
                             </button>
-                            <button
-                                className={`filter-btn ${activeType === "today-recurring" ? "active" : ""}`}
-                                onClick={() => { setActiveType('today-recurring'); setActiveTab('today-recurring'); }}
-                            >
-                                קבועות
+
+                            <button className={`tab-button active`} onClick={() => setActiveTab(tabs[activeIndex].key)}>
+                                {tabs[activeIndex].label}
+                            </button>
+
+                            <button className="tab-button arrows ChevronLeft" onClick={handleNextTab}>
+                                הבא
+                                <ChevronLeft size={16} />
                             </button>
                         </div>
-                    )}
+
+                        {activeTab.startsWith('today') && (
+                            <div className="sub-tabs">
+                                <button
+                                    className={`filter-btn ${activeType === "today-single" ? "active" : ""}`}
+                                    onClick={() => { setActiveType('today-single'); setActiveTab('today-single'); }}
+                                >
+                                    שוטפות
+                                </button>
+                                <button
+                                    className={`filter-btn ${activeType === "today-recurring" ? "active" : ""}`}
+                                    onClick={() => { setActiveType('today-recurring'); setActiveTab('today-recurring'); }}
+                                >
+                                    קבועות
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button className="btn-add add-task-button" onClick={() => setShowCreatePopup(true)}>
+                            <Plus size={20} color="#fafafa" /> הוסף משימה
+                        </button>
+                        <button className="btn-add add-project-button" onClick={() => createProject(true)}>
+                            <Plus size={20} color="#fafafa" /> הוסף פרויקט
+                        </button>
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <button className="btn-add add-task-button" onClick={() => setShowCreatePopup(true)}>
-                        <Plus size={20} color="#fafafa" /> הוסף משימה
-                    </button>
-                    <button className="btn-add add-project-button" onClick={() => createProject(true)}>
-                        <Plus size={20} color="#fafafa" /> הוסף פרויקט
-                    </button>
-                </div>
+                {showCreatePopup && (
+                    <div className="popup-overlay">
+                        <div className="popup-content">
+                            <button onClick={handleClosePopup} className="close-btn">×</button>
+                            <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
+                        </div>
+                    </div>
+                )}
+
+                {ShowEditModal && (
+                    <div className="popup-overlay">
+                        <div className="popup-content">
+                            <button onClick={handleClosePopupEdit} className="close-btn">×</button>
+                            <EditTask
+                                taskToEdit={selectedTask}
+                                taskType={taskType}
+                                onClose={() => setShowEditModal(false)}
+                                onTaskUpdated={refreshTasks}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <TaskDetails
+                    details={details}
+                    isOpen={openDetails}
+                    onClose={closeDetailsDiv}
+                />
+
+                <TaskAgGrid
+                    rowData={filteredTasks}
+                    columnDefs={getColumnDefs()}
+                    onCellValueChanged={onCellValueChanged}
+                />
             </div>
-
-            {showCreatePopup && (
-                <div className="popup-overlay">
-                    <div className="popup-content">
-                        <button onClick={handleClosePopup} className="close-btn">×</button>
-                        <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
-                    </div>
-                </div>
-            )}
-
-            {ShowEditModal && (
-                <div className="popup-overlay">
-                    <div className="popup-content">
-                        <button onClick={handleClosePopupEdit} className="close-btn">×</button>
-                        <EditTask
-                            taskToEdit={selectedTask}
-                            taskType={taskType}
-                            onClose={() => setShowEditModal(false)}
-                            onTaskUpdated={refreshTasks}
-                        />
-                    </div>
-                </div>
-            )}
-
-            <TaskDetails
-                details={details}
-                isOpen={openDetails}
-                onClose={closeDetailsDiv}
-            />
-
-            <TaskAgGrid
-                rowData={filteredTasks}
-                columnDefs={getColumnDefs()}
-                onCellValueChanged={onCellValueChanged}
-            />
-        </div>
+        </>
     );
 };
 
