@@ -130,10 +130,10 @@ const Tasks = () => {
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
         { key: 'future', label: 'משימות עתידיות' },
-        { key: 'recurring', label: 'קבועות' },
-        { key: 'completed', label: 'בוצעו' },
-        { key: 'cancelled', label: 'בוטלו' },
-        { key: 'drawer', label: 'מגירה' },
+        { key: 'recurring', label: 'משימות קבועות' },
+        { key: 'completed', label: 'משימות שבוצעו' },
+        { key: 'cancelled', label: 'משימות שבוטלו' },
+        { key: 'drawer', label: 'משימות מגירה' },
     ];
 
     const [activeIndex, setActiveIndex] = useState(0);
@@ -664,10 +664,27 @@ const Tasks = () => {
                                 <ChevronRight size={16} />
                                 הקודם
                             </button>
+                            <div className="tab-dropdown-wrapper">
+                                <button className={`tab-button active`}
+                                    onClick={() => setActiveTab(tabs[activeIndex].key)}>
+                                    {tabs[activeIndex].label}
+                                </button>
 
-                            <button className={`tab-button active`} onClick={() => setActiveTab(tabs[activeIndex].key)}>
-                                {tabs[activeIndex].label}
-                            </button>
+                                <div className="tab-dropdown">
+                                    {tabs.map((tab, index) => (
+                                        <div
+                                            key={tab.key}
+                                            className={`tab-dropdown-item ${activeIndex === index ? "selected" : ""}`}
+                                            onClick={() => {
+                                                setActiveIndex(index);
+                                                setActiveTab(tab.key);
+                                            }}
+                                        >
+                                            {tab.label}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
                             <button className="tab-button arrows ChevronLeft" onClick={handleNextTab}>
                                 הבא
@@ -737,7 +754,7 @@ const Tasks = () => {
                     columnDefs={getColumnDefs()}
                     onCellValueChanged={onCellValueChanged}
                 />
-            </div>
+            </div >
         </>
     );
 };

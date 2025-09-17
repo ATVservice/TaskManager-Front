@@ -33,11 +33,10 @@ const NavBar = () => {
 
       <nav className='navbar'>
         <div className='rightProfile'>
-          {user.role === 'עובד' && (
             <div className="user-profile-container">
-              <span className="user-profile-name">שלום {user.userName}</span>
+              <span className="user-profile-name">{user.userName}</span>
             </div>
-          )}
+          
         </div>
 
         <div className='nav-links'>
