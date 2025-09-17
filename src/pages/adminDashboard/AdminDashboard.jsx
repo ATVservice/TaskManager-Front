@@ -62,31 +62,38 @@ const AdminDashboard = () => {
       const result = await fetchGeneralSummary(user.token, filterOptions);
       setData(result);
     } catch (error) {
-      toast.error(error.response?.data?.message, { duration: 3000 });
+      toast.error(error.response?.data?.message ||'שגיאה בטעינה', { duration: 3000 });
       console.error('שגיאה בטעינת נתונים:', error);
     } finally {
       setLoading(false);
     }
   };
 
-
   useEffect(() => {
     if (!user?.token) return;
-    getNames(user.token).then((names) => {
-      const unique = new Map();
-
-      names.forEach((n) => {
-        const key = `${n.firstName} ${n.lastName}`;
-        if (!unique.has(key)) {
-          unique.set(key, {
-            value: n.firstName,
-            label: key,
-          });
-        }
-      });
-      setEmployees([...unique.values()]);
-    });
+  
+    const loadNames = async () => {
+      try {
+        const names = await getNames(user.token);
+        const unique = new Map();
+  
+        names.forEach((n) => {
+          const key = `${n.firstName} ${n.lastName}`;
+          if (!unique.has(key)) {
+            unique.set(key, { value: n.firstName, label: key });
+          }
+        });
+  
+        setEmployees([...unique.values()]);
+      } catch (error) {
+        console.error("שגיאה בטעינת שמות:", error);
+        toast.error("שגיאה בטעינה", { duration: 3000 });
+      }
+    };
+  
+    loadNames();
   }, [user]);
+  
 
   // טעינת נתונים כשמשתנה הסינון
   useEffect(() => {

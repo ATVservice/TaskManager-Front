@@ -25,7 +25,7 @@ const Association = () => {
       const data = await fetchAllAssociations(user?.token);
       setAssociations(data);
     } catch (error) {
-      toast.error(error.response?.data?.message || "שגיאה, אנא נסע מאוחר יותר", { duration: 3000 });
+      toast.error(error.response?.data?.message || "שגיאה, אנא נסה מאוחר יותר", { duration: 3000 });
       console.log(error)
     }
   };

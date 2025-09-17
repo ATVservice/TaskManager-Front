@@ -88,7 +88,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 const data = await fetchAllAssociations(token);
                 setAssociations(data);
             } catch (error) {
-                toast.error(error.response?.data?.message, { duration: 3000 });
+                toast.error(error.response?.data?.message || 'שגיאה בטעינה', { duration: 3000 });
                 console.error('Error fetching associations:', error);
             }
         };
