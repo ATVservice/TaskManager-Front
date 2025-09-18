@@ -108,7 +108,7 @@ const Tasks = () => {
     const navigate = useNavigate();
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
-    
+
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
         { key: 'future', label: 'משימות עתידיות' },
@@ -122,18 +122,19 @@ const Tasks = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
-    
+
     // קריאת הטאב השמור מ-sessionStorage או ברירת מחדל
     const [activeTab, setActiveTab] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
         return savedTab && tabs.some(tab => tab.key === savedTab) ? savedTab : tabs[0].key;
     });
-    
+
     const [activeType, setActiveType] = useState(() => {
         const savedType = sessionStorage.getItem('activeTaskType');
         return savedType || 'today-recurring';
     });
-    
+
+
     const [ShowEditModal, setShowEditModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -141,7 +142,7 @@ const Tasks = () => {
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [open, setOpen] = useState(false);
-    
+
     // חישוב האינדקס הפעיל בהתבסס על הטאב השמור
     const [activeIndex, setActiveIndex] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
@@ -195,38 +196,40 @@ const Tasks = () => {
         });
     };
 
-    const fetchTasks = useCallback(async (tab) => {
+    const fetchTasks = useCallback(async (tab, type) => {
+
         setIsLoading(true);
         const token = user?.token;
         try {
             let data = [];
-            switch (tab) {
-                case 'today':
-                    data = await fetchTodayTasks();
-                    break;
-                case 'today-single':
+            if (tab === 'today') {
+                if (type === 'today-single') {
                     data = await fetchTodayTasks(false);
-                    break;
-                case 'today-recurring':
+                } else if (type === 'today-recurring') {
                     data = await fetchTodayTasks(true);
-                    break;
-                case 'future':
-                    data = await getTasks(token);
-                    break;
-                case 'recurring':
-                    data = await fetchRecurringTasks(token);
-                    break;
-                case 'completed':
-                    data = await fetchCompleteds(token);
-                    break;
-                case 'cancelled':
-                    data = await fetchCancelled(token);
-                    break;
-                case 'drawer':
-                    data = await fetchDrawer(token);
-                    break;
-                default:
+                } else {
                     data = [];
+                }
+            } else {
+                switch (tab) {
+                    case 'future':
+                        data = await getTasks(token);
+                        break;
+                    case 'recurring':
+                        data = await fetchRecurringTasks(token);
+                        break;
+                    case 'completed':
+                        data = await fetchCompleteds(token);
+                        break;
+                    case 'cancelled':
+                        data = await fetchCancelled(token);
+                        break;
+                    case 'drawer':
+                        data = await fetchDrawer(token);
+                        break;
+                    default:
+                        data = [];
+                }
             }
 
             const enriched = enrichTasksWithSearchText(data);
@@ -247,20 +250,24 @@ const Tasks = () => {
     const [version, setVersion] = useState(0);
     const refreshTasks = () => setVersion(v => v + 1);
 
+    // useEffect(() => {
+    //     if (!user?.token) return;
+
+    //     const loadTasks = async () => {
+    //         try {
+    //             await fetchTasks(activeTab);
+    //         } catch (err) {
+    //             toast.error(err.response?.data?.message || 'שגיאה בטעינת משימות', { id: 'fetch-tasks-error' });
+    //             console.error('Error fetching tasks:', err);
+    //         }
+    //     };
+
+    //     loadTasks();
+    // }, [activeTab, user, version, fetchTasks]);
     useEffect(() => {
         if (!user?.token) return;
-
-        const loadTasks = async () => {
-            try {
-                await fetchTasks(activeTab);
-            } catch (err) {
-                toast.error(err.response?.data?.message || 'שגיאה בטעינת משימות', { id: 'fetch-tasks-error' });
-                console.error('Error fetching tasks:', err);
-            }
-        };
-
-        loadTasks();
-    }, [activeTab, user, version, fetchTasks]);
+        fetchTasks(activeTab, activeType);
+    }, [activeTab, activeType, user, version, fetchTasks]);
 
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
@@ -299,17 +306,16 @@ const Tasks = () => {
             cancelButtonText: 'ביטול',
             confirmButtonText: "כן",
             denyButtonText: "לא",
-            confirmButtonColor: "blue",  
-            denyButtonColor: "gray" 
-        }).then(async(result) => {
+            confirmButtonColor: "blue",
+            denyButtonColor: "gray",
+        }).then(async (result) => {
             if (result.isConfirmed) {
-                try{
+                try {
                     await duplicateTask(taskId, token);
                     toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
                     refreshTasks();
                 }
-                catch(error)
-                {
+                catch (error) {
                     toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
                 }
             }
@@ -330,12 +336,10 @@ const Tasks = () => {
     };
 
     const toHistory = async (task) => {
+        console.log("historyy",task)
         let model;
         if (task.frequencyType) {
             model = "RecurringTask";
-        }
-        else if (task.taskModel) {
-            model = "TodayTask";
         }
         else {
             model = "Task";
@@ -751,13 +755,13 @@ const Tasks = () => {
                             <div className="sub-tabs">
                                 <button
                                     className={`filter-btn ${activeType === "today-single" ? "active" : ""}`}
-                                    onClick={() => { setActiveType('today-single'); setActiveTab('today-single'); }}
+                                    onClick={() => setActiveType("today-single")}
                                 >
                                     שוטפות
                                 </button>
                                 <button
                                     className={`filter-btn ${activeType === "today-recurring" ? "active" : ""}`}
-                                    onClick={() => { setActiveType('today-recurring'); setActiveTab('today-recurring'); }}
+                                    onClick={() => setActiveType("today-recurring")}
                                 >
                                     קבועות
                                 </button>
@@ -782,11 +786,11 @@ const Tasks = () => {
                             <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
                         </div>
                     </div>,
-                     document.body
+                    document.body
 
                 )}
 
-                {ShowEditModal && (
+                {ShowEditModal && createPortal(
                     <div className="popup-overlay">
                         <div className="popup-content">
                             <button onClick={handleClosePopupEdit} className="close-btn">×</button>
@@ -797,7 +801,9 @@ const Tasks = () => {
                                 onTaskUpdated={refreshTasks}
                             />
                         </div>
-                    </div>
+                    </div>,
+                    document.body
+
                 )}
 
                 {openDetails && createPortal(

@@ -207,7 +207,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         </select>
                     </div>
                     <div className="form-group">
-                        <label>תאריך יעד</label>
+                        <label>תאריך משימה</label>
 
                         <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
                             min={new Date().toISOString().split("T")[0]} />

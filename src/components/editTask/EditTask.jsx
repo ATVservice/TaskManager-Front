@@ -138,57 +138,70 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
     const { name, value } = e.target;
 
     if ((name === "dueDate" || name === "finalDeadline") && value !== form[name]) {
-      const { value: result } = await Swal.fire({
-        title: 'בחר סיבת אי - ביצוע',
-        html: `
-          <select id="reasonSelect" class="swal2-input">
-            <option value="">בחר סיבה</option>
-            <option value="חוסר זמן">חוסר זמן</option>
-            <option value="חופשה">חופשה</option>
-            <option value="בעיה טכנית">בעיה טכנית</option>
-            <option value="תלות בגורם חיצוני">תלות בגורם חיצוני</option>
-            <option value="לא דחוף">לא דחוף</option>
-            <option value="אחר">אחר</option>
-          </select>
-          <input id="customReason" class="swal2-input" placeholder="פירוט..." style="display:none" />
-        `,
-        focusConfirm: false,
-        preConfirm: () => {
-          const reason = document.getElementById('reasonSelect').value;
-          const custom = document.getElementById('customReason').value;
-          if (!reason) {
-            Swal.showValidationMessage('חובה לבחור סיבה');
-            return false;
-          }
-          if (reason === "אחר" && !custom) {
-            Swal.showValidationMessage('חובה למלא פירוט');
-            return false;
-          }
-          return { option: reason, customText: custom };
-        },
-        didOpen: () => {
-          const select = document.getElementById('reasonSelect');
-          const customInput = document.getElementById('customReason');
-          select.addEventListener('change', (e) => {
-            if (e.target.value === "אחר") {
-              customInput.style.display = "block";
-            } else {
-              customInput.style.display = "none";
+      // בדיקה אם התאריך נדחה (התאריך החדש מאוחר יותר)
+      const currentDate = form[name] ? new Date(form[name]) : null;
+      const newDate = new Date(value);
+      const isDelayed = currentDate && newDate > currentDate;
+
+      // הצג את החלון רק אם התאריך נדחה
+      if (isDelayed) {
+        const { value: result, isConfirmed } = await Swal.fire({
+          title: 'סיבת דחיית התאריך (לא חובה)',
+          html: `
+            <select id="reasonSelect" class="swal2-input">
+              <option value="">ללא סיבה</option>
+              <option value="חוסר זמן">חוסר זמן</option>
+              <option value="חופשה">חופשה</option>
+              <option value="בעיה טכנית">בעיה טכנית</option>
+              <option value="תלות בגורם חיצוני">תלות בגורם חיצוני</option>
+              <option value="לא דחוף">לא דחוף</option>
+              <option value="אחר">אחר</option>
+            </select>
+            <input id="customReason" class="swal2-input" placeholder="פירוט..." style="display:none" />
+          `,
+          focusConfirm: false,
+          preConfirm: () => {
+            const reason = document.getElementById('reasonSelect').value;
+            const custom = document.getElementById('customReason').value;
+
+            // רק אם בחר "אחר" ולא מילא פירוט - תן התראה
+            if (reason === "אחר" && !custom.trim()) {
+              Swal.showValidationMessage('אנא מלא פירוט כאשר בוחר "אחר"');
+              return false;
             }
-          });
-        },
-        showCancelButton: true,
-        confirmButtonText: 'אישור',
-        cancelButtonText: 'ביטול'
-      });
 
-      if (!result) return;
+            return reason ? { option: reason, customText: custom } : null;
+          },
+          didOpen: () => {
+            const select = document.getElementById('reasonSelect');
+            const customInput = document.getElementById('customReason');
+            select.addEventListener('change', (e) => {
+              if (e.target.value === "אחר") {
+                customInput.style.display = "block";
+              } else {
+                customInput.style.display = "none";
+              }
+            });
+          },
+          showCancelButton: true,
+          confirmButtonText: 'אישור',
+          cancelButtonText: 'ביטול',
+          target: document.body, 
+          backdrop: true,
+          zIndex: 99999 
+        });
 
-      setForm(prev => ({
-        ...prev,
-        [name]: value,
-        failureReason: result
-      }));
+
+
+        setForm(prev => ({
+          ...prev,
+          [name]: value,
+          failureReason: result || undefined // שמור רק אם יש סיבה
+        }));
+      } else {
+        // אם התאריך לא נדחה, פשוט עדכן ללא סיבה
+        setForm(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setForm(prev => ({ ...prev, [name]: value }));
     }
@@ -202,7 +215,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       const preparedForm = {};
 
       if (!form.project) {
-        delete preparedForm.project; 
+        delete preparedForm.project;
       }
 
       if (form.failureReason) {
@@ -235,7 +248,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
         if (key === "isRecurring") continue;
 
         if (["frequencyType", "frequencyDetails"].includes(key)) {
-          const isTaskRecurring =  taskToEdit.frequencyType || taskToEdit.frequencyDetails;
+          const isTaskRecurring = taskToEdit.frequencyType || taskToEdit.frequencyDetails;
           if (!isTaskRecurring) continue;
           if (!isEqual(value, original)) preparedForm[key] = value;
           continue;
@@ -303,7 +316,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       console.error("Update error:", error);
     }
   };
- 
+
   if (!form) return <div>טוען...</div>;
 
   return (
@@ -378,13 +391,14 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
           {(taskType === "single") && (
             <>
               <div className="form-group">
-                <label>תאריך יעד</label>
+                <label>תאריך משימה</label>
                 <input
                   type="date"
                   name="dueDate"
                   value={form.dueDate}
-                  onChange={handleChange}
-                  min={form.dueDate}
+                  // onChange={handleChange}
+                  onChange={handleDateChange}
+                  min={new Date().toISOString().split("T")[0]}
                 />
               </div>
             </>
@@ -446,9 +460,10 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
                 name="finalDeadline"
                 value={form.finalDeadline}
                 onChange={handleDateChange}
-                min={form.finalDeadline}
-              />
+                // onChange={handleChange}
+                min={form.dueDate} />
             </div>
+
           )}
           {form.frequencyType && (
             <div className="form-group">
