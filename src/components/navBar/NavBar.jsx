@@ -62,92 +62,112 @@ const NavBar = () => {
       setEditingEmployee(null);
       setEditingEmployeeId(null)
     }
-     catch (err) {
-    console.error(err);
-    toast.error(err.response?.data?.message || "שגיאה בטעינת עובד", { duration: 3000 });
-  }
-};
+    catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "שגיאה בטעינת עובד", { duration: 3000 });
+    }
+  };
 
 
-if (!user) return null;
-return (
-  <>
+  if (!user) return null;
+  return (
+    <>
 
-    <nav className='navbar'>
-      <div className='rightProfile'>
-        <div className="user-profile-container">
-          <UserRoundPen color="#8011ee" size={20}
-            onClick={() => {
-              const user = JSON.parse(localStorage.getItem("user"));
-              toEdit(user, user?.id);
-            }}
-            style={{ cursor: "pointer" }} />
-          <span className="user-profile-name">
-            {user.userName}
-          </span>
-        </div>
-
-      </div>
-
-      <div className='nav-links'>
-        <NavLink to="/tasks">משימות</NavLink>
-
-        {user.role === 'מנהל' && (
-          <>
-            <NavLink to="/association">עמותות</NavLink>
-            <NavLink to="/goals">הגדרת יעדים</NavLink>
-            <NavLink to="/employee">ניהול עובדים</NavLink>
-            <NavLink to="/adminDashboard">דשבורד</NavLink>
-            <NavLink to="/reports">דוחות</NavLink>
-
-          </>
-        )}
-
-        {user.role === 'עובד' && (
-          <NavLink to="/dashboard">דשבורד</NavLink>
-        )}
-
-
-      </div>
-
-      <div className='leftButton'>
-        <div>
-          <button className="logout-btn" onClick={logout}>התנתק</button>
-        </div>
-        <div className='bell'>
-          <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התראות" title='התראות'>
-            <Bell />
-            {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
+      <nav className='navbar'>
+        <div className='rightProfile'>
+          
+          <button className="user-profile-container"
+           onClick={() => {
+            const user = JSON.parse(localStorage.getItem("user"));
+            toEdit(user, user?.id);
+          }}
+          style={{ cursor: "pointer" }} >
+          <title>עריכת פרטים אישיים</title>
+              <UserRoundPen color="#8011ee" size={20}/>
+            <span className="user-profile-name">
+              {user.userName}
+            </span>
           </button>
-        </div>
-      </div>
-    </nav>
-    <AlertsDrawer
-      open={drawerOpen}
-      onClose={() => {
-        setDrawerOpen(false);
-      }}
-      token={user?.token}
-      onMarkedRead={loadUnreadCount} />
+          {/* {user.role === 'עובד' && (
+            <button className="user-profile-container" 
+           onClick={() => {
+            const user = JSON.parse(localStorage.getItem("user"));
+            toEdit(user, user?.id);
+          }}
+          style={{ cursor: "pointer" }} >
 
-    {showRegister && (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <Register
-            key={editingEmployee ? editingEmployeeId : 'new'}
-            existingUser={editingEmployee}
-            onClose={() => {
-              setShowRegister(false);
-              setEditingEmployee(null);
-              setEditingEmployeeId(null)
-            }}
-            onSubmit={handleSubmitUser}
-          />
+            <title>עריכת פרטים אישיים</title>
+
+            <UserRoundPen color="#8011ee" size={20}/>
+
+            <span className="user-profile-name">
+               פרטים אישיים
+            </span>
+            
+          </button>
+          )}
+           */}
         </div>
-      </div>
-    )}
-  </>
-);
+
+        <div className='nav-links'>
+          <NavLink to="/tasks">משימות</NavLink>
+
+          {user.role === 'מנהל' && (
+            <>
+              <NavLink to="/association">עמותות</NavLink>
+              <NavLink to="/goals">הגדרת יעדים</NavLink>
+              <NavLink to="/employee">ניהול עובדים</NavLink>
+              <NavLink to="/adminDashboard">דשבורד</NavLink>
+              <NavLink to="/reports">דוחות</NavLink>
+
+            </>
+          )}
+
+          {user.role === 'עובד' && (
+            <NavLink to="/dashboard">דשבורד</NavLink>
+          )}
+
+
+        </div>
+
+        <div className='leftButton'>
+          <div>
+            <button className="logout-btn" onClick={logout}>התנתק</button>
+          </div>
+          <div className='bell'>
+            <button className="bell-btn" onClick={() => setDrawerOpen(true)} aria-label="התראות" title='התראות'>
+              <Bell />
+              {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
+            </button>
+          </div>
+        </div>
+      </nav>
+      <AlertsDrawer
+        open={drawerOpen}
+        onClose={() => {
+          setDrawerOpen(false);
+        }}
+        token={user?.token}
+        onMarkedRead={loadUnreadCount} />
+
+      {showRegister && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <Register
+              key={editingEmployee ? editingEmployeeId : 'new'}
+              existingUser={editingEmployee}
+              onClose={() => {
+                setShowRegister(false);
+                setEditingEmployee(null);
+                setEditingEmployeeId(null)
+              }}
+              onSubmit={handleSubmitUser}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
 };
 
 export default NavBar;
