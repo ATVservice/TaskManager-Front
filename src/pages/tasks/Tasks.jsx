@@ -336,7 +336,7 @@ const Tasks = () => {
     };
 
     const toHistory = async (task) => {
-        console.log("historyy",task)
+        console.log("historyy", task)
         let model;
         if (task.frequencyType) {
             model = "RecurringTask";
@@ -353,7 +353,8 @@ const Tasks = () => {
         }
     };
 
-    const toDelete = async (taskId) => {
+    const toDelete = async (taskId, todayTask) => {
+        console.log("task", todayTask)
         const token = user?.token;
 
         const { value: password, isConfirmed } = await Swal.fire({
@@ -373,8 +374,17 @@ const Tasks = () => {
 
         if (!isConfirmed) return;
 
+        let isTodayTask;
+        if (todayTask !== undefined) {
+            isTodayTask = true
+        }
+        else {
+            isTodayTask = false
+        }
+        console.log("!!!!isTodayTask",isTodayTask)
+
         try {
-            await fetchDeleteTask(token, password, taskId);
+            await fetchDeleteTask(token, password, taskId, isTodayTask);
             toast.success('המשימה נמחקה בהצלחה', { duration: 3000 });
             refreshTasks();
         } catch (error) {
@@ -551,7 +561,7 @@ const Tasks = () => {
             resizable: false,
             cellRenderer: (params) => (
                 <div className='trash iconButton' title='מחק משימה'>
-                    <Trash size={17} color="black" onClick={() => toDelete(params.data._id)} />
+                    <Trash size={17} color="black" onClick={() => toDelete(params.data._id, params.data.taskModel)} />
                 </div>
             )
         });
@@ -790,7 +800,7 @@ const Tasks = () => {
 
                 )}
 
-                {ShowEditModal && createPortal(
+                {ShowEditModal && (
                     <div className="popup-overlay">
                         <div className="popup-content">
                             <button onClick={handleClosePopupEdit} className="close-btn">×</button>
@@ -801,9 +811,7 @@ const Tasks = () => {
                                 onTaskUpdated={refreshTasks}
                             />
                         </div>
-                    </div>,
-                    document.body
-
+                    </div>
                 )}
 
                 {openDetails && createPortal(
