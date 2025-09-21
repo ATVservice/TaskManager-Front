@@ -23,6 +23,7 @@ import { createPortal } from 'react-dom';      // לפורטלים (popups, moda
 
 import './Tasks.css';
 import { Title } from 'react-head';
+import { addComment } from '../../services/commentService.js';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -338,10 +339,12 @@ const Tasks = () => {
     const toHistory = async (task) => {
         console.log("historyy", task)
         let model;
+
         if (task.frequencyType) {
             model = "RecurringTask";
-        }
-        else {
+        } else if (task.taskModel === "RecurringTask") {
+            model = "RecurringTask";
+        } else {
             model = "Task";
         }
 
@@ -381,7 +384,7 @@ const Tasks = () => {
         else {
             isTodayTask = false
         }
-        console.log("!!!!isTodayTask",isTodayTask)
+        console.log("!!!!isTodayTask", isTodayTask)
 
         try {
             await fetchDeleteTask(token, password, taskId, isTodayTask);
@@ -604,9 +607,9 @@ const Tasks = () => {
             if (activeTab === 'today-recurring') {
                 try {
                     const { value: content, isConfirmed } = await Swal.fire({
-                        title: 'הוספת הערה יומית',
+                        title: 'הוספת הערה',
                         input: 'text',
-                        inputLabel: 'מה קרה במשימה?',
+                        inputLabel: 'הקלד/י את תוכן ההערה',
                         showCancelButton: true,
                         confirmButtonText: 'הוסף',
                         cancelButtonText: 'בטל',
@@ -639,20 +642,35 @@ const Tasks = () => {
                 }
             }
 
+
             try {
-                const { value: statusNote, isConfirmed } = await Swal.fire({
-                    title: 'האם להוסיף הערה לסטטוס?',
+                const { value: content, isConfirmed } = await Swal.fire({
+                    title: 'האם להוסיף הערה ?',
                     input: 'text',
-                    inputLabel: 'הערה לסטטוס (לא חובה)',
+                    inputLabel: 'הערה למשימה (לא חובה)',
                     showCancelButton: true,
                     confirmButtonText: 'עדכן ',
                     cancelButtonText: 'בטל',
                 });
+                let currentModel;
+
+                if (params.data.frequencyType) {
+                    currentModel = "recurring";
+                } else if (params.data.taskModel === "RecurringTask") {
+                    currentModel = "recurring";
+                } else {
+                    currentModel = "task";
+                }
+
+                if (currentModel == "task")
+                    await updateTaskStatus(taskId, newStatus, token);
+                else
+                    await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
+
 
                 if (isConfirmed) {
-                    await updateTaskStatus(taskId, newStatus, token, statusNote);
-                } else {
-                    await updateTaskStatus(taskId, newStatus, token);
+                    await addComment(params.data._id, currentModel, content, user?.token);
+                    // toast.success("נוספה הערה", { duration: 3000 });
                 }
                 toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
 
@@ -822,7 +840,6 @@ const Tasks = () => {
                     />,
                     document.body
                 )}
-
                 <TaskAgGrid
                     rowData={filteredTasks}
                     columnDefs={getColumnDefs()}

@@ -47,7 +47,7 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
         },
 
     ]);
-    
+
     useEffect(() => {
         const getAllComments = async () => {
           const token = user?.token;
