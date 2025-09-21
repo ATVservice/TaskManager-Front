@@ -2,66 +2,85 @@
     position: fixed;
     right: 0;
     top: 0;
-    width: 400px;
+    width: 70vw ;
+    max-width: 900px;
     height: 100vh;
-    background: white;
-    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    box-shadow: -2px 0 20px rgba(0, 0, 0, 0.15);
     transform: translateX(0);
     transition: transform 0.3s ease-in-out;
     z-index: 1000;
-    padding: 20px;
+    padding: 30px;
     overflow-y: auto;
     direction: rtl;
-}
-
-.side-popup.hidden {
-    transform: translateX(100%);
-}
-
-.side-popup h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 1.2em;
-    border-bottom: 2px solid #042486;
-    padding-bottom: 10px;
-}
-
-.side-popup p {
-    margin-bottom: 10px;
-    line-height: 1.5;
-    color: #444;
-}
-
-.side-popup p strong {
-    color: #042486;
-}
-
-.close-btn {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #042486;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-size: 16px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-}
-
-.close-btn:hover {
-    background: #0a3aa0;
-}
-
-/* עבור מובייל */
-@media (max-width: 768px) {
-    .side-popup {
-        width: 100%;
-    }
-}
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .side-popup.hidden {
+    transform: translateX(100%);
+  }
+  
+  .side-popup h3 {
+    font-size: 1.5em;
+    color: #042486;
+    border-bottom: 3px solid #042486;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .task-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px 20px;
+  }
+  
+  .task-details-grid p {
+    margin: 0;
+    background: #f9f9f9;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .comment-section {
+    margin-top: 20px;
+    border-top: 2px solid #ddd;
+    padding-top: 20px;
+  }
+  
+  button.add-comment-btn {
+    background: #783db4;
+    margin-bottom: 2%;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background 0.2s ease;
+  }
+  
+  button.add-comment-btn:hover {
+    background: #b88ae6;
+  }
+  
+  /* SweetAlert עיצוב מותאם */
+  .swal-wide {
+    width: 50% !important;
+    max-width: 600px;
+  }
+  
+  .swal-confirm {
+    background-color: #042486 !important;
+    border-radius: 8px !important;
+  }
+  
+  .swal-cancel {
+    background-color: #ccc !important;
+    color: #333 !important;
+    border-radius: 8px !important;
+  }
+  
