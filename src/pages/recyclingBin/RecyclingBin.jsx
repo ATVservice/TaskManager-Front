@@ -32,7 +32,11 @@ const RecyclingBin = () => {
             cellRenderer: (params) => (
                 <div className='recycle iconButton' title='שיחזור משימה'>
                     <Recycle size={17} color="black" title="שיחזור משימה"
-                        onClick={() => toRestoreTask(params.data._id)} />
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toRestoreTask(params.data._id)
+                        }}
+                    />
                 </div>
             )
         },
@@ -66,17 +70,22 @@ const RecyclingBin = () => {
                 );
             }
         },
-        {
-            headerName: 'פרטים', field: 'details', maxWidth: 100,
-            cellRenderer: (params) => (
-                <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>לפרטים</button>
-            )
-        },
+        // {
+        //     headerName: 'פרטים', field: 'details', maxWidth: 100,
+        //     cellRenderer: (params) => (
+        //         <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>לפרטים</button>
+        //     )
+        // },
         {
             headerName: "", field: "history", maxWidth: 50,
             cellRenderer: (params) => (
                 <div className='history iconButton' title='צפה בהיסטוריה'>
-                    <History size={17} color="black" onClick={() => toHistory(params.data)} />
+                    <History size={17} color="black" onClick={(e) => {
+                        e.stopPropagation();
+                        toHistory(params.data)
+                    }
+                    }
+                    />
                 </div>
             )
         },
@@ -172,16 +181,26 @@ const RecyclingBin = () => {
                     <TaskAgGrid
                         rowData={data}
                         columnDefs={columnDefs}
+                        // onRowClicked={(params) => MoreDetails(params.data._id)}
+                        onRowClicked={(params) => {
+                            const tagName = params.event.target.tagName.toLowerCase();
+                            if (["button", "svg", "path"].includes(tagName)) return;
+
+                            const selection = window.getSelection();
+                            if (selection && selection.toString().length > 0) return;
+
+                            MoreDetails(params.data._id);
+                        }}
                     />
-                  
+
                 </div>
                 {openDetails &&
-                        <TaskDetails
-                            details={details}
-                            isOpen={openDetails}
-                            onClose={closeDetailsDiv}
-                        />
-                    }
+                    <TaskDetails
+                        details={details}
+                        isOpen={openDetails}
+                        onClose={closeDetailsDiv}
+                    />
+                }
             </div>
         </>
     );

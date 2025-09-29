@@ -503,17 +503,17 @@ const Tasks = () => {
             });
         }
 
-        baseColumns.push({
-            headerName: 'פרטים',
-            field: 'details',
-            width: 100,
-            flex: 0,
-            cellRenderer: (params) => (
-                <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>
-                    לפרטים
-                </button>
-            )
-        });
+        // baseColumns.push({
+        //     headerName: 'פרטים',
+        //     field: 'details',
+        //     width: 100,
+        //     flex: 0,
+        //     cellRenderer: (params) => (
+        //         <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>
+        //             לפרטים
+        //         </button>
+        //     )
+        // });
 
         baseColumns.push({
             headerName: "",
@@ -821,7 +821,7 @@ const Tasks = () => {
                 {ShowEditModal && (
                     <div className="popup-overlay">
                         <div className="popup-content">
-                            <button onClick={handleClosePopupEdit} className="close-btn">×</button>
+                            <button onClick={handleClosePopupEdit} className="close-btn close-edit">×</button>
                             <EditTask
                                 taskToEdit={selectedTask}
                                 taskType={taskType}
@@ -845,6 +845,38 @@ const Tasks = () => {
                     <TaskAgGrid
                         rowData={filteredTasks}
                         columnDefs={getColumnDefs()}
+                        onRowClicked={(params) => {
+                            const target = params.event.target;
+                            const tagName = target.tagName.toLowerCase();
+                            
+                            // בדיקה אם לחצו על כפתור או אייקון
+                            if (["button", "svg", "path"].includes(tagName)) return;
+                            
+                            // בדיקה אם לחצו על אייקונים
+                            if (target.closest('.iconButton')) return;
+                        
+                            // בדיקה חזקה לעמודת הסטטוס
+                            if (params.column && params.column.colId === 'status') return;
+                            
+                            // בדיקה אם לחצו על span של סטטוס (האופציות הצבעוניות)
+                            if (target.tagName === 'SPAN' && target.style.backgroundColor) return;
+                        
+                            // בדיקה אם התא כרגע במצב עריכה (הסלקט פתוח)
+                            if (target.closest('.ag-cell-inline-editing')) return;
+                            
+                            // בדיקה אם לחצו על אלמנט של הסלקט או התפריט שלו
+                            if (target.closest('.ag-popup') || 
+                                target.closest('.ag-select-list') || 
+                                target.closest('.ag-list-item') ||
+                                target.closest('.ag-cell-editor')) return;
+                        
+                            // בדיקה אם מסמנים טקסט
+                            const selection = window.getSelection();
+                            if (selection && selection.toString().length > 0) return;
+                        
+                            // פתיחת פרטים
+                            MoreDetails(params.data._id);
+                        }}
                         onCellValueChanged={onCellValueChanged}
                     />
                 </div>

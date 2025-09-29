@@ -7,7 +7,7 @@ import './taskAgGrid.css'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
+const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked  }) => {
     const gridRef = useRef();
 
     const defaultColDef = {
@@ -85,6 +85,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged }) => {
                     domLayout="autoHeight"
                     animateRows={true}
                     onCellValueChanged={onCellValueChanged}
+                    onRowClicked={onRowClicked} 
                     singleClickEdit={true}
                     localeText={localeText}
                     suppressSizeToFit={false}
