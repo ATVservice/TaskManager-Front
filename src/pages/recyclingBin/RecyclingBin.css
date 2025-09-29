@@ -5,6 +5,7 @@ body {
 
 .RecyclingBin-page-wrapper {
   min-height: calc(100vh - 70px);
+  overflow-y: hidden;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
@@ -17,6 +18,9 @@ body {
   font-family: 'Segoe UI', 'Alef', 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
   direction: rtl;
   position: relative;
+}
+.ag-theme-alpine .ag-body-viewport {
+  min-height: auto !important;
 }
 
 .RecyclingBin-page-wrapper::before {
@@ -231,4 +235,7 @@ body {
   background-color: #ecfdf5;
   color: #047857;
   border: 1px solid #a7f3d0;
+}
+.ag-theme-alpine .ag-row:hover {
+  transform: translateX(0); /* ביטול התזוזה */
 }
