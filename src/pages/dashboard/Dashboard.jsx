@@ -84,7 +84,7 @@ const Dashboard = ({ employeeId }) => {
 
 
   if (!data){
-    return <div>טוען...</div>; 
+    return <div className='dashboard-container'>טוען...</div>; 
   }
 
   const goalPercent = data.overallPercentAchieved;

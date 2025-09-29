@@ -1,4 +1,5 @@
 .admin-dashboard {
+    min-height: calc(100vh - 70px);
     direction: rtl;
     padding: 20px;
     background: #f9fafc;

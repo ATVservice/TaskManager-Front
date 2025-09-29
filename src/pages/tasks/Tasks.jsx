@@ -840,11 +840,14 @@ const Tasks = () => {
                     />,
                     document.body
                 )}
-                <TaskAgGrid
-                    rowData={filteredTasks}
-                    columnDefs={getColumnDefs()}
-                    onCellValueChanged={onCellValueChanged}
-                />
+                <div className='task-grid-container'>
+
+                    <TaskAgGrid
+                        rowData={filteredTasks}
+                        columnDefs={getColumnDefs()}
+                        onCellValueChanged={onCellValueChanged}
+                    />
+                </div>
             </div >
         </>
     );

@@ -80,9 +80,9 @@ export default function GoalForm() {
         <>
             <Title>הגדרת יעדים</Title>
 
-            <div className="association-page-wrapper">
+            <div className="form-page-wrapper">
                 <form onSubmit={handleSubmit} className="goal-form">
-                    <h3>הגדרת יעדים</h3>
+                    {/* <h4>הגדרת יעדים</h4> */}
                     <select name="targetType" value={formData.targetType} onChange={handleChange} required className="goal-form__select">
                         <option value="">בחר סוג יעד</option>
                         <option value="עובד בודד">עובד בודד</option>
@@ -132,9 +132,6 @@ export default function GoalForm() {
                         required
                         className="goal-form__input"
                     />
-
-
-
                     <button type="submit" className="goal-form__button">שמור יעד</button>
                 </form>
             </div>

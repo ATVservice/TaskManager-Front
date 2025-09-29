@@ -1,19 +1,92 @@
-.App {
-  text-align: center;
+/* =========================
+Global Layout & Scroll
+========================= */
+* {
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+html {
+  height: 100%;
+  overflow-x: hidden;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+body {
+  min-height: 100%;  /* שינוי מ-height ל-min-height */
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #f0f2f5;
+}
+
+  
+  #root {
+    min-height: 100vh;   /* גובה מסך מינימלי */
+    display: flex;
+    flex-direction: column;
   }
-}
-
-.App-header {
+  /* גלילה – תופיע רק כשבאמת יש צורך */
+  body {
+  overflow-y: auto;
+  }
+  
+  /* סקרולבר דק */
+  ::-webkit-scrollbar {
+  width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+  background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+  }
+  
+  /* =========================
+  Layout Utilities
+  ========================= */
+  .page-container {
+    min-height: calc(100vh - 70px) ;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 20px;
+    max-width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+    background: transparent;
+    flex: 1;  /* הוסף שורה זו */
+  }
+  
+  .full-height-page {
+  min-height: var(--content-height);
+  }
+  
+  .adaptive-height-page {
+  /* מתארך לפי התוכן, בלי מגבלה */
+  }
+  
+  .min-content-height {
+  min-height: var(--content-height);
+  }
+  
+  /* =========================
+  Global Variables
+  ========================= */
+  :root {
+  --navbar-height: 50px;
+  --content-height: calc(100vh - var(--navbar-height));
+  }
+  
+  /* =========================
+  Example App Header (demo)
+  ========================= */
+  .App {
+  text-align: center;
+  }
+  
+  .App-header {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
@@ -22,17 +95,14 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
-}
-
-.App-link {
+  }
+  
+  .App-link {
   color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
   }
-  to {
-    transform: rotate(360deg);
+  
+  @keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
   }
-}
+  

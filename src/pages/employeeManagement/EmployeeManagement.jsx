@@ -214,7 +214,7 @@ const EmployeeManagement = () => {
         <>
               <Title>ניהול עובדים</Title>
 
-        <div>
+        <div className='employees-page-container'>
             <div className="actions-bar">
                 <div className="search-input-container">
                     <Search size={16} className="search-icon" />

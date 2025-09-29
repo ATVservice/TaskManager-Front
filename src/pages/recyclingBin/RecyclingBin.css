@@ -1,5 +1,14 @@
+body {
+  overflow-x: hidden !important;
+}
+
+
 .RecyclingBin-page-wrapper {
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
   background: 
     radial-gradient(circle at 20% 50%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
     radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
@@ -8,7 +17,6 @@
   font-family: 'Segoe UI', 'Alef', 'Assistant', -apple-system, BlinkMacSystemFont, sans-serif;
   direction: rtl;
   position: relative;
-  overflow-x: hidden;
 }
 
 .RecyclingBin-page-wrapper::before {
@@ -22,6 +30,7 @@
   border-radius: 50%;
   animation: rotate 20s linear infinite;
   z-index: 0;
+  overflow: hidden; /* הוסף */
 }
 
 .RecyclingBin-page-wrapper::after {
@@ -35,6 +44,7 @@
   border-radius: 50%;
   animation: rotate-reverse 25s linear infinite;
   z-index: 0;
+  overflow: hidden; 
 }
 
 @keyframes rotate {
@@ -95,11 +105,13 @@
 .RecyclingBin-grid-container {
   max-width: 1400px;
   margin: 0 auto;
+  overflow-x: hidden;
   background: 
     linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%),
     radial-gradient(circle at 30% 40%, rgba(34, 197, 94, 0.02) 0%, transparent 50%);
   border-radius: 24px;
   padding: 2.5rem;
+  box-sizing: border-box; /* הוסף */
   box-shadow: 
     0 20px 60px rgba(0,0,0,0.08),
     0 8px 25px rgba(0,0,0,0.06),

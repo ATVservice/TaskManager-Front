@@ -1,4 +1,6 @@
 .reports-filters {
+  min-height: calc(100vh - 70px);
+
   direction: rtl;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   background: #fff;
