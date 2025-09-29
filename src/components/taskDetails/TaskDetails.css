@@ -23,10 +23,10 @@
   }
   
   .side-popup h3 {
-    font-size: 1.5em;
+    font-size: 1em;
     color: #042486;
     border-bottom: 3px solid #042486;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     margin-bottom: 10px;
   }
   
@@ -52,8 +52,8 @@
   
   button.add-comment-btn {
     margin-top: 2px;
-    background: #783db4;
     margin-bottom: 2px;
+    background: #783db4;
     color: #fff;
     padding: 10px 20px;
     border-radius: 8px;

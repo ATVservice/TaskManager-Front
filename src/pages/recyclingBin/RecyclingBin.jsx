@@ -173,12 +173,15 @@ const RecyclingBin = () => {
                         rowData={data}
                         columnDefs={columnDefs}
                     />
-                    <TaskDetails
-                        details={details}
-                        isOpen={openDetails}
-                        onClose={closeDetailsDiv}
-                    />
+                  
                 </div>
+                {openDetails &&
+                        <TaskDetails
+                            details={details}
+                            isOpen={openDetails}
+                            onClose={closeDetailsDiv}
+                        />
+                    }
             </div>
         </>
     );

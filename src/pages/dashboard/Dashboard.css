@@ -1,10 +1,11 @@
 .dashboard-container {
   min-height: calc(100vh - 70px);
   direction: rtl;
-  font-family: Arial, sans-serif;
-  max-width: 900px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 100%;
   margin: auto;
-  padding: 20px;
+  padding: 30px 20px;
+  background: #f9fafe; /* רקע בהיר נקי */
 }
 
 .dashboard-header {
@@ -17,18 +18,25 @@
 }
 
 .range-button {
-  margin-right: 8px;
-  padding: 6px 12px;
+  margin-right: 6px;
+  padding: 8px 16px;
   background-color: #f0f0f0;
-  color: black;
+  color: #333;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
 }
 
 .range-button.active {
   background-color: #4C91FF;
   color: white;
+  box-shadow: 0 4px 10px rgba(76, 145, 255, 0.3);
+}
+.range-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(76, 145, 255, 0.2);
 }
 
 .dashboard-sections {
@@ -42,15 +50,22 @@
 .dashboard-card {
   flex: 1;
   min-width: 320px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 25px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* הצללה עדינה */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
 .card-stats {
   display: flex;
   justify-content: space-around;
   margin-top: 20px;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
 }
 
 .card-stat {

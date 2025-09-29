@@ -19,7 +19,6 @@
   background: #f9f9f9;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  margin-bottom: 2rem;
 }
 
 /* הוספת סגנון לראש הדף */
@@ -59,7 +58,7 @@
 
 .association-table th,
 .association-table td {
-  padding: 12px 16px;
+  padding: 10px 16px;
   text-align: center;
   border-bottom: 1px solid #eee;
 }

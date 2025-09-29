@@ -10,6 +10,7 @@ import { registerUser } from '../../services/authService.js';
 import './EmployeeManagement.css';
 import toast from 'react-hot-toast';
 import { Title } from 'react-head';
+import Swal from 'sweetalert2';
 
 const EmployeeManagement = () => {
 
@@ -129,18 +130,32 @@ const EmployeeManagement = () => {
         if (!token) {
             return toast.error("עלייך להתחבר מחדש", { duration: 3000 });
         }
-
-        try {
-            await deleteUser(id, token);
-            toast.success("נמחק בהצלחה", { duration: 3000 });
-            await fetchEmployees();
-        }
-        catch (err) {
-            toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
-            console.error('שגיאה במחיקת עובד', err);
-        }
+        await Swal.fire({
+            title: "אתה בטוח שברצונך למחוק עובד זה?",
+            showDenyButton: true,
+            showCancelButton: false,
+            cancelButtonText: 'ביטול',
+            confirmButtonText: "כן",
+            denyButtonText: "לא",
+            confirmButtonColor: "blue",
+            denyButtonColor: "gray",
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await deleteUser(id, token);
+                    toast.success("נמחק בהצלחה", { duration: 3000 });
+                    await fetchEmployees();
+                }
+                catch (err) {
+                    toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
+                    console.error('שגיאה במחיקת עובד', err);
+                }
+               
+            }
+        });
 
     }
+      
     const toTarget = async (employeeId) => {
         setSelectedEmployee(employeeId);
     };
