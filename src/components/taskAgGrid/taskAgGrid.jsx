@@ -7,7 +7,7 @@ import './taskAgGrid.css'
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked  }) => {
+const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,highlightedTaskId }) => {
     const gridRef = useRef();
 
     const defaultColDef = {
@@ -78,6 +78,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked  }) 
                     ref={gridRef}
                     rowData={rowData}
                     columnDefs={columnDefs}
+                    highlightedTaskId={highlightedTaskId}
                     defaultColDef={defaultColDef}
                     pagination={true}
                     enableRtl={true}

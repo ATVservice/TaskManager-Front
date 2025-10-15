@@ -40,6 +40,7 @@ const AppRoutes = () => {
         <>
           <Route path="/" element={<Navigate to="/tasks" replace />} />
           <Route path="/taskRedirect/:id" element={<PageWrapper><TaskRedirect /></PageWrapper>} />
+          <Route path="/tasks/:taskId" element={<PageWrapper><Tasks /></PageWrapper>} />
           <Route path="/createTask" element={<PageWrapper><CreateTask /></PageWrapper>} />
           <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
           <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />

@@ -155,19 +155,22 @@ const Tasks = () => {
     });
 
     const wrapperRef = useRef(null);
+
     useEffect(() => {
         if (taskId && allTasks.length > 0) {
           const foundTask = allTasks.find(t => t._id === taskId);
+      
           if (foundTask) {
             setHighlightedTaskId(taskId);
-            MoreDetails(taskId); // יפתח את פרטי המשימה
+            setTimeout(() => {
+              MoreDetails(taskId);
+            }, 400); // השהיה קלה שתאפשר לטבלה להיטען
           } else {
-            toast.error("המשימה לא נמצאה", { duration: 3000 });
+            toast.error("המשימה לא קיימת בטאב הנוכחי, ייתכן שהיא בארכיון או בוטלה.");
           }
         }
       }, [taskId, allTasks]);
       
-
     // שמירת הטאב הפעיל ב-sessionStorage בכל פעם שהוא משתנה
     useEffect(() => {
         sessionStorage.setItem('activeTaskTab', activeTab);
