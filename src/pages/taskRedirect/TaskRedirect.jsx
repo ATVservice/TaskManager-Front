@@ -17,26 +17,37 @@ const TaskRedirect = () => {
         try {
           console.log("📡 Calling getMoreDetails with ID:", id);
           const task = await getMoreDetails(id);
-          console.log("✅ Task found:", task);
+          console.log("✅ Task received:", task);
           
-          if (task) {
-            if (task.frequencyType || task.taskModel === 'RecurringTask') {
-              navigate(`/tasks?tab=recurring&task=${id}`);
-            } else if (task.status === 'הושלם') {
-              navigate(`/tasks?tab=completed&task=${id}`);
-            } else if (task.status === 'בוטלה') {
-              navigate(`/tasks?tab=cancelled&task=${id}`);
-            } else {
-              navigate(`/tasks?tab=today&task=${id}`);
-            }
-          } else {
+          if (!task) {
             console.log("❌ Task is null/undefined");
             setNotFound(true);
+            setChecking(false);
+            return;
+          }
+          
+          // בודק אם המשימה נמחקה או בארכיון
+          if (task.isDeleted || task.isArchived) {
+            console.log("❌ Task is deleted or archived");
+            setNotFound(true);
+            setChecking(false);
+            return;
+          }
+          
+          // המשימה קיימת וזמינה - מנתב
+          console.log("✅ Task is available, navigating...");
+          if (task.frequencyType || task.taskModel === 'RecurringTask') {
+            navigate(`/tasks?tab=recurring&task=${id}`, { replace: true });
+          } else if (task.status === 'הושלם') {
+            navigate(`/tasks?tab=completed&task=${id}`, { replace: true });
+          } else if (task.status === 'בוטלה') {
+            navigate(`/tasks?tab=cancelled&task=${id}`, { replace: true });
+          } else {
+            navigate(`/tasks?tab=today&task=${id}`, { replace: true });
           }
         } catch (err) {
           console.error("❌ Error checking task:", err);
           setNotFound(true);
-          toast.error('המשימה לא נמצאה במערכת');
         } finally {
           setChecking(false);
         }
@@ -44,24 +55,54 @@ const TaskRedirect = () => {
       checkTask();
     }, [id, navigate]);
   
-    if (checking) return <div style={{ textAlign: 'center', marginTop: '40px' }}>בודק משימה...</div>;
+    if (checking) {
+      return (
+        <div style={{ 
+          textAlign: 'center', 
+          marginTop: '100px',
+          fontSize: '18px',
+          color: '#666'
+        }}>
+          <div style={{ marginBottom: '20px' }}>🔍</div>
+          בודק משימה...
+        </div>
+      );
+    }
     
     if (notFound) {
       return (
-        <div style={{ textAlign: 'center', marginTop: '60px' }}>
-          <h2>❌ המשימה לא קיימת במערכת</h2>
-          <p>יתכן שהיא נמחקה או הועברה לארכיון.</p>
+        <div style={{ 
+          textAlign: 'center', 
+          marginTop: '80px',
+          padding: '20px'
+        }}>
+          <h2 style={{ color: '#d9534f', marginBottom: '20px' }}>
+            ❌ המשימה לא קיימת במערכת
+          </h2>
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#666', 
+            marginBottom: '30px',
+            lineHeight: '1.6'
+          }}>
+            יתכן שהמשימה נמחקה, הועברה לארכיון, או שמספר המשימה שגוי.
+          </p>
           <button
             onClick={() => navigate('/tasks?tab=today')}
             style={{
-              padding: '10px 20px',
+              padding: '12px 30px',
               background: '#007bff',
               color: '#fff',
               border: 'none',
-              borderRadius: '6px',
+              borderRadius: '8px',
               cursor: 'pointer',
-              marginTop: '10px'
+              fontSize: '16px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 8px rgba(0,123,255,0.3)',
+              transition: 'all 0.2s'
             }}
+            onMouseOver={(e) => e.target.style.background = '#0056b3'}
+            onMouseOut={(e) => e.target.style.background = '#007bff'}
           >
             חזרה למשימות להיום
           </button>
@@ -69,7 +110,7 @@ const TaskRedirect = () => {
       );
     }
     
-    return null;  // ← חשוב! צריך return כאן
+    return null;
 };
 
-export default TaskRedirect;  // ← זה מה שחסר!!!
+export default TaskRedirect;

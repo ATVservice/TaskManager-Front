@@ -13,13 +13,13 @@ import { fetchDeleteTask } from '../../services/deleteTaskService.js';
 import TrashWithRecycleIcon from '../../components/trashWithRecycleIcon/TrashWithRecycleIcon.jsx';
 import { updateRecurringStatus, updateTaskStatus } from '../../services/updateService.js';
 import EditTask from '../../components/editTask/EditTask.jsx';
-import { useNavigate } from 'react-router-dom';
 import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
 import toast from 'react-hot-toast';
 import { createRoot } from 'react-dom/client'; // לשורש של האפליקציה
 import { createPortal } from 'react-dom';      // לפורטלים (popups, modals)
+import { useNavigate, useParams } from 'react-router-dom';
 
 import './Tasks.css';
 import { Title } from 'react-head';
@@ -107,6 +107,9 @@ const statusOptions = [
 
 const Tasks = () => {
     const navigate = useNavigate();
+    const { taskId } = useParams();
+    const [highlightedTaskId, setHighlightedTaskId] = useState(null);
+
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
 
@@ -152,6 +155,18 @@ const Tasks = () => {
     });
 
     const wrapperRef = useRef(null);
+    useEffect(() => {
+        if (taskId && allTasks.length > 0) {
+          const foundTask = allTasks.find(t => t._id === taskId);
+          if (foundTask) {
+            setHighlightedTaskId(taskId);
+            MoreDetails(taskId); // יפתח את פרטי המשימה
+          } else {
+            toast.error("המשימה לא נמצאה", { duration: 3000 });
+          }
+        }
+      }, [taskId, allTasks]);
+      
 
     // שמירת הטאב הפעיל ב-sessionStorage בכל פעם שהוא משתנה
     useEffect(() => {
@@ -848,35 +863,36 @@ const Tasks = () => {
                         onRowClicked={(params) => {
                             const target = params.event.target;
                             const tagName = target.tagName.toLowerCase();
-                            
+
                             // בדיקה אם לחצו על כפתור או אייקון
                             if (["button", "svg", "path"].includes(tagName)) return;
-                            
+
                             // בדיקה אם לחצו על אייקונים
                             if (target.closest('.iconButton')) return;
-                        
+
                             // בדיקה חזקה לעמודת הסטטוס
                             if (params.column && params.column.colId === 'status') return;
-                            
+
                             // בדיקה אם לחצו על span של סטטוס (האופציות הצבעוניות)
                             if (target.tagName === 'SPAN' && target.style.backgroundColor) return;
-                        
+
                             // בדיקה אם התא כרגע במצב עריכה (הסלקט פתוח)
                             if (target.closest('.ag-cell-inline-editing')) return;
-                            
+
                             // בדיקה אם לחצו על אלמנט של הסלקט או התפריט שלו
-                            if (target.closest('.ag-popup') || 
-                                target.closest('.ag-select-list') || 
-                                target.closest('.ag-list-item') ||
-                                target.closest('.ag-cell-editor')) return;
-                        
+                            if (target.closest('.ag-popup, .ag-select-list, .ag-list-item, .ag-cell-editor')) return;
+
                             // בדיקה אם מסמנים טקסט
                             const selection = window.getSelection();
                             if (selection && selection.toString().length > 0) return;
-                        
+
+                            setHighlightedTaskId(params.data._id);
                             // פתיחת פרטים
                             MoreDetails(params.data._id);
                         }}
+                        getRowClass={(params) => 
+                            params.data._id === highlightedTaskId ? 'highlighted-row' : ''
+                          }
                         onCellValueChanged={onCellValueChanged}
                     />
                 </div>

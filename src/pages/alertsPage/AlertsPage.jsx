@@ -4,10 +4,11 @@ import './AlertsPage.css';
 import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { Title } from 'react-head';
+import { useNavigate } from 'react-router-dom';
 
 const AlertsPage = () => {
     const { user } = useContext(AuthContext);
-
+    const navigate = useNavigate();
     const [alerts, setAlerts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const alertsPerPage = 5;
@@ -45,6 +46,11 @@ const AlertsPage = () => {
         }
     };
 
+    const handleTaskClick = (taskId) => {
+        console.log("🔵 Navigating to task:", taskId);
+        navigate(`/taskRedirect/${taskId}`);
+    };
+
     // חישוב דפים
     const indexOfLast = currentPage * alertsPerPage;
     const indexOfFirst = indexOfLast - alertsPerPage;
@@ -65,11 +71,23 @@ const AlertsPage = () => {
                             {alert.task ? (
                                 alert.task.taskId ? (
                                     <div className="alert-task">
-                                        משימה מס' {alert.task.taskId}: {alert.task.title}
+                                        <span
+                                            className="alert-title"
+                                            style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                                            onClick={() => handleTaskClick(alert.task._id || alert.task.taskId)}
+                                        >
+                                            משימה מס' {alert.task.taskId}: {alert.task.title}                                    </span>
+
                                     </div>
                                 ) : (
                                     <div className="alert-task">
-                                        משימה: {alert.task.title}
+                                        <span
+                                            className="alert-title"
+                                            style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                                            onClick={() => handleTaskClick(alert.task._id || alert.task.taskId)}
+                                        >
+                                            משימה: {alert.task.title}
+                                        </span>
                                     </div>
                                 )
                             ) : (
