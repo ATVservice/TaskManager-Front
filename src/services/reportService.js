@@ -1,4 +1,3 @@
-import axios from 'axios';
 import api from './api.js'
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 

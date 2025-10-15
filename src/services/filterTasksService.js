@@ -1,4 +1,5 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 // משימות להיום
@@ -12,7 +13,7 @@ export const fetchTodayTasks = async (isRecurring) => {
         token = user.token;
     }
 
-      const res = await axios.get(`${API_URL}/api/tasks/getTodayTasks`, {
+      const res = await api.get(`${API_URL}/api/tasks/getTodayTasks`, {
         params: {
           isRecurringInstance: isRecurring, 
         },
@@ -28,7 +29,7 @@ export const fetchTodayTasks = async (isRecurring) => {
 // משימות קבועות
 export const fetchRecurringTasks = async (token) => {
 
-      const res = await axios.get(`${API_URL}/api/taskFilters/recurringTasks`, {
+      const res = await api.get(`${API_URL}/api/taskFilters/recurringTasks`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -42,7 +43,7 @@ export const fetchRecurringTasks = async (token) => {
 export const fetchCompleteds = async (token) => {
 
     
-      const res = await axios.get(`${API_URL}/api/taskFilters/completed`, {
+      const res = await api.get(`${API_URL}/api/taskFilters/completed`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -55,7 +56,7 @@ export const fetchCompleteds = async (token) => {
   // משימות שבוטלו
 export const fetchCancelled = async (token) =>{
  
-      const res = await axios.get(`${API_URL}/api/taskFilters/cancelled`, {
+      const res = await api.get(`${API_URL}/api/taskFilters/cancelled`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -68,7 +69,7 @@ export const fetchCancelled = async (token) =>{
   // משימות מגירה
 export const fetchDrawer = async (token) => {
  
-      const res = await axios.get(`${API_URL}/api/taskFilters/drawer`, {
+      const res = await api.get(`${API_URL}/api/taskFilters/drawer`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

@@ -1,8 +1,9 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const getTaskHistory = async (taskId, token, model) => {
-    const response = await axios.get(`${API_URL}/api/update/history/${taskId}`, {
+    const response = await api.get(`${API_URL}/api/update/history/${taskId}`, {
         params: { model }, 
         headers: {
             Authorization: `Bearer ${token}`,
@@ -13,7 +14,7 @@ export const getTaskHistory = async (taskId, token, model) => {
     return response.data;
 };
 export const getRecurringTaskHistory = async (taskId, token) => {
-    const response = await axios.get(`${API_URL}/api/update/recurringHistory/${taskId}`, {
+    const response = await api.get(`${API_URL}/api/update/recurringHistory/${taskId}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

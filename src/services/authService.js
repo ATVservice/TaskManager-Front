@@ -1,11 +1,12 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 
 export const loginUser = async (username, password) => {
   console.log("בדיקה",API_URL)
 
-  const response = await axios.post(`${API_URL}/api/auth/login`, { userName: username, password },
+  const response = await api.post(`${API_URL}/api/auth/login`, { userName: username, password },
 
     {
       method: 'POST',
@@ -16,7 +17,7 @@ export const loginUser = async (username, password) => {
 };
 export const registerUser = async (userName, firstName, lastName, password, email, role, token) => {
 
-  const response = await axios.post(`${API_URL}/api/auth/register`, { userName, firstName, lastName, password, email, role },
+  const response = await api.post(`${API_URL}/api/auth/register`, { userName, firstName, lastName, password, email, role },
     {
       method: 'POST',
       headers: {
@@ -28,7 +29,7 @@ export const registerUser = async (userName, firstName, lastName, password, emai
   return response.data;
 };
 export const forgotPassword = async (email) => {
-  const response = await axios.post(`${API_URL}/api/auth/forgotPassword`, {email},
+  const response = await api.post(`${API_URL}/api/auth/forgotPassword`, {email},
     {
       method: 'POST',
       withCredentials: true
@@ -37,7 +38,7 @@ export const forgotPassword = async (email) => {
   return response.data;
 };
 export const resetPassword = async (token, newPassword) => {
-  const response = await axios.post(`${API_URL}/api/auth/resetPassword`, {token, newPassword},
+  const response = await api.post(`${API_URL}/api/auth/resetPassword`, {token, newPassword},
     {
       method: 'POST',
       withCredentials: true

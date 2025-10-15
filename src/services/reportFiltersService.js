@@ -1,9 +1,10 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const fetchLoadSavedFilter = async (screenType, token) => {
     try{
-    const response = await axios.get(`${API_URL}/api/report/loadSavedFilter/${screenType}`, {
+    const response = await api.get(`${API_URL}/api/report/loadSavedFilter/${screenType}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -20,7 +21,7 @@ export const fetchLoadSavedFilter = async (screenType, token) => {
 
 export const fetchResetFilter = async (screenType, token) => {
     try{
-    const response = await axios.delete(`${API_URL}/api/report/resetFilter/${screenType}`, {
+    const response = await api.delete(`${API_URL}/api/report/resetFilter/${screenType}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },

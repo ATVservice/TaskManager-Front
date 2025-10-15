@@ -14,6 +14,10 @@ export default function useSessionManager() {
     logout();
     navigate('/login?message=timeout');
   }
+  function logoutUserExpired() {
+    logout();
+    navigate('/login?message=tokenExpired');
+  }
 
   const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) {

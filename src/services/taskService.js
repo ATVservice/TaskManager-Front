@@ -1,10 +1,10 @@
-import axios from 'axios';
+import api from './api.js'
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 export const createTask = async (form, token) => {
   console.log("form", form);
 
-  const response = await axios.post(`${API_URL}/api/tasks/createTask`, { form },
+  const response = await api.post(`${API_URL}/api/tasks/createTask`, { form },
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -14,7 +14,7 @@ export const createTask = async (form, token) => {
   return response.data;
 };
 export const getTasks = async (token) => {
-  const response = await axios.get(`${API_URL}/api/tasks/getTasks`,
+  const response = await api.get(`${API_URL}/api/tasks/getTasks`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -32,7 +32,7 @@ export const getMoreDetails = async (_id) => {
     const user = JSON.parse(userStr);
     token = user.token;
   }
-  const response = await axios.get(`${API_URL}/api/tasks/getMoreDetails/${_id}`,
+  const response = await api.get(`${API_URL}/api/tasks/getMoreDetails/${_id}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -44,7 +44,7 @@ export const getMoreDetails = async (_id) => {
 };
 export const duplicateTask = async (taskId, token) => {
 
-  const response = await axios.post(`${API_URL}/api/tasks/duplicateTask `, { taskId },
+  const response = await api.post(`${API_URL}/api/tasks/duplicateTask `, { taskId },
     {
       headers: {
         Authorization: `Bearer ${token}`,

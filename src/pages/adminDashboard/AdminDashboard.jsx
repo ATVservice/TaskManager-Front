@@ -106,8 +106,23 @@ const AdminDashboard = () => {
     loadSummaryData();
   }, [rangeType, fromDate, toDate, user]);
 
-  if (loading) return <div admin-dashboard>טוען נתונים...</div>;
-  if (!data) return <div admin-dashboard>אין נתונים להצגה</div>;
+  if (loading) {
+    return (
+      <div className="admin-dashboard">
+        <div className="loading-overlay">
+          <p>טוען נתונים...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="admin-dashboard">
+        <div className="no-data-message">אין נתונים להצגה</div>
+      </div>
+    );
+  }
 
 
   const barData = [
@@ -283,8 +298,8 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
-      </>
-      );
+    </>
+  );
 };
 
-      export default AdminDashboard;
+export default AdminDashboard;

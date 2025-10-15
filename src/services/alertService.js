@@ -1,4 +1,5 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const fetchUserAlerts = async (token, { limit = 30, skip = 0, sortBy = 'createdAt', order = 'desc', resolved } = {}) => {
@@ -9,7 +10,7 @@ export const fetchUserAlerts = async (token, { limit = 30, skip = 0, sortBy = 'c
   params.append('sortBy', sortBy);
   params.append('order', order);
 
-  const res = await axios.get(`${API_URL}/api/alert/getUserAlerts?${params.toString()}`, {
+  const res = await api.get(`${API_URL}/api/alert/getUserAlerts?${params.toString()}`, {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true
   });
@@ -18,7 +19,7 @@ export const fetchUserAlerts = async (token, { limit = 30, skip = 0, sortBy = 'c
 
 export const markAlertsRead = async (token, alertIds = []) => {
   if (!Array.isArray(alertIds) || alertIds.length === 0) return "אין התראות";
-  const res = await axios.post(`${API_URL}/api/alert/markRead`, { alertIds }, {
+  const res = await api.post(`${API_URL}/api/alert/markRead`, { alertIds }, {
     headers: { Authorization: `Bearer ${token}` },
     withCredentials: true
   });

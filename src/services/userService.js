@@ -1,8 +1,8 @@
-import axios from 'axios';
+import api from './api.js'
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 export const getUserNames = async (token) => {
 
-  const response = await axios.get(`${API_URL}/api/users/getUserNamesEmployees`,
+  const response = await api.get(`${API_URL}/api/users/getUserNamesEmployees`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -14,7 +14,7 @@ export const getUserNames = async (token) => {
 };
 export const getNames = async (token) => {
 
-  const response = await axios.get(`${API_URL}/api/users/getNamesEmployees`,
+  const response = await api.get(`${API_URL}/api/users/getNamesEmployees`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +26,7 @@ export const getNames = async (token) => {
 };
 export const getAllEmployees = async (token) => {
 
-  const response = await axios.get(`${API_URL}/api/users/getAllEmployees`,
+  const response = await api.get(`${API_URL}/api/users/getAllEmployees`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -38,7 +38,7 @@ export const getAllEmployees = async (token) => {
 };
 export const updateUser = async (id, updates, token) => {
 
-  const response = await axios.put(`${API_URL}/api/users/updateUser/${id}`, updates,
+  const response = await api.put(`${API_URL}/api/users/updateUser/${id}`, updates,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -50,7 +50,7 @@ export const updateUser = async (id, updates, token) => {
 };
 export const deleteUser = async (id, token) => {
 
-  const response = await axios.delete(`${API_URL}/api/users/deleteUser/${id}`, 
+  const response = await api.delete(`${API_URL}/api/users/deleteUser/${id}`, 
     {
       headers: {
         Authorization: `Bearer ${token}`,

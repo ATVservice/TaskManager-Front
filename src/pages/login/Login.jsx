@@ -13,10 +13,19 @@ const Login = () => {
 
   const [searchParams] = useSearchParams();
   const message = searchParams.get('message');
+  let tokenExpiredToastShown = false;
+
 
   useEffect(() => {
-    if (message === 'timeout') {
-      toast.info("החיבור פג עקב חוסר פעילות");
+
+    if (!tokenExpiredToastShown  && message === 'timeout') {
+      tokenExpiredToastShown = true;
+      toast("החיבור פג עקב חוסר פעילות", { icon: "⚠️" });
+    }
+    if (!tokenExpiredToastShown  && message === 'tokenExpired') {
+      tokenExpiredToastShown = true;
+      toast("הסשן פג", { icon: "⚠️" });
+  
     }
   }, [message]);
 

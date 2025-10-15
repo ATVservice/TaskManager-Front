@@ -1,8 +1,8 @@
-import axios from 'axios';
+import api from './api.js'
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const fetchRestoreTask = async (token, password, taskId) => { 
-      const res = await axios.put(`${API_URL}/api/restore/restoreTask/${taskId}`,{password}, {
+      const res = await api.put(`${API_URL}/api/restore/restoreTask/${taskId}`,{password}, {
        
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -12,7 +12,7 @@ export const fetchRestoreTask = async (token, password, taskId) => {
       return res.data;
   };
   export const fetchGetDeletedTasks = async (token) => { 
-    const res = await axios.get(`${API_URL}/api/restore/getAllDeletedTasks`, {
+    const res = await api.get(`${API_URL}/api/restore/getAllDeletedTasks`, {
      
           headers: {
               Authorization: `Bearer ${token}`,

@@ -1,10 +1,11 @@
-import axios from 'axios';
+import api from './api.js'
+
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const fetchAllAssociations = async (token) => {
 
 
-    const res = await axios.get(`${API_URL}/api/associations/getAllAssociations`, {
+    const res = await api.get(`${API_URL}/api/associations/getAllAssociations`, {
         method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
@@ -16,7 +17,7 @@ export const fetchAllAssociations = async (token) => {
 export const fetchGetAssociatedEmployees = async (associationId, token) => {
 
 
-    const res = await axios.get(`${API_URL}/api/associations/getAssociated/${associationId}`, {
+    const res = await api.get(`${API_URL}/api/associations/getAssociated/${associationId}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -27,7 +28,7 @@ export const fetchGetAssociatedEmployees = async (associationId, token) => {
 export const updateAssociationUsers = async (body, token) => {
     console.log("token", token)
     console.log("addAssociatedEmployees", body)
-    const res = await axios.put(`${API_URL}/api/associations/updateAssociationUsers`,
+    const res = await api.put(`${API_URL}/api/associations/updateAssociationUsers`,
         body,
         {
             headers: {
@@ -39,7 +40,7 @@ export const updateAssociationUsers = async (body, token) => {
 };
 export const createAssociation = async (name,   description, token) => {
 
-    const res = await axios.post(`${API_URL}/api/associations/createAssociation`,
+    const res = await api.post(`${API_URL}/api/associations/createAssociation`,
         {name, description},
         {
             headers: {

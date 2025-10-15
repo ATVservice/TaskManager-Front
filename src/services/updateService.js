@@ -1,9 +1,9 @@
-import axios from 'axios';
+import api from './api.js'
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const updateTaskStatus = async (taskId, status, token) => {
     console.log("sta",status)
-    const response = await axios.put(`${API_URL}/api/update/updateTask/${taskId}`, {status},{
+    const response = await api.put(`${API_URL}/api/update/updateTask/${taskId}`, {status},{
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -14,7 +14,7 @@ export const updateTaskStatus = async (taskId, status, token) => {
 };
 export const updateTask = async (taskId, preparedForm, token) => {
     console.log("preparedForm" ,preparedForm)
-    const response = await axios.put(`${API_URL}/api/update/updateTask/${taskId}`, {preparedForm},{
+    const response = await api.put(`${API_URL}/api/update/updateTask/${taskId}`, {preparedForm},{
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -24,7 +24,7 @@ export const updateTask = async (taskId, preparedForm, token) => {
     return response.data;
 };
 export const updateRecurringStatus = async (taskId, status, token ) => {
-    const response = await axios.put(`${API_URL}/api/updateToday/completeRecurringTask/${taskId}`, {status},{
+    const response = await api.put(`${API_URL}/api/updateToday/completeRecurringTask/${taskId}`, {status},{
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -36,7 +36,7 @@ export const updateRecurringStatus = async (taskId, status, token ) => {
 
 export const updateRecurringTask = async (taskId, preparedForm, token) => {
     console.log("preparedForm" ,preparedForm)
-    const response = await axios.put(`${API_URL}/api/update/updateRecurringTask/${taskId}`, {preparedForm},{
+    const response = await api.put(`${API_URL}/api/update/updateRecurringTask/${taskId}`, {preparedForm},{
         headers: {
             Authorization: `Bearer ${token}`,
         },
