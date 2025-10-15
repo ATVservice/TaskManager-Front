@@ -61,9 +61,15 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     };
 
     const seeAllAlerts = () => {
-        handleClose()
-        navigate('/allAlerts', { target: '_blank' });
+        onClose(); // סוגר את המגירה
+        navigate('/allAlerts');
     }
+
+    const handleTaskClick = (taskId) => {
+        console.log("🔵 Navigating to task:", taskId);
+        onClose(); // סוגר את המגירה
+        navigate(`/taskRedirect/${taskId}`);
+    };
 
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
@@ -75,7 +81,6 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                         seeAllAlerts();
                     }}
                     className='allAlerts'
-
                     href="#"
                 >
                     לכל התראות
@@ -89,7 +94,6 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
 
                 {alerts.map((a) => {
                     const task = a.task || {};
-
                     const typeLine = a.type || '';
                     const timeAgo = a.createdAt ? formatDistanceToNowStrict(parseISO(a.createdAt), { locale: he, addSuffix: true }) : '';
 
@@ -100,12 +104,17 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                             </div>
                             <div className="alert-body">
                                 <div className="alert-top">
-                                    <span className="alert-title">{task.title || ''}</span>
+                                    <span
+                                        className="alert-title"
+                                        style={{ color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
+                                        onClick={() => handleTaskClick(task._id || task.taskId)}
+                                    >
+                                        {task.title || ''}
+                                    </span>
                                     <span className="alert-time">{timeAgo}</span>
                                 </div>
                                 <div className="alert-type">{typeLine}</div>
                                 {a.details && <div className="alert-details">{a.details}</div>}
-
                             </div>
                         </div>
                     );

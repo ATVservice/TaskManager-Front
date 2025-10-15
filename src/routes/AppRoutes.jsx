@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { AnimatePresence } from "framer-motion";
 import PageWrapper from "../components/PageWrapper";
 import Login from '../pages/login/Login';
 import Tasks from '../pages/tasks/Tasks';
@@ -18,53 +17,56 @@ import AdminDashboard from '../pages/adminDashboard/AdminDashboard';
 import Report from '../pages/report/report/Report';
 import AlertsPage from '../pages/alertsPage/AlertsPage';
 import ResetEmailForm from '../pages/resetEmailForm/resetEmailForm';
+import TaskRedirect from '../pages/taskRedirect/TaskRedirect';
 
 const AppRoutes = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
   const location = useLocation();
-
+  
+  console.log("🛣️ AppRoutes - current path:", location.pathname);
+  
+  if (loading) return null;
+ 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {!user ? (
-          <>
-            <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-            <Route path="/ResetEmail" element={<PageWrapper><ResetEmailForm /></PageWrapper>} />
-            <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </>
-        ) : (
-          <>
-            <Route path="/" element={<Navigate to="/tasks" replace />} />
-            
-            <Route path="/createTask" element={<PageWrapper><CreateTask /></PageWrapper>} />
-            <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
-            <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
-            <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
-            <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
-            
-            {user.role === 'מנהל' && (
-              <>
-                <Route path="/association" element={<PageWrapper><Association /></PageWrapper>} />
-                <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
-                <Route path="/goals" element={<PageWrapper><GoalForm /></PageWrapper>} />
-                <Route path="/employee" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
-                <Route path="/adminDashboard" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
-                <Route path="/reports" element={<PageWrapper><Report /></PageWrapper>} />
-              </>
-            )}
-            
-            {user.role === 'עובד' && (
-              <>
-                <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
-              </>
-            )}
-            
-            <Route path="*" element={<Navigate to="/tasks" replace />} />
-          </>
-        )}
-      </Routes>
-    </AnimatePresence>
+    <Routes location={location}>
+      {!user ? (
+        <>
+          <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+          <Route path="/ResetEmail" element={<PageWrapper><ResetEmailForm /></PageWrapper>} />
+          <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </>
+      ) : (
+        <>
+          <Route path="/" element={<Navigate to="/tasks" replace />} />
+          <Route path="/taskRedirect/:id" element={<PageWrapper><TaskRedirect /></PageWrapper>} />
+          <Route path="/createTask" element={<PageWrapper><CreateTask /></PageWrapper>} />
+          <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
+          <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
+          <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
+          <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
+          
+          {user.role === 'מנהל' && (
+            <>
+              <Route path="/association" element={<PageWrapper><Association /></PageWrapper>} />
+              <Route path="/register" element={<PageWrapper><Register /></PageWrapper>} />
+              <Route path="/goals" element={<PageWrapper><GoalForm /></PageWrapper>} />
+              <Route path="/employee" element={<PageWrapper><EmployeeManagement /></PageWrapper>} />
+              <Route path="/adminDashboard" element={<PageWrapper><AdminDashboard /></PageWrapper>} />
+              <Route path="/reports" element={<PageWrapper><Report /></PageWrapper>} />
+            </>
+          )}
+          
+          {user.role === 'עובד' && (
+            <>
+              <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+            </>
+          )}
+          
+          <Route path="*" element={<Navigate to="/tasks" replace />} />
+        </>
+      )}
+    </Routes>
   );
 };
 
