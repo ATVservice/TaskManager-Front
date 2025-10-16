@@ -8,11 +8,13 @@ import AlertsDrawer from '../alertsDrawer/AlertsDrawer';
 import Register from '../../pages/register/Register';
 import toast from 'react-hot-toast';
 import { updateUser } from '../../services/userService';
+import { AlertContext } from '../../context/AlertContext';
 
 const NavBar = () => {
   const { user, logout } = useContext(AuthContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount, updateUnreadCount } = useContext(AlertContext);
+
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
@@ -23,7 +25,7 @@ const NavBar = () => {
     try {
       const data = await fetchUserAlerts(user.token, { limit: 100 });
       const unread = data.alerts ? data.alerts.filter(a => !a.resolved).length : 0;
-      setUnreadCount(unread);
+      updateUnreadCount(unread);
     } catch (err) {
       console.error('Error fetching unread count', err);
     }
@@ -88,25 +90,6 @@ const NavBar = () => {
               {user.userName}
             </span>
           </button>
-          {/* {user.role === 'עובד' && (
-            <button className="user-profile-container" 
-           onClick={() => {
-            const user = JSON.parse(localStorage.getItem("user"));
-            toEdit(user, user?.id);
-          }}
-          style={{ cursor: "pointer" }} >
-
-            <title>עריכת פרטים אישיים</title>
-
-            <UserRoundPen color="#8011ee" size={20}/>
-
-            <span className="user-profile-name">
-               פרטים אישיים
-            </span>
-            
-          </button>
-          )}
-           */}
         </div>
 
         <div className='nav-links'>

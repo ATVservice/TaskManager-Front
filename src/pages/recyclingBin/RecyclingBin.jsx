@@ -96,8 +96,10 @@ const RecyclingBin = () => {
         setDetails({});
     };
     const MoreDetails = async (_id) => {
+        const token = user?.token;
+
         try {
-            const detail = await getMoreDetails(_id);
+            const detail = await getMoreDetails(_id, token);
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {

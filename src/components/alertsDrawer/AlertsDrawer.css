@@ -4,7 +4,7 @@
     right: -420px;
     width: 380px;
     height: 100%;
-    background: #1f1f1f;
+    background: #dad9d9;
     color: #fff;
     box-shadow: -4px 0 12px rgba(0,0,0,0.4);
     transition: right 0.25s ease;
@@ -15,6 +15,7 @@
   .alerts-drawer.open { right: 0; }
   
   .alerts-header {
+    background-color: black;
     display:flex;
     align-items:center;
     justify-content: space-between;
@@ -44,17 +45,16 @@
     background: rgba(255,255,255,0.02);
   }
   .alert-item.unread {
-    background: linear-gradient(90deg, rgba(234, 41, 20, 0.484), rgba(255,255,255,0.02));
+    background: linear-gradient(90deg, rgba(234, 41, 20, 0.747), rgba(255,255,255,0.02));
     box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
   }
   .alert-item.read {
-    background: rgba(14, 14, 14, 0.368);
-    opacity: 0.7;
+    background-color: black;
   }
   
   .left-indicator .avatar-circle {
     width:36px; height:36px; border-radius:50%;
-    background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:600;
+    background:#059aa8; display:flex; align-items:center; justify-content:center; font-weight:600;
     color:#fff;
   }
   
@@ -70,7 +70,7 @@
     position: absolute;
     top: 2px;
     right: 2px;
-    background: #e11d48;
+    background: #f70036;
     color: white;
     border-radius: 12px;
     padding: 0 6px;
@@ -79,8 +79,10 @@
   }
   .allAlerts{
       text-decoration: 'underline' ;
-      color: white;
       cursor: pointer;
       font-size: 12px;
       margin-right: 35%;
+  }
+  .pColor{
+    color: #059aa8;
   }

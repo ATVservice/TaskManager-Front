@@ -5,6 +5,8 @@ import { AuthContext } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { Title } from 'react-head';
 import { useNavigate } from 'react-router-dom';
+import { AlertContext } from '../../context/AlertContext';
+
 
 const AlertsPage = () => {
     const { user } = useContext(AuthContext);
@@ -12,6 +14,8 @@ const AlertsPage = () => {
     const [alerts, setAlerts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const alertsPerPage = 5;
+    const { updateUnreadCount } = useContext(AlertContext);
+
 
     useEffect(() => {
         const fetchAlerts = async () => {
@@ -40,6 +44,10 @@ const AlertsPage = () => {
             setAlerts(prev =>
                 prev.map(a => (a._id === alertId ? { ...a, resolved: true } : a))
             );
+            // updateUnreadCount(0);
+            updateUnreadCount(prev => Math.max(prev - 1, 0));
+
+
         } catch (err) {
             toast.error(err.response?.data?.message, { duration: 3000 });
             console.error('Failed to mark alert as read', err);

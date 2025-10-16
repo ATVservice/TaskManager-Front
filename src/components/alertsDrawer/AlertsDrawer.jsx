@@ -26,7 +26,7 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
             });
             setAlerts(list);
         } catch (err) {
-            toast.error(err.response?.data?.message || 'לא ניתן לטעון התרעות כרגע', { duration: 3000 });
+            toast.error(err.response?.data?.message || 'לא ניתן לטעון התראות כרגע', { duration: 3000 });
             console.error('Error loading alerts', err);
         } finally {
             setLoading(false);
@@ -74,13 +74,13 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>
             <div className="alerts-header">
-                <h3>התראות</h3>
+                <h3 className='pColor'>התראות</h3>
                 <a
                     onClick={(e) => {
                         e.preventDefault();
                         seeAllAlerts();
                     }}
-                    className='allAlerts'
+                    className='allAlerts pColor'
                     href="#"
                 >
                     לכל התראות

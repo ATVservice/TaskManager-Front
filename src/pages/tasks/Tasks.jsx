@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { getMoreDetails, getTasks } from '../../services/taskService';
+import { getMoreDetails, getTaskById, getTasks } from '../../services/taskService';
 import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
@@ -155,22 +155,9 @@ const Tasks = () => {
     });
 
     const wrapperRef = useRef(null);
+    const taskHandledRef = useRef(false);
 
-    useEffect(() => {
-        if (taskId && allTasks.length > 0) {
-          const foundTask = allTasks.find(t => t._id === taskId);
-      
-          if (foundTask) {
-            setHighlightedTaskId(taskId);
-            setTimeout(() => {
-              MoreDetails(taskId);
-            }, 400); // השהיה קלה שתאפשר לטבלה להיטען
-          } else {
-            toast.error("המשימה לא קיימת בטאב הנוכחי, ייתכן שהיא בארכיון או בוטלה.");
-          }
-        }
-      }, [taskId, allTasks]);
-      
+
     // שמירת הטאב הפעיל ב-sessionStorage בכל פעם שהוא משתנה
     useEffect(() => {
         sessionStorage.setItem('activeTaskTab', activeTab);
@@ -214,52 +201,117 @@ const Tasks = () => {
             return newIndex;
         });
     };
-
     const fetchTasks = useCallback(async (tab, type) => {
-
         setIsLoading(true);
         const token = user?.token;
+        let data = [];
         try {
-            let data = [];
             if (tab === 'today') {
-                if (type === 'today-single') {
-                    data = await fetchTodayTasks(false);
-                } else if (type === 'today-recurring') {
-                    data = await fetchTodayTasks(true);
-                } else {
-                    data = [];
-                }
+                if (type === 'today-single') data = await fetchTodayTasks(false);
+                else if (type === 'today-recurring') data = await fetchTodayTasks(true);
             } else {
                 switch (tab) {
-                    case 'future':
-                        data = await getTasks(token);
-                        break;
-                    case 'recurring':
-                        data = await fetchRecurringTasks(token);
-                        break;
-                    case 'completed':
-                        data = await fetchCompleteds(token);
-                        break;
-                    case 'cancelled':
-                        data = await fetchCancelled(token);
-                        break;
-                    case 'drawer':
-                        data = await fetchDrawer(token);
-                        break;
-                    default:
-                        data = [];
+                    case 'future': data = await getTasks(token); break;
+                    case 'recurring': data = await fetchRecurringTasks(token); break;
+                    case 'completed': data = await fetchCompleteds(token); break;
+                    case 'cancelled': data = await fetchCancelled(token); break;
+                    case 'drawer': data = await fetchDrawer(token); break;
                 }
             }
-
             const enriched = enrichTasksWithSearchText(data);
             setAllTasks(enriched);
+            return enriched; // ← מחזירים את המערך כדי handleTaskRedirect יעבוד
         } catch (error) {
-            toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 }, { id: 'unique-error' });
-            console.error('Error getting tasks:', error);
+            toast.error(error.response?.data?.message || 'שגיאה בהתחברות');
+            return [];
         } finally {
             setIsLoading(false);
         }
     }, [user]);
+
+
+    // const fetchTasks = useCallback(async (tab, type) => {
+
+    //     setIsLoading(true);
+    //     const token = user?.token;
+    //     try {
+    //         let data = [];
+    //         if (tab === 'today') {
+    //             if (type === 'today-single') {
+    //                 data = await fetchTodayTasks(false);
+    //             } else if (type === 'today-recurring') {
+    //                 data = await fetchTodayTasks(true);
+    //             } else {
+    //                 data = [];
+    //             }
+    //         } else {
+    //             switch (tab) {
+    //                 case 'future':
+    //                     data = await getTasks(token);
+    //                     break;
+    //                 case 'recurring':
+    //                     data = await fetchRecurringTasks(token);
+    //                     break;
+    //                 case 'completed':
+    //                     data = await fetchCompleteds(token);
+    //                     break;
+    //                 case 'cancelled':
+    //                     data = await fetchCancelled(token);
+    //                     break;
+    //                 case 'drawer':
+    //                     data = await fetchDrawer(token);
+    //                     break;
+    //                 default:
+    //                     data = [];
+    //             }
+    //         }
+
+    //         const enriched = enrichTasksWithSearchText(data);
+    //         setAllTasks(enriched);
+    //     } catch (error) {
+    //         toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 }, { id: 'unique-error' });
+    //         console.error('Error getting tasks:', error);
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // }, [user]);
+
+    useEffect(() => {
+        if (!taskId || taskHandledRef.current || !user?.token) return;
+
+        const handleTaskRedirect = async () => {
+            const token = user.token;
+            const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
+            let foundTask = null;
+            let foundTab = '';
+
+            for (let tab of tabsToCheck) {
+                // fetchTasks מחזירה עכשיו את הנתונים
+                const tasksData = await fetchTasks(tab, tab === 'today' ? activeType : '');
+                foundTask = tasksData.find(t => t._id === taskId);
+                if (foundTask) {
+                    foundTab = tab;
+                    break;
+                }
+            }
+
+            if (foundTask) {
+                taskHandledRef.current = true;
+
+                setActiveTab(foundTab);           // עדכון הטאב הנכון
+                setTimeout(() => {
+                    setHighlightedTaskId(taskId); // מחכה ש־rowData נטען
+                    MoreDetails(taskId);
+                }, 200);
+            } else {
+                // אם לא נמצאה בכלל — נווט ל-TaskRedirect
+                navigate(`/taskRedirect/${taskId}`);
+            }
+        };
+
+        handleTaskRedirect();
+    }, [taskId, activeType, user, fetchTasks]);
+
 
     const filteredTasks = useMemo(() =>
         allTasks.filter(task =>
@@ -306,8 +358,10 @@ const Tasks = () => {
     };
 
     const MoreDetails = async (_id) => {
+        const token = user?.token;
+
         try {
-            const detail = await getMoreDetails(_id);
+            const detail = await getMoreDetails(_id, token);
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
@@ -893,9 +947,9 @@ const Tasks = () => {
                             // פתיחת פרטים
                             MoreDetails(params.data._id);
                         }}
-                        getRowClass={(params) => 
+                        getRowClass={(params) =>
                             params.data._id === highlightedTaskId ? 'highlighted-row' : ''
-                          }
+                        }
                         onCellValueChanged={onCellValueChanged}
                     />
                 </div>

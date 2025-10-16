@@ -24,14 +24,8 @@ export const getTasks = async (token) => {
   console.log("response", response.data);
   return response.data;
 };
-export const getMoreDetails = async (_id) => {
-  const userStr = localStorage.getItem('user');
+export const getMoreDetails = async (_id, token) => {
 
-  let token = null;
-  if (userStr) {
-    const user = JSON.parse(userStr);
-    token = user.token;
-  }
   const response = await api.get(`${API_URL}/api/tasks/getMoreDetails/${_id}`,
     {
       headers: {
@@ -40,6 +34,17 @@ export const getMoreDetails = async (_id) => {
       withCredentials: true
     });
   console.log("details", response.data);
+  return response.data;
+};
+export const getTaskById = async (taskId ,token) => {
+
+  const response = await api.get(`${API_URL}/api/tasks/getTaskById/${taskId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      withCredentials: true
+    });
   return response.data;
 };
 export const duplicateTask = async (taskId, token) => {
