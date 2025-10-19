@@ -35,6 +35,7 @@ const AppRoutes = () => {
           <Route path="/ResetEmail" element={<PageWrapper><ResetEmailForm /></PageWrapper>} />
           <Route path="/reset-password/:token" element={<PageWrapper><ResetPassword /></PageWrapper>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
+          
         </>
       ) : (
         <>

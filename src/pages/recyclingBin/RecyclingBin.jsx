@@ -20,10 +20,12 @@ const RecyclingBin = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const statusOptions = [
-        { status: "לביצוע", color: 'yellow' },
-        { status: "בטיפול", color: 'purple' },
+  
         { status: "הושלם", color: 'green' },
-        { status: "בוטלה", color: 'red' },
+        { status: "בוטלה", color: 'red' },  
+        { status: "בטיפול", color: 'purple' },
+        { status: "לביצוע", color: 'yellow' },
+     
     ];
 
     const [columnDefs] = useState([

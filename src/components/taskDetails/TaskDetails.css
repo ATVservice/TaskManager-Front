@@ -84,4 +84,27 @@
     color: #333 !important;
     border-radius: 8px !important;
   }
+  .frequency-tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .days-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .day-tag {
+    background-color: #f0f0f0;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .swal-container {
+    z-index: 10001 !important;
+}
   

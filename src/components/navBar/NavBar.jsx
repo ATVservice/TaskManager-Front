@@ -9,6 +9,8 @@ import Register from '../../pages/register/Register';
 import toast from 'react-hot-toast';
 import { updateUser } from '../../services/userService';
 import { AlertContext } from '../../context/AlertContext';
+import OverdueTasks from '../../pages/overdueTasks/OverdueTasks';
+import { getOverdueTasks } from '../../services/overdueTasksService';
 
 const NavBar = () => {
   const { user, logout } = useContext(AuthContext);
@@ -18,6 +20,9 @@ const NavBar = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
+  const [overOpen, setOverOpen] = useState(false);
+  const [data, setData] = useState([]);
+
 
 
   const loadUnreadCount = async () => {
@@ -30,6 +35,21 @@ const NavBar = () => {
       console.error('Error fetching unread count', err);
     }
   };
+  // משימות מתעכבות
+  useEffect(() => {
+    if (!user || !user.token) return;
+
+    const GetOverdueTasks = async () => {
+      try {
+        const overdueTasks = await getOverdueTasks(user.token);
+        setData(overdueTasks.tasks);
+      } catch (err) {
+        console.error('שגיאה בטעינת משימות מתעכבות', err);
+      }
+    };
+
+    GetOverdueTasks();
+  }, [user?.token]);
 
   useEffect(() => {
     loadUnreadCount();
@@ -69,7 +89,9 @@ const NavBar = () => {
       toast.error(err.response?.data?.message || "שגיאה בטעינת עובד", { duration: 3000 });
     }
   };
-
+  const toOverOpen = () => {
+    setOverOpen(true);
+  }
 
   if (!user) return null;
   return (
@@ -77,15 +99,15 @@ const NavBar = () => {
 
       <nav className='navbar'>
         <div className='rightProfile'>
-          
+
           <button className="user-profile-container"
-           onClick={() => {
-            const user = JSON.parse(localStorage.getItem("user"));
-            toEdit(user, user?.id);
-          }}
-          style={{ cursor: "pointer" }} >
-          <title>עריכת פרטים אישיים</title>
-              <UserRoundPen color="#8011ee" size={20}/>
+            onClick={() => {
+              const user = JSON.parse(localStorage.getItem("user"));
+              toEdit(user, user?.id);
+            }}
+            style={{ cursor: "pointer" }} >
+            <title>עריכת פרטים אישיים</title>
+            <UserRoundPen color="#8011ee" size={20} />
             <span className="user-profile-name">
               {user.userName}
             </span>
@@ -94,6 +116,7 @@ const NavBar = () => {
 
         <div className='nav-links'>
           <NavLink to="/tasks">משימות</NavLink>
+
 
           {user.role === 'מנהל' && (
             <>
@@ -115,6 +138,9 @@ const NavBar = () => {
 
         <div className='leftButton'>
           <div>
+            <button onClick={toOverOpen}>מתעכבות</button>
+          </div>
+          <div>
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
           <div className='bell'>
@@ -123,6 +149,7 @@ const NavBar = () => {
               {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
             </button>
           </div>
+
         </div>
       </nav>
       <AlertsDrawer
@@ -149,6 +176,28 @@ const NavBar = () => {
           </div>
         </div>
       )}
+      
+      {overOpen && (
+        <div className="overdue-overlay">
+          <div className="overdue-popup">
+          <OverdueTasks
+                data={data}
+              />
+          </div>
+        </div>
+      )}
+
+      {/* {data.length > 0 && (
+        <div className="overdue-overlay">
+          <div className="overdue-popup">
+            <OverdueTasks
+                data={data}
+              />
+          </div>
+        </div>
+      )} */}
+
+
     </>
   );
 };

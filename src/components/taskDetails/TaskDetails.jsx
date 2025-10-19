@@ -50,24 +50,24 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
 
     useEffect(() => {
         const getAllComments = async () => {
-          const token = user?.token;
-          if (!token) return;
-      
-          const currentModel = details.frequencyType ? "recurring" : "task";
-      
-          try {
-            const comments = await getComments(details._id, currentModel, token);
-            setData(comments.comments);
-            setModel(currentModel); // אם עדיין רוצים לשמור ב-state
-          } catch (err) {
-            toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
-            console.log(err);
-          }
+            const token = user?.token;
+            if (!token) return;
+
+            const currentModel = details.frequencyType ? "recurring" : "task";
+
+            try {
+                const comments = await getComments(details._id, currentModel, token);
+                setData(comments.comments);
+                setModel(currentModel); // אם עדיין רוצים לשמור ב-state
+            } catch (err) {
+                toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
+                console.log(err);
+            }
         };
-      
+
         getAllComments();
-      }, [details, user]);
-      
+    }, [details, user]);
+
     if (!isOpen) return null;
 
     const formatDate = (dateString) => {
@@ -82,6 +82,9 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
             showCancelButton: true,
             confirmButtonText: 'הוסף',
             cancelButtonText: 'בטל',
+            customClass: {
+                container: 'swal-container'
+            }
         });
 
         try {
@@ -108,22 +111,26 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                 return (
                     <p>
                         <strong>
-                            {details.frequencyDetails?.includingFriday ? "'ימים א'-ו" : "'ימים א'-ה"}
+                            {details.frequencyDetails?.includingFriday ? "ימים א - ו" : "ימים א - ה"}
                         </strong>
                     </p>
                 );
 
+
             case 'יומי פרטני':
                 return (
-                    <>
-                        <p><strong>ימים:</strong></p>
-                        {details.frequencyDetails?.days?.map((dayIndex, index) => (
-                            <p key={index}>
-                                <strong>{daysOfWeek[dayIndex]}</strong>
-                            </p>
-                        ))}
-                    </>
+                    <div className="frequency-tags">
+                        <strong>ימים: </strong>
+                        <div className="days-tags">
+                            {details.frequencyDetails?.days?.map((dayIndex, index) => (
+                                <span key={index} className="day-tag">
+                                    {daysOfWeek[dayIndex]}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
                 );
+
 
             case 'חודשי':
                 return (
@@ -147,7 +154,7 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
 
     return (
         // <div className={`side-popup ${!isOpen ? 'hidden' : ''}`}>
-            <div className="side-popup" style={{ width: '80vw', maxWidth: '900px' }}>
+        <div className="side-popup" style={{ width: '80vw', maxWidth: '900px' }}>
 
             <button className="close-btn" onClick={onClose}>X</button>
             <h3>פרטים נוספים</h3>
@@ -165,8 +172,25 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                 {details.statusNote && <p><strong>עדכון מצב: </strong>{details.statusNote}</p>}
                 {details.creator?.userName && <p><strong>יוצר משימה: </strong>{details.creator.userName}</p>}
                 {details.daysOpen !== undefined && <p><strong>ימים מאז פתיחה: </strong>{details.daysOpen}</p>}
-                {details.dueDate && <p><strong>יעד לביצוע: </strong>{formatDate(details.dueDate)}</p>}
+                {details.dueDate && <p><strong> תאריך משימה: </strong>{formatDate(details.dueDate)}</p>}
                 {details.finalDeadline && <p><strong>תאריך יעד סופי: </strong>{formatDate(details.finalDeadline)}</p>}
+                {details.failureReason?.option && details.failureReason.option != "אחר" && (
+                    <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.option}</p>
+                )}
+                {details.failureReason?.option == "אחר" && (
+                    <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.customText}</p>
+                )}
+
+                {details.cancelReason && (
+                    <p><strong>סיבת ביטול: </strong>{details.cancelReason}</p>
+                )}
+
+                {details.frequencyType && (
+                    <>
+                        <p><strong>סוג תדירות: </strong>{details.frequencyType}</p>
+                        {renderFrequencyDetails()}
+                    </>
+                )}
             </div>
 
             <div className="comment-section">

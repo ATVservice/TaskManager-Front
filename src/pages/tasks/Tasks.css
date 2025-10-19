@@ -558,22 +558,22 @@
 }
 
 .ag-popup-child .ag-list-item:nth-child(1) {
-  background-color: yellow !important;
-  color: black !important;
-}
-
-.ag-popup-child .ag-list-item:nth-child(2) {
-  background-color: purple !important;
-  color: black !important;
-}
-
-.ag-popup-child .ag-list-item:nth-child(3) {
   background-color: green !important;
   color: black !important;
 }
 
-.ag-popup-child .ag-list-item:nth-child(4) {
+.ag-popup-child .ag-list-item:nth-child(2) {
   background-color: red !important;
+  color: black !important;
+}
+
+.ag-popup-child .ag-list-item:nth-child(3) {
+  background-color: purple !important;
+  color: black !important;
+}
+
+.ag-popup-child .ag-list-item:nth-child(4) {
+  background-color: yellow !important;
   color: black !important;
 }
 

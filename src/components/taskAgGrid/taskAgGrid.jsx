@@ -8,6 +8,7 @@ import './taskAgGrid.css'
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,highlightedTaskId }) => {
+  
     const gridRef = useRef();
 
     const defaultColDef = {
@@ -25,7 +26,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,hig
             filterOptions: ['contains'],
             buttons: []
         },
-        enableRowGroup: true,
+        // enableRowGroup: true,
         suppressMovable: true,
         cellClass: 'copyable-cell',
         suppressKeyboardEvent: false,

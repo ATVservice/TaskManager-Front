@@ -1,0 +1,279 @@
+.overdue-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 100%);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9998;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    to {
+        opacity: 1;
+        backdrop-filter: blur(4px);
+    }
+}
+
+.swal-container {
+    z-index: 10001 !important;
+}
+
+.overdue-popup {
+    width: 90%;
+    max-width: 1200px;
+    height: 80%;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d0d7ff #f0f2ff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.overdue-popup::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overdue-popup::-webkit-scrollbar-track {
+    background: #f0f2ff;
+    border-radius: 10px;
+}
+
+.overdue-popup::-webkit-scrollbar-thumb {
+    background: #d0d7ff;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+.overdue-popup::-webkit-scrollbar-thumb:hover {
+    background: #b0bfff;
+}
+
+.hh3 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #c71818 0%, #e53e3e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+.hh4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #aa3636 0%, #e53e3e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.overdue-grid {
+    flex: 1;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: #d0d7ff #f0f2ff;
+}
+
+.overdue-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.overdue-grid::-webkit-scrollbar-track {
+    background: #f0f2ff;
+    border-radius: 10px;
+}
+
+.overdue-grid::-webkit-scrollbar-thumb {
+    background: #d0d7ff;
+    border-radius: 10px;
+}
+
+.overdue-grid::-webkit-scrollbar-thumb:hover {
+    background: #b0bfff;
+}
+
+/* סטטוס בצבעוניות מודרנית */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 70px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.status-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+
+.due-date-input {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    color: #1f2937;
+    font-weight: 500;
+}
+
+.due-date-input:hover {
+    border-color: #d1d5db;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.due-date-input:focus {
+    outline: none;
+    border-color: #c71818;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(199, 24, 24, 0.1), 0 2px 8px rgba(199, 24, 24, 0.15);
+}
+
+/* AG-GRID עיצוב מודרני */
+.ag-root {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --ag-header-background-color: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    --ag-header-foreground-color: #1f2937;
+    --ag-header-cell-border-color: #d1d5db;
+    --ag-header-cell-hover-background-color: #d1d5db;
+}
+
+.ag-header-cell {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-right: 1px solid #d1d5db;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #374151;
+    padding: 14px 12px !important;
+}
+
+.ag-header-cell:hover {
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+}
+
+.ag-row {
+    border-bottom: 1px solid #f0f0f0;
+    transition: all 0.2s ease;
+}
+
+.ag-row:hover {
+    background-color: #f9fafb;
+    box-shadow: inset 0 0 0 1px #ede9fe;
+}
+
+.ag-cell {
+    padding: 12px 12px;
+    display: flex;
+    align-items: center;
+    color: #374151;
+    font-size: 14px;
+}
+
+.ag-row-selected {
+    background: linear-gradient(90deg, #ede9fe 0%, transparent 100%) !important;
+}
+
+.ag-cell-focus {
+    outline: 1px solid #c71818 !important;
+}
+
+.ag-select-cell-editor {
+    border: 2px solid #c71818;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.ag-popup {
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e5e7eb;
+}
+
+.ag-list-item {
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+}
+
+.ag-list-item:hover {
+    background: linear-gradient(90deg, #ede9fe 0%, #f5f3ff 100%);
+    color: #c71818;
+    font-weight: 600;
+}
+
+/* משפרים את ה-Swal פופאפ */
+.swal2-popup {
+    border-radius: 14px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.swal2-title {
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 12px;
+}
+
+.swal2-confirm {
+    background: linear-gradient(135deg, #c71818 0%, #e53e3e 100%) !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-confirm:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(199, 24, 24, 0.3) !important;
+}
+
+.swal2-cancel {
+    background: #e5e7eb !important;
+    color: #1f2937 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-cancel:hover {
+    background: #d1d5db !important;
+    transform: translateY(-2px) !important;
+}
