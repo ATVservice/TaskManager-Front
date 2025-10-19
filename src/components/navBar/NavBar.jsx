@@ -22,6 +22,16 @@ const NavBar = () => {
   const [showRegister, setShowRegister] = useState(false);
   const [overOpen, setOverOpen] = useState(false);
   const [data, setData] = useState([]);
+  const [showOverduePopup, setShowOverduePopup] = useState(false);
+
+useEffect(() => {
+  if (data.length > 0) {
+    setShowOverduePopup(true);
+  } else {
+    setShowOverduePopup(false);
+  }
+}, [data]);
+
 
 
 
@@ -189,11 +199,11 @@ const NavBar = () => {
           </div>
         )} */}
 
-      {data.length > 0 && (
+      {showOverduePopup  > 0 && (
         <div className="overdue-overlay">
           <div className="overdue-popup">
             <OverdueTasks
-              data={data}
+              tasks={data}
               onTasksUpdate={(newData) => setData(newData)}
             />
           </div>
