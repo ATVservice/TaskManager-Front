@@ -178,14 +178,7 @@
     --ag-header-cell-hover-background-color: #d1d5db;
 }
 
-.ag-header-cell {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border-right: 1px solid #d1d5db;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    color: #374151;
-    padding: 14px 12px !important;
-}
+
 
 .ag-header-cell:hover {
     background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);

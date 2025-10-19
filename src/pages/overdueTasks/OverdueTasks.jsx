@@ -16,10 +16,10 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 
-const OverdueTasks = ({ tasks }) => {
+const OverdueTasks = ({ tasks, onTasksUpdate }) => {
     const { user } = useContext(AuthContext);
 
-    const [data, setData] = useState(tasks || []); // ✅ התחלה מהפרופס
+    const [data, setData] = useState(tasks || []);
     const [loading, setLoading] = useState(true);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
@@ -38,7 +38,9 @@ const OverdueTasks = ({ tasks }) => {
         try {
             setLoading(true);
             const res = await getOverdueTasks(user.token);
-            setData(res.tasks || []);
+            const newData = res.tasks || [];
+            setData(newData);
+            onTasksUpdate?.(newData);
         } catch (err) {
             toast.error(err.response?.data?.message || 'שגיאה בטעינת המשימות');
         } finally {
@@ -105,25 +107,25 @@ const OverdueTasks = ({ tasks }) => {
             minWidth: 160,
             cellRenderer: (params) => (
                 <input
-                type="date"
-                min={dayjs().tz('Asia/Jerusalem').format('YYYY-MM-DD')}
-                value={params.data.dueDate?.split('T')[0] || ''}
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => {
-                    const selectedDate = e.target.value;
-                    if (!selectedDate) return;
-                    if (dayjs(selectedDate).isBefore(dayjs().tz('Asia/Jerusalem'), 'day')) {
-                        toast.error('לא ניתן לבחור תאריך קודם להיום');
-                        return;
-                    }
-                    handleDueDateChange(params, selectedDate);
-                }}
-                className="due-date-input"
-              />
-              
+                    type="date"
+                    min={dayjs().tz('Asia/Jerusalem').format('YYYY-MM-DD')}
+                    value={params.data.dueDate?.split('T')[0] || ''}
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                        const selectedDate = e.target.value;
+                        if (!selectedDate) return;
+                        if (dayjs(selectedDate).isBefore(dayjs().tz('Asia/Jerusalem'), 'day')) {
+                            toast.error('לא ניתן לבחור תאריך קודם להיום');
+                            return;
+                        }
+                        handleDueDateChange(params, selectedDate);
+                    }}
+                    className="due-date-input"
+                />
+
             )
         }
-        
+
     ]);
 
     const closeDetailsDiv = () => {
@@ -160,22 +162,28 @@ const OverdueTasks = ({ tasks }) => {
     
             if (!confirmResult.isConfirmed) return;
     
-            // נעדכן גם dueDate וגם finalDeadline
+            // עדכן את השרת
             await fetchUpdatedueDate(token, selectedDate, selectedDate, taskModel, taskId);
-            toast.success('תאריך יעד ותאריך סופי עודכנו בהצלחה ');
-            await loadTasks();
+            toast.success('תאריך יעד ותאריך סופי עודכנו בהצלחה');
+            
+            // עדכן את ה-state מקומית בלי ללחזור לשרת
+            const updatedData = data.map(task =>
+                task.taskId === taskId 
+                    ? { ...task, dueDate: selectedDate + 'T00:00:00' }
+                    : task
+            );
+            setData(updatedData);
+            onTasksUpdate?.(updatedData);
     
         } catch (err) {
             toast.error(err.response?.data?.message || 'שגיאה בעדכון תאריך');
         }
     };
     
-
     const handleStatusChange = async (taskId, model, oldStatus, newStatus) => {
-
         try {
             if (!user?.token) throw new Error("אין גישה, המשתמש לא מחובר");
-
+    
             const confirmResult = await Swal.fire({
                 title: 'בטוח שברצונך לשנות את הסטטוס?',
                 text: `סטטוס ישתנה מ-${oldStatus} ל-${newStatus}`,
@@ -187,9 +195,9 @@ const OverdueTasks = ({ tasks }) => {
                     container: 'swal-container'
                 }
             });
-
+    
             if (!confirmResult.isConfirmed) return oldStatus;
-
+    
             const { value: note } = await Swal.fire({
                 title: 'האם להוסיף הערה?',
                 input: 'text',
@@ -201,22 +209,113 @@ const OverdueTasks = ({ tasks }) => {
                     container: 'swal-container'
                 }
             });
-
+    
+            // עדכן את השרת
             await fetchUpdateStatusDelayed(user.token, newStatus, model, taskId);
             if (note) {
                 await addComment(taskId, model, note, user?.token);
-
             }
-
+    
             toast.success(note ? 'סטטוס עודכן והערה נוספה' : 'סטטוס עודכן בהצלחה');
-
-            await loadTasks();
+    
+            // הסר את המשימה מה-state אם הסטטוס הוא "הושלם" או "בוטלה"
+            if (newStatus === 'הושלם' || newStatus === 'בוטלה') {
+                const updatedData = data.filter(task => task.taskId !== taskId);
+                setData(updatedData);
+                onTasksUpdate?.(updatedData);
+            } else {
+                // אחרת עדכן את הסטטוס
+                const updatedData = data.map(task =>
+                    task.taskId === taskId 
+                        ? { ...task, userStatus: newStatus }
+                        : task
+                );
+                setData(updatedData);
+                onTasksUpdate?.(updatedData);
+            }
+    
             return newStatus;
         } catch (err) {
             toast.error(err.response?.data?.message || 'שגיאה בעדכון סטטוס');
             return oldStatus;
         }
     };
+    // const handleDueDateChange = async (params, selectedDate) => {
+    //     try {
+    //         const { taskId, taskModel } = params.data;
+    //         const token = user?.token;
+
+    //         const confirmResult = await Swal.fire({
+    //             title: 'לאשר שינוי תאריך?',
+    //             text: `התאריך החדש יהיה ${selectedDate}`,
+    //             icon: 'question',
+    //             showCancelButton: true,
+    //             confirmButtonText: 'אשר',
+    //             cancelButtonText: 'בטל',
+    //             customClass: {
+    //                 container: 'swal-container'
+    //             }
+    //         });
+
+    //         if (!confirmResult.isConfirmed) return;
+
+    //         // נעדכן גם dueDate וגם finalDeadline
+    //         await fetchUpdatedueDate(token, selectedDate, selectedDate, taskModel, taskId);
+    //         toast.success('תאריך יעד ותאריך סופי עודכנו בהצלחה ');
+    //         await loadTasks();
+
+    //     } catch (err) {
+    //         toast.error(err.response?.data?.message || 'שגיאה בעדכון תאריך');
+    //     }
+    // };
+
+
+    // const handleStatusChange = async (taskId, model, oldStatus, newStatus) => {
+
+    //     try {
+    //         if (!user?.token) throw new Error("אין גישה, המשתמש לא מחובר");
+
+    //         const confirmResult = await Swal.fire({
+    //             title: 'בטוח שברצונך לשנות את הסטטוס?',
+    //             text: `סטטוס ישתנה מ-${oldStatus} ל-${newStatus}`,
+    //             icon: 'question',
+    //             showCancelButton: true,
+    //             confirmButtonText: 'כן',
+    //             cancelButtonText: 'לא',
+    //             customClass: {
+    //                 container: 'swal-container'
+    //             }
+    //         });
+
+    //         if (!confirmResult.isConfirmed) return oldStatus;
+
+    //         const { value: note } = await Swal.fire({
+    //             title: 'האם להוסיף הערה?',
+    //             input: 'text',
+    //             inputPlaceholder: 'תוכן ההערה (לא חובה)',
+    //             showCancelButton: true,
+    //             confirmButtonText: 'הוסף',
+    //             cancelButtonText: 'דלג',
+    //             customClass: {
+    //                 container: 'swal-container'
+    //             }
+    //         });
+
+    //         await fetchUpdateStatusDelayed(user.token, newStatus, model, taskId);
+    //         if (note) {
+    //             await addComment(taskId, model, note, user?.token);
+
+    //         }
+
+    //         toast.success(note ? 'סטטוס עודכן והערה נוספה' : 'סטטוס עודכן בהצלחה');
+
+    //         await loadTasks();
+    //         return newStatus;
+    //     } catch (err) {
+    //         toast.error(err.response?.data?.message || 'שגיאה בעדכון סטטוס');
+    //         return oldStatus;
+    //     }
+    // };
 
     return (
         <>

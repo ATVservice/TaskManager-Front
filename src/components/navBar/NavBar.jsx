@@ -138,8 +138,8 @@ const NavBar = () => {
 
         <div className='leftButton'>
           {/* <div>
-            <button onClick={toOverOpen}>מתעכבות</button>
-          </div> */}
+              <button onClick={toOverOpen}>מתעכבות</button>
+            </div> */}
           <div>
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
@@ -176,23 +176,26 @@ const NavBar = () => {
           </div>
         </div>
       )}
-      
+
       {/* {overOpen && (
-        <div className="overdue-overlay">
-          <div className="overdue-popup">
-          <OverdueTasks
-                data={data}
-              />
+          <div className="overdue-overlay">
+            <div className="overdue-popup">
+            <OverdueTasks
+                  data={data}
+                          onTasksUpdate={(newData) => setData(newData)}
+
+                />
+            </div>
           </div>
-        </div>
-      )} */}
+        )} */}
 
       {data.length > 0 && (
         <div className="overdue-overlay">
           <div className="overdue-popup">
             <OverdueTasks
-                data={data}
-              />
+              data={data}
+              onTasksUpdate={(newData) => setData(newData)}
+            />
           </div>
         </div>
       )}
