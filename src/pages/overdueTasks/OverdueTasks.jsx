@@ -147,7 +147,7 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
         try {
             const { taskId, taskModel } = params.data;
             const token = user?.token;
-    
+
             const confirmResult = await Swal.fire({
                 title: 'לאשר שינוי תאריך?',
                 text: `התאריך החדש יהיה ${selectedDate}`,
@@ -155,31 +155,32 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
                 showCancelButton: true,
                 confirmButtonText: 'אשר',
                 cancelButtonText: 'בטל',
-                customClass: {
-                    container: 'swal-container'
-                }
+                customClass: { container: 'swal-container' }
             });
-    
+
             if (!confirmResult.isConfirmed) return;
-    
-            // עדכן את השרת
-            await fetchUpdatedueDate(token, selectedDate, selectedDate, taskModel, taskId);
-            toast.success('תאריך יעד ותאריך סופי עודכנו בהצלחה');
-            
-            // עדכן את ה-state מקומית בלי ללחזור לשרת
+
+            // ✅ עדכון מיידי ב־state (לתחושת זריזות)
             const updatedData = data.map(task =>
-                task.taskId === taskId 
+                task.taskId === taskId
                     ? { ...task, dueDate: selectedDate + 'T00:00:00' }
                     : task
             );
             setData(updatedData);
             onTasksUpdate?.(updatedData);
-    
+
+            // ⏳ במקביל עדכון השרת
+            await fetchUpdatedueDate(token, selectedDate, selectedDate, taskModel, taskId);
+            toast.success('תאריך יעד ותאריך סופי עודכנו בהצלחה');
+
+            // 💾 רענון מהשרת לאימות
+            await loadTasks();
+
         } catch (err) {
             toast.error(err.response?.data?.message || 'שגיאה בעדכון תאריך');
         }
     };
-    
+
     const handleStatusChange = async (taskId, model, oldStatus, newStatus) => {
         try {
             if (!user?.token) throw new Error("אין גישה, המשתמש לא מחובר");
@@ -191,9 +192,7 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
                 showCancelButton: true,
                 confirmButtonText: 'כן',
                 cancelButtonText: 'לא',
-                customClass: {
-                    container: 'swal-container'
-                }
+                customClass: { container: 'swal-container' }
             });
     
             if (!confirmResult.isConfirmed) return oldStatus;
@@ -205,12 +204,10 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
                 showCancelButton: true,
                 confirmButtonText: 'הוסף',
                 cancelButtonText: 'דלג',
-                customClass: {
-                    container: 'swal-container'
-                }
+                customClass: { container: 'swal-container' }
             });
     
-            // עדכן את השרת
+            // שליחת העדכון לשרת
             await fetchUpdateStatusDelayed(user.token, newStatus, model, taskId);
             if (note) {
                 await addComment(taskId, model, note, user?.token);
@@ -218,21 +215,7 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
     
             toast.success(note ? 'סטטוס עודכן והערה נוספה' : 'סטטוס עודכן בהצלחה');
     
-            // הסר את המשימה מה-state אם הסטטוס הוא "הושלם" או "בוטלה"
-            if (newStatus === 'הושלם' || newStatus === 'בוטלה') {
-                const updatedData = data.filter(task => task.taskId !== taskId);
-                setData(updatedData);
-                onTasksUpdate?.(updatedData);
-            } else {
-                // אחרת עדכן את הסטטוס
-                const updatedData = data.map(task =>
-                    task.taskId === taskId 
-                        ? { ...task, userStatus: newStatus }
-                        : task
-                );
-                setData(updatedData);
-                onTasksUpdate?.(updatedData);
-            }
+            await loadTasks();
     
             return newStatus;
         } catch (err) {
@@ -240,6 +223,7 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
             return oldStatus;
         }
     };
+    
     // const handleDueDateChange = async (params, selectedDate) => {
     //     try {
     //         const { taskId, taskModel } = params.data;

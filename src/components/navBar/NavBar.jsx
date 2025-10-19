@@ -199,7 +199,7 @@ useEffect(() => {
           </div>
         )} */}
 
-      {showOverduePopup  > 0 && (
+      {showOverduePopup  && (
         <div className="overdue-overlay">
           <div className="overdue-popup">
             <OverdueTasks
