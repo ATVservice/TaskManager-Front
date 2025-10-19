@@ -59,6 +59,26 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             day: ""
         },
     });
+        // ברירת מחדל: האחראי הראשי הוא הראשון שסומן
+        useEffect(() => {
+            if (form.assignees.length > 0 && !form.mainAssignee) {
+                setForm((prev) => ({
+                    ...prev,
+                    mainAssignee: form.assignees[0]._id,
+                }));
+            }
+        }, [form.assignees]);
+    
+        // ברירת מחדל: תאריך סופי = תאריך משימה
+        useEffect(() => {
+            if (form.dueDate && !form.finalDeadline) {
+                setForm((prev) => ({
+                    ...prev,
+                    finalDeadline: form.dueDate,
+                }));
+            }
+        }, [form.dueDate]);
+    
 
     useEffect(() => {
         const token = user?.token;

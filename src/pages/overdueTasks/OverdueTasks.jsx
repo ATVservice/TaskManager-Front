@@ -101,7 +101,7 @@ const OverdueTasks = ({ tasks, onTasksUpdate }) => {
             }
         },
         {
-            headerName: 'תאריך דחייה',
+            headerName: 'דחיית תאריך',
             field: 'dueDate',
             flex: 1,
             minWidth: 160,
