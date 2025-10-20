@@ -62,3 +62,45 @@
   border-radius: 8px;
   overflow: hidden;
 }
+/* סגנון בסיסי של משימות מגירה */
+.ag-theme-alpine .drawer-task {
+    background-color: rgba(255, 235, 59, 0.15) !important;
+}
+
+/* אנימציית הדגשה - תיקום חיוני */
+.ag-theme-alpine [role="row"].highlight-animation {
+    animation: highlightPulse 4s ease-in-out !important;
+}
+
+@keyframes highlightPulse {
+    0% {
+        background-color: #FFD700 !important;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) inset !important;
+    }
+    25% {
+        background-color: #FFC700 !important;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.9) inset !important;
+    }
+    50% {
+        background-color: #FFD700 !important;
+        box-shadow: 0 0 25px rgba(255, 215, 0, 1) inset !important;
+    }
+    75% {
+        background-color: #FFC700 !important;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.9) inset !important;
+    }
+    100% {
+        background-color: #FFD700 !important;
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6) inset !important;
+    }
+}
+
+/* סגנון ברירה (שורה שנבחרה) */
+.ag-theme-alpine .ag-row-selected {
+    background-color: #E8F4F8 !important;
+}
+
+/* וודא שבעת hover לא מכסה את ההדגשה */
+.ag-theme-alpine [role="row"].highlight-animation:hover {
+    background-color: #FFD700 !important;
+}

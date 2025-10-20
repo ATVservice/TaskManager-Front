@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { getMoreDetails, getTaskById, getTasks } from '../../services/taskService';
+import { getMoreDetails, getTasks } from '../../services/taskService';
 import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
@@ -17,10 +17,8 @@ import TaskAgGrid from '../../components/taskAgGrid/taskAgGrid.jsx';
 import TaskDetails from '../../components/taskDetails/TaskDetails.jsx';
 import { fetchAddProject } from '../../services/projectService.js';
 import toast from 'react-hot-toast';
-import { createRoot } from 'react-dom/client'; // לשורש של האפליקציה
-import { createPortal } from 'react-dom';      // לפורטלים (popups, modals)
+import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
-
 import './Tasks.css';
 import { Title } from 'react-head';
 import { addComment } from '../../services/commentService.js';
@@ -32,7 +30,6 @@ const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('he-IL');
 };
 
-//   לחיפוש חכם
 const enrichTasksWithSearchText = (tasks) => {
     return tasks.map(task => {
         const frequencyParts = [];
@@ -61,35 +58,18 @@ const enrichTasksWithSearchText = (tasks) => {
                         if (task.frequencyDetails.month)
                             frequencyParts.push(`חודש ${months[task.frequencyDetails.month - 1]}`);
                         break;
-
                     default:
                         break;
                 }
             }
         }
         const searchParts = [
-            task.taskId,
-            task.title,
-            task.details,
-            task.project?.name,
-            task.status,
-            task.statusNote,
-            task.daysOpen,
-            task.failureReason,
-            task.importance,
-            task.subImportance,
-            task.dueDate,
-            task.cancelReason,
-            task.failureReason?.option,
-            task.failureReason?.customText,
-            formatDate(task.dueDate),
-            formatDate(task.finalDeadline),
-            task.creator?.userName,
-            task.frequencyType,
-            task.mainAssignee?.userName,
-            ...(task.assignees?.map(a => a.userName) || []),
-            task.organization?.name,
-            ...frequencyParts,
+            task.taskId, task.title, task.details, task.project?.name, task.status,
+            task.statusNote, task.daysOpen, task.failureReason, task.importance,
+            task.subImportance, task.dueDate, task.cancelReason, task.failureReason?.option,
+            task.failureReason?.customText, formatDate(task.dueDate), formatDate(task.finalDeadline),
+            task.creator?.userName, task.frequencyType, task.mainAssignee?.userName,
+            ...(task.assignees?.map(a => a.userName) || []), task.organization?.name, ...frequencyParts,
         ];
         return {
             ...task,
@@ -99,12 +79,10 @@ const enrichTasksWithSearchText = (tasks) => {
 };
 
 const statusOptions = [
-
     { status: "הושלם", color: 'green' },
     { status: "בוטלה", color: 'red' },
     { status: "בטיפול", color: 'purple' },
     { status: "לביצוע", color: 'yellow' },
-
 ];
 
 const Tasks = () => {
@@ -113,7 +91,7 @@ const Tasks = () => {
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
     const gridRef = useRef(null);
-
+    const taskHandledRef = useRef(false);
 
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
@@ -128,19 +106,14 @@ const Tasks = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
-
-    // קריאת הטאב השמור מ-sessionStorage או ברירת מחדל
     const [activeTab, setActiveTab] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
         return savedTab && tabs.some(tab => tab.key === savedTab) ? savedTab : tabs[0].key;
     });
-
     const [activeType, setActiveType] = useState(() => {
         const savedType = sessionStorage.getItem('activeTaskType');
         return savedType || 'today-recurring';
     });
-
-
     const [ShowEditModal, setShowEditModal] = useState(false);
     const [selectedTask, setSelectedTask] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
@@ -148,27 +121,15 @@ const Tasks = () => {
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [open, setOpen] = useState(false);
-
-    // חישוב האינדקס הפעיל בהתבסס על הטאב השמור
     const [activeIndex, setActiveIndex] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
         const index = tabs.findIndex(tab => tab.key === savedTab);
         return index !== -1 ? index : 0;
     });
-
     const wrapperRef = useRef(null);
-    const taskHandledRef = useRef(false);
 
-
-    // שמירת הטאב הפעיל ב-sessionStorage בכל פעם שהוא משתנה
-    useEffect(() => {
-        sessionStorage.setItem('activeTaskTab', activeTab);
-    }, [activeTab]);
-
-    // שמירת הסוג הפעיל ב-sessionStorage בכל פעם שהוא משתנה
-    useEffect(() => {
-        sessionStorage.setItem('activeTaskType', activeType);
-    }, [activeType]);
+    useEffect(() => sessionStorage.setItem('activeTaskTab', activeTab), [activeTab]);
+    useEffect(() => sessionStorage.setItem('activeTaskType', activeType), [activeType]);
 
     useEffect(() => {
         function handleClickOutside(e) {
@@ -181,10 +142,7 @@ const Tasks = () => {
     }, []);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 300);
-
+        const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 300);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
@@ -203,6 +161,7 @@ const Tasks = () => {
             return newIndex;
         });
     };
+
     const fetchTasks = useCallback(async (tab, type) => {
         setIsLoading(true);
         const token = user?.token;
@@ -222,7 +181,7 @@ const Tasks = () => {
             }
             const enriched = enrichTasksWithSearchText(data);
             setAllTasks(enriched);
-            return enriched; // ← מחזירים את המערך כדי handleTaskRedirect יעבוד
+            return enriched;
         } catch (error) {
             toast.error(error.response?.data?.message || 'שגיאה בהתחברות');
             return [];
@@ -231,174 +190,119 @@ const Tasks = () => {
         }
     }, [user]);
 
-
-    // const fetchTasks = useCallback(async (tab, type) => {
-
-    //     setIsLoading(true);
-    //     const token = user?.token;
-    //     try {
-    //         let data = [];
-    //         if (tab === 'today') {
-    //             if (type === 'today-single') {
-    //                 data = await fetchTodayTasks(false);
-    //             } else if (type === 'today-recurring') {
-    //                 data = await fetchTodayTasks(true);
-    //             } else {
-    //                 data = [];
-    //             }
-    //         } else {
-    //             switch (tab) {
-    //                 case 'future':
-    //                     data = await getTasks(token);
-    //                     break;
-    //                 case 'recurring':
-    //                     data = await fetchRecurringTasks(token);
-    //                     break;
-    //                 case 'completed':
-    //                     data = await fetchCompleteds(token);
-    //                     break;
-    //                 case 'cancelled':
-    //                     data = await fetchCancelled(token);
-    //                     break;
-    //                 case 'drawer':
-    //                     data = await fetchDrawer(token);
-    //                     break;
-    //                 default:
-    //                     data = [];
-    //             }
-    //         }
-
-    //         const enriched = enrichTasksWithSearchText(data);
-    //         setAllTasks(enriched);
-    //     } catch (error) {
-    //         toast.error(error.response?.data?.message || 'שגיאה בהתחברות', { duration: 3000 }, { id: 'unique-error' });
-    //         console.error('Error getting tasks:', error);
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // }, [user]);
+    useEffect(() => {
+        if (!user?.token) return;
+        fetchTasks(activeTab, activeType);
+    }, [activeTab, activeType, user, fetchTasks]);
 
     useEffect(() => {
-        if (!taskId || taskHandledRef.current || !user?.token) return;
+        if (!taskId || !user?.token || taskHandledRef.current) return;
 
         const handleTaskRedirect = async () => {
-            const token = user.token;
-            const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
-            let foundTask = null;
-            let foundTab = '';
+            try {
+                const storedTab = sessionStorage.getItem("highlightedTaskTab");
+                const storedTaskId = sessionStorage.getItem("highlightedTaskId");
 
-            for (let tab of tabsToCheck) {
-                // fetchTasks מחזירה עכשיו את הנתונים
-                const tasksData = await fetchTasks(tab, tab === 'today' ? activeType : '');
-                foundTask = tasksData.find(t => t._id === taskId);
-                if (foundTask) {
-                    foundTab = tab;
-                    break;
+                if (storedTab && storedTaskId === taskId) {
+                    taskHandledRef.current = true;
+                    setActiveTab(storedTab);
+                    sessionStorage.removeItem("highlightedTaskTab");
+                    return;
                 }
-            }
 
-            if (foundTask) {
-                taskHandledRef.current = true;
+                const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
+                let foundTask = null;
+                let foundTab = '';
 
-                setActiveTab(foundTab);           // עדכון הטאב הנכון
-                setTimeout(() => {
-                    MoreDetails(taskId);
-                }, 200);
-            } else {
-                // אם לא נמצאה בכלל — נווט ל-TaskRedirect
-                navigate(`/taskRedirect/${taskId}`);
+                for (let tab of tabsToCheck) {
+                    const tasksData = await fetchTasks(tab, tab === 'today' ? activeType : '');
+                    foundTask = tasksData.find(t => t._id === taskId);
+                    if (foundTask) {
+                        foundTab = tab;
+                        break;
+                    }
+                }
+
+                if (foundTask) {
+                    taskHandledRef.current = true;
+                    setActiveTab(foundTab);
+                    sessionStorage.setItem("highlightedTaskId", taskId);
+                } else {
+                    navigate(`/taskRedirect/${taskId}`);
+                }
+            } catch (error) {
+                console.error('Error handling task redirect:', error);
             }
         };
 
         handleTaskRedirect();
-    }, [taskId, activeType, user, fetchTasks]);
+    }, [taskId, user?.token, activeType, fetchTasks, navigate]);
 
+    useEffect(() => {
+        const highlightedId = sessionStorage.getItem("highlightedTaskId");
+        if (!highlightedId || allTasks.length === 0) return;
+
+        const found = allTasks.find(t => t._id === highlightedId);
+        if (!found) return;
+
+        const timer = setTimeout(() => {
+            highlightRow(highlightedId);
+            MoreDetails(highlightedId);
+            sessionStorage.removeItem("highlightedTaskId");
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [allTasks]);
+
+    const highlightRow = (taskId) => {
+        if (!gridRef.current?.api) return;
+
+        try {
+            const node = gridRef.current.api.getRowNode(taskId);
+            if (!node) return;
+
+            node.setSelected(true);
+            gridRef.current.api.ensureNodeVisible(node, 'middle');
+
+            setTimeout(() => {
+                const rowElement = document.querySelector(`[row-index="${node.rowIndex}"]`);
+                if (rowElement) {
+                    rowElement.classList.add("highlighted-row");
+                    setTimeout(() => rowElement.classList.remove("highlighted-row"), 3000);
+                }
+            }, 50);
+        } catch (error) {
+            console.error('Error highlighting row:', error);
+        }
+    };
 
     const filteredTasks = useMemo(() =>
-        allTasks.filter(task =>
-            task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())
-        ), [allTasks, debouncedSearchTerm]);
+        allTasks.filter(task => task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())),
+        [allTasks, debouncedSearchTerm]
+    );
 
     const [version, setVersion] = useState(0);
     const refreshTasks = () => setVersion(v => v + 1);
 
-    // useEffect(() => {
-    //     if (!user?.token) return;
-
-    //     const loadTasks = async () => {
-    //         try {
-    //             await fetchTasks(activeTab);
-    //         } catch (err) {
-    //             toast.error(err.response?.data?.message || 'שגיאה בטעינת משימות', { id: 'fetch-tasks-error' });
-    //             console.error('Error fetching tasks:', err);
-    //         }
-    //     };
-
-    //     loadTasks();
-    // }, [activeTab, user, version, fetchTasks]);
-    useEffect(() => {
-        if (!user?.token) return;
-        fetchTasks(activeTab, activeType);
-    }, [activeTab, activeType, user, version, fetchTasks]);
-
-    useEffect(() => {
-        const highlightedId = sessionStorage.getItem("highlightedTaskId");
-        if (highlightedId) {
-            const found = allTasks.find(t => t._id === highlightedId);
-            if (found) {
-                setTimeout(() => {
-                    MoreDetails(highlightedId);
-                    highlightRow(highlightedId);
-                }, 500);
-            }
-            sessionStorage.removeItem("highlightedTaskId");
-        }
-    }, [allTasks]); // יופעל ברגע שהטבלת משימות נטענה
-
- 
-    const highlightRow = (taskId) => {
-        if (!gridRef.current?.api) return;
-    
-        const node = gridRef.current.api.getRowNode(taskId);
-        if (node) {
-            node.setSelected(true); // סמן את השורה
-            gridRef.current.api.ensureNodeVisible(node, 'middle'); // גלול למרכז
-    
-            const rowElement = document.querySelector(`[row-index="${node.rowIndex}"]`);
-            if (rowElement) {
-                rowElement.classList.add("highlighted-row");
-                setTimeout(() => rowElement.classList.remove("highlighted-row"), 3000); // הסר אחרי 3 שניות
-            }
-        }
-    };
-    
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
         if (userObj.role === 'מנהל') return true;
-
         const userId = userObj.id || userObj._id || userObj._id?.toString?.() || userObj.toString?.();
-
         if (taskData.creator && String(taskData.creator) === String(userId)) return true;
-        if (taskData.creator && taskData.creator._id && String(taskData.creator._id) === String(userId)) return true;
-
-        if (taskData.mainAssignee) {
-            if (taskData.mainAssignee._id && String(taskData.mainAssignee._id) === String(userId)) return true;
-            if (String(taskData.mainAssignee) === String(userId)) return true;
-        }
-
+        if (taskData.creator?._id && String(taskData.creator._id) === String(userId)) return true;
+        if (taskData.mainAssignee?._id && String(taskData.mainAssignee._id) === String(userId)) return true;
+        if (taskData.mainAssignee && String(taskData.mainAssignee) === String(userId)) return true;
         return false;
     };
 
     const MoreDetails = async (_id) => {
         const token = user?.token;
-
         try {
             const detail = await getMoreDetails(_id, token);
             setDetails(detail);
             setOpenDetails(true);
         } catch (error) {
             toast.error(error.response?.data?.message || 'פרטים נוספים לא זמינים כרגע', { duration: 3000 });
-            console.error('Error getting more details:', error);
         }
     };
 
@@ -419,8 +323,7 @@ const Tasks = () => {
                     await duplicateTask(taskId, token);
                     toast.success('משימה שוכפלה בהצלחה', { duration: 3000 });
                     refreshTasks();
-                }
-                catch (error) {
+                } catch (error) {
                     toast.error(error.response?.data?.message || 'לא ניתן לשחזר', { duration: 3000 });
                 }
             }
@@ -432,38 +335,20 @@ const Tasks = () => {
         setDetails({});
     };
 
-    const handleClosePopup = () => {
-        setShowCreatePopup(false);
-    };
-
-    const handleClosePopupEdit = () => {
-        setShowEditModal(false);
-    };
+    const handleClosePopup = () => setShowCreatePopup(false);
+    const handleClosePopupEdit = () => setShowEditModal(false);
 
     const toHistory = async (task) => {
-        console.log("historyy", task)
-        let model;
-
-        if (task.frequencyType) {
-            model = "RecurringTask";
-        } else if (task.taskModel === "RecurringTask") {
-            model = "RecurringTask";
-        } else {
-            model = "Task";
-        }
-
+        let model = task.frequencyType ? "RecurringTask" : task.taskModel === "RecurringTask" ? "RecurringTask" : "Task";
         try {
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
-        }
-        catch (error) {
+        } catch (error) {
             toast.error(error.response?.data?.message || 'אין אפשרות לצפות בהיסטוריה', { duration: 3000 });
         }
     };
 
     const toDelete = async (taskId, todayTask) => {
-        console.log("task", todayTask)
         const token = user?.token;
-
         const { value: password, isConfirmed } = await Swal.fire({
             title: 'אימות סיסמה למחיקת משימה',
             input: 'password',
@@ -473,25 +358,14 @@ const Tasks = () => {
             cancelButtonText: 'ביטול',
             showCancelButton: true,
             inputValidator: (value) => {
-                if (!value) {
-                    return 'חייבים להזין סיסמה';
-                }
+                if (!value) return 'חייבים להזין סיסמה';
             },
         });
 
         if (!isConfirmed) return;
 
-        let isTodayTask;
-        if (todayTask !== undefined) {
-            isTodayTask = true
-        }
-        else {
-            isTodayTask = false
-        }
-        console.log("!!!!isTodayTask", isTodayTask)
-
         try {
-            await fetchDeleteTask(token, password, taskId, isTodayTask);
+            await fetchDeleteTask(token, password, taskId, todayTask !== undefined);
             toast.success('המשימה נמחקה בהצלחה', { duration: 3000 });
             refreshTasks();
         } catch (error) {
@@ -500,196 +374,55 @@ const Tasks = () => {
     };
 
     const toEdit = (task) => {
-        const canEditTask = user.id === task.creator ||
-            user.id === task.mainAssignee._id ||
-            user.role === 'מנהל';
-
+        const canEditTask = user.id === task.creator || user.id === task.mainAssignee._id || user.role === 'מנהל';
         if (canEditTask) {
             setShowEditModal(true);
             setSelectedTask(task);
-
-            if (task.frequencyType || task.isRecurringInstance) {
-                setTaskType("recurring");
-            }
-            else {
-                setTaskType("single");
-            }
-        }
-        else {
+            setTaskType(task.frequencyType || task.isRecurringInstance ? "recurring" : "single");
+        } else {
             toast.error("אין לך הרשאה לערוך משימה זו!", { duration: 3000 });
         }
     };
 
     const getColumnDefs = () => {
         const baseColumns = [
-            {
-                headerName: "מס'",
-                field: 'taskId',
-                maxWidth: 100,
-                flex: 0,
-                cellStyle: () => ({
-                    color: 'rgb(15, 164, 157)',
-                    fontWeight: '600'
-                })
-            },
-            {
-                headerName: 'כותרת',
-                field: 'title',
-                flex: 2,
-                cellStyle: () => ({
-                    color: 'rgb(29, 136, 163)',
-                    fontWeight: '500'
-                })
-            },
-            {
-                headerName: 'אחראי ראשי',
-                valueGetter: (params) => params.data.mainAssignee?.userName || '',
-                flex: 1,
-                cellStyle: () => ({
-                    color: 'rgb(86, 54, 161)',
-                    fontWeight: '500'
-                })
-            },
-            {
-                headerName: 'עמותה',
-                valueGetter: (params) => params.data.organization?.name || '',
-                flex: 1,
-                cellStyle: () => ({
-                    color: 'rgb(29, 51, 163)',
-                    fontWeight: '500'
-                })
-            }
+            { headerName: "מס'", field: 'taskId', maxWidth: 100, flex: 0, cellStyle: () => ({ color: 'rgb(15, 164, 157)', fontWeight: '600' }) },
+            { headerName: 'כותרת', field: 'title', flex: 2, cellStyle: () => ({ color: 'rgb(29, 136, 163)', fontWeight: '500' }) },
+            { headerName: 'אחראי ראשי', valueGetter: (params) => params.data.mainAssignee?.userName || '', flex: 1, cellStyle: () => ({ color: 'rgb(86, 54, 161)', fontWeight: '500' }) },
+            { headerName: 'עמותה', valueGetter: (params) => params.data.organization?.name || '', flex: 1, cellStyle: () => ({ color: 'rgb(29, 51, 163)', fontWeight: '500' }) }
         ];
 
         if (activeTab !== 'recurring') {
             baseColumns.push({
-                headerName: 'סטטוס',
-                field: 'status',
-                flex: 1,
-                maxWidth: 120,
-                editable: () => activeTab !== 'recurring',
-                cellEditor: 'agSelectCellEditor',
-                cellEditorParams: {
-                    values: statusOptions.map(x => x.status)
-                },
+                headerName: 'סטטוס', field: 'status', flex: 1, maxWidth: 120, editable: () => true,
+                cellEditor: 'agSelectCellEditor', cellEditorParams: { values: statusOptions.map(x => x.status) },
                 valueGetter: (params) => params.data.personalDetails?.status || params.data.status,
                 valueSetter: (params) => {
                     if (params.newValue !== params.oldValue) {
-                        if (params.data.personalDetails) {
-                            params.data.personalDetails.status = params.newValue;
-                        } else {
-                            params.data.status = params.newValue;
-                        }
+                        if (params.data.personalDetails) params.data.personalDetails.status = params.newValue;
+                        else params.data.status = params.newValue;
                         return true;
                     }
                     return false;
                 },
                 cellRenderer: (params) => {
-                    const status = params.value;
-                    const option = statusOptions.find(opt => opt.status === status);
+                    const option = statusOptions.find(opt => opt.status === params.value);
                     const color = option?.color || 'gray';
-                    return (
-                        <span style={{
-                            backgroundColor: color,
-                            width: '60px',
-                            color: 'black',
-                            padding: '2px 8px',
-                            display: 'inline-block',
-                            borderRadius: '4px',
-                            textAlign: 'center',
-                            fontSize: '12px',
-                            fontWeight: '600'
-                        }}>
-                            {status}
-                        </span>
-                    );
+                    return <span style={{ backgroundColor: color, width: '60px', color: 'black', padding: '2px 8px', display: 'inline-block', borderRadius: '4px', textAlign: 'center', fontSize: '12px', fontWeight: '600' }}>{params.value}</span>;
                 }
             });
         }
 
-        // baseColumns.push({
-        //     headerName: 'פרטים',
-        //     field: 'details',
-        //     width: 100,
-        //     flex: 0,
-        //     cellRenderer: (params) => (
-        //         <button className='details' onClick={() => MoreDetails(params.data._id)} title='פרטים נוספים' style={{ cursor: "pointer" }}>
-        //             לפרטים
-        //         </button>
-        //     )
-        // });
-
-        baseColumns.push({
-            headerName: "",
-            field: "duplicate",
-            width: 50,
-            flex: 0,
-            minWidth: 50,
-            maxWidth: 50,
-            suppressSizeToFit: true,
-            sortable: false,
-            filter: false,
-            resizable: false,
-            cellRenderer: (params) => (
-                <div className='copy iconButton' title='שכפל משימה'>
-                    <Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} />
-                </div>
-            )
-        });
-
-        baseColumns.push({
-            headerName: "",
-            field: "history",
-            width: 50,
-            flex: 0,
-            minWidth: 50,
-            maxWidth: 50,
-            suppressSizeToFit: true,
-            sortable: false,
-            filter: false,
-            resizable: false,
-            cellRenderer: (params) => (
-                <div className='history iconButton' title='צפה בהיסטוריה'>
-                    <History size={17} color="black" onClick={() => toHistory(params.data)} />
-                </div>
-            )
-        });
-
-        baseColumns.push({
-            headerName: "",
-            field: "delete",
-            width: 50,
-            flex: 0,
-            minWidth: 50,
-            maxWidth: 50,
-            suppressSizeToFit: true,
-            sortable: false,
-            filter: false,
-            resizable: false,
-            cellRenderer: (params) => (
-                <div className='trash iconButton' title='מחק משימה'>
-                    <Trash size={17} color="black" onClick={() => toDelete(params.data._id, params.data.taskModel)} />
-                </div>
-            )
-        });
+        baseColumns.push(
+            { headerName: "", field: "duplicate", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false, cellRenderer: (params) => <div className='copy iconButton' title='שכפל משימה'><Copy size={17} color="black" onClick={() => toDuplicateTask(params.data._id)} /></div> },
+            { headerName: "", field: "history", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false, cellRenderer: (params) => <div className='history iconButton' title='צפה בהיסטוריה'><History size={17} color="black" onClick={() => toHistory(params.data)} /></div> },
+            { headerName: "", field: "delete", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false, cellRenderer: (params) => <div className='trash iconButton' title='מחק משימה'><Trash size={17} color="black" onClick={() => toDelete(params.data._id, params.data.taskModel)} /></div> }
+        );
 
         if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
             baseColumns.push({
-                headerName: "",
-                field: "edit",
-                width: 50,
-                flex: 0,
-                minWidth: 50,
-                maxWidth: 50,
-                suppressSizeToFit: true,
-                sortable: false,
-                filter: false,
-                resizable: false,
-                cellRenderer: (params) => (
-                    <div className='pencil iconButton' title='ערוך משימה'>
-                        <Pencil size={17} color="black" onClick={() => toEdit(params.data)} />
-                    </div>
-                )
+                headerName: "", field: "edit", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false,
+                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} /></div>
             });
         }
 
@@ -723,7 +456,6 @@ const Tasks = () => {
                         await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content);
                         params.node.setDataValue(params.colDef.field, newStatus);
                         toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
-
                     } else {
                         suppressedChangeNodesRef.current.add(params.node.id);
                         params.node.setDataValue(params.colDef.field, oldStatus);
@@ -746,41 +478,25 @@ const Tasks = () => {
                 }
             }
 
-
             try {
                 const { value: content, isConfirmed } = await Swal.fire({
                     title: 'האם להוסיף הערה ?',
                     input: 'text',
                     inputLabel: 'הערה למשימה (לא חובה)',
                     showCancelButton: true,
-                    confirmButtonText: 'עדכן ',
+                    confirmButtonText: 'עדכן',
                     cancelButtonText: 'בטל',
                 });
-                let currentModel;
 
-                if (params.data.frequencyType) {
-                    currentModel = "recurring";
-                } else if (params.data.taskModel === "RecurringTask") {
-                    currentModel = "recurring";
-                } else {
-                    currentModel = "task";
-                }
+                let currentModel = params.data.frequencyType ? "recurring" : params.data.taskModel === "RecurringTask" ? "recurring" : "task";
 
-                if (currentModel == "task")
-                    await updateTaskStatus(taskId, newStatus, token);
-                else
-                    await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
+                if (currentModel === "task") await updateTaskStatus(taskId, newStatus, token);
+                else await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
 
-
-                if (isConfirmed) {
-                    await addComment(params.data._id, currentModel, content, user?.token);
-                    // toast.success("נוספה הערה", { duration: 3000 });
-                }
+                if (isConfirmed) await addComment(params.data._id, currentModel, content, user?.token);
                 toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
-
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
-                console.log("!", error.response?.data?.message || error.message || 'שגיאה לא ידועה');
                 suppressedChangeNodesRef.current.add(params.node.id);
                 params.node.setDataValue(params.colDef.field, oldStatus);
             }
@@ -789,24 +505,15 @@ const Tasks = () => {
 
     const createProject = async () => {
         const token = user?.token;
-
         const { value: formValues, isConfirmed } = await Swal.fire({
             title: "הוספת פרויקט",
-            html: `
-                <input id="swal-input1" class="swal2-input" placeholder="הכנס/י שם פרויקט">
-                <label style="display:flex; align-items:center; justify-content:flex-start; margin-top:10px;">
-                    <input type="checkbox" id="swal-input2" checked style="margin-right:8px;">
-                    פעיל
-                </label>
-            `,
+            html: `<input id="swal-input1" class="swal2-input" placeholder="הכנס/י שם פרויקט"><label style="display:flex; align-items:center; justify-content:flex-start; margin-top:10px;"><input type="checkbox" id="swal-input2" checked style="margin-right:8px;">פעיל</label>`,
             focusConfirm: false,
             showCancelButton: true,
             preConfirm: () => {
                 const name = document.getElementById('swal-input1').value;
                 const isActive = document.getElementById('swal-input2').checked;
-                if (!name) {
-                    Swal.showValidationMessage('חובה להזין שם פרויקט');
-                }
+                if (!name) Swal.showValidationMessage('חובה להזין שם פרויקט');
                 return { name, isActive };
             },
             confirmButtonText: 'אשר',
@@ -818,10 +525,8 @@ const Tasks = () => {
         try {
             await fetchAddProject(formValues.name, formValues.isActive, token);
             toast.success('פרויקט נוסף', { duration: 2000 });
-
         } catch (err) {
             toast.error(err.response?.data?.message || 'לא ניתן להוסיף פרויקט כרגע', { duration: 3000 });
-            console.error('שגיאה בהוספת פרויקט', err);
         }
     };
 
