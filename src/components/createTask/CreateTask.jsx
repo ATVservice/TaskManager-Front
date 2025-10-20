@@ -61,13 +61,28 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
     });
         // ברירת מחדל: האחראי הראשי הוא הראשון שסומן
         useEffect(() => {
-            if (form.assignees.length > 0 && !form.mainAssignee) {
-                setForm((prev) => ({
-                    ...prev,
-                    mainAssignee: form.assignees[0]._id,
-                }));
-            }
-        }, [form.assignees]);
+            setForm((prev) => {
+              // אם אין אחראיים — ננקה ראשי
+              if (form.assignees.length === 0) {
+                return { ...prev, mainAssignee: "" };
+              }
+          
+              // אם אין עדיין ראשי — נגדיר את הראשון
+              if (!prev.mainAssignee) {
+                return { ...prev, mainAssignee: form.assignees[0]._id };
+              }
+          
+              // אם הראשי כבר לא ברשימת האחראיים (נמחק מה-MultiSelect)
+              const stillExists = form.assignees.some(a => a._id === prev.mainAssignee);
+              if (!stillExists) {
+                return { ...prev, mainAssignee: form.assignees[0]._id };
+              }
+          
+              // אחרת – לא משנים כלום
+              return prev;
+            });
+          }, [form.assignees]);
+          
     
         // ברירת מחדל: תאריך סופי = תאריך משימה
         useEffect(() => {
@@ -214,6 +229,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             selected={form.assignees}
                             onChange={(newSelected) =>
                                 setForm((prev) => ({ ...prev, assignees: newSelected }))
+                                
                             }
                         />
                     </div>
