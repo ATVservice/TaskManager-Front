@@ -801,7 +801,13 @@
   z-index: 1;
   animation: fadeInUp 1s ease-out;
 }
+
 .highlighted-row {
-  background-color: #fff6b3 !important;
-  transition: background-color 0.3s ease;
+  animation: highlightAnimation 3s ease;
+  background-color: rgba(255, 255, 0, 0.3); 
+}
+
+@keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 0, 0.7); }
+  100% { background-color: transparent; }
 }

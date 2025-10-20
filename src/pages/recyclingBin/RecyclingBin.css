@@ -239,3 +239,14 @@ body {
 .ag-theme-alpine .ag-row:hover {
   transform: translateX(0); /* ביטול התזוזה */
 }
+.highlighted-row {
+  animation: highlightAnimation 3s ease;
+  background-color: rgba(255, 255, 0, 0.3); 
+}
+
+@keyframes highlightAnimation {
+  0% { background-color: rgba(255, 255, 0, 0.7); }
+  100% { background-color: transparent; }
+}
+
+

@@ -1,15 +1,20 @@
-import React, { useRef } from 'react';
+import React, { useRef, forwardRef, useImperativeHandle } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry } from 'ag-grid-community';
 import { AllCommunityModule } from 'ag-grid-community';
 import { motion } from "framer-motion";
-import './taskAgGrid.css'
+import './taskAgGrid.css';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,highlightedTaskId }) => {
-  
+const TaskAgGrid = forwardRef(({ rowData, columnDefs, onCellValueChanged, onRowClicked }, ref) => {
+
     const gridRef = useRef();
+
+    useImperativeHandle(ref, () => ({
+        api: gridRef.current.api,
+        columnApi: gridRef.current.columnApi,
+    }));
 
     const defaultColDef = {
         filter: 'agTextColumnFilter',
@@ -26,13 +31,11 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,hig
             filterOptions: ['contains'],
             buttons: []
         },
-        // enableRowGroup: true,
         suppressMovable: true,
         cellClass: 'copyable-cell',
         suppressKeyboardEvent: false,
     };
 
-    // הגדרות  לעברית
     const localeText = {
         page: 'עמוד',
         more: 'עוד',
@@ -53,15 +56,7 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,hig
         selectAll: 'בחר הכל',
         blanks: 'ריקים',
         columns: 'עמודות',
-        pivotMode: 'מצב Pivot',
-        groups: 'קבוצות',
-        values: 'ערכים',
-        pivots: 'Pivot-ים',
-        valueColumns: 'עמודות ערך',
-        pivotColumns: 'עמודות Pivot',
-        toolPanelButton: 'לוח כלים',
         noRowsToShow: 'אין שורות להצגה',
-        rowGroupColumnsEmptyMessage: 'גרור כאן עמודות כדי לקבץ',
     };
 
     return (
@@ -73,22 +68,27 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,hig
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 style={{ height: "100%", width: "100%" }}
-
             >
                 <AgGridReact
-                    ref={gridRef}
+                    ref={(grid) => {
+                        gridRef.current = grid;
+                        if (ref) {
+                            if (typeof ref === 'function') ref(grid);
+                            else ref.current = grid;
+                        }
+                    }}
+                    getRowId={params => params.data._id}
                     rowData={rowData}
                     columnDefs={columnDefs}
-                    highlightedTaskId={highlightedTaskId}
                     defaultColDef={defaultColDef}
-                    pagination={true}
-                    enableRtl={true}
+                    pagination
+                    enableRtl
                     paginationPageSize={20}
                     domLayout="autoHeight"
-                    animateRows={true}
+                    animateRows
                     onCellValueChanged={onCellValueChanged}
-                    onRowClicked={onRowClicked} 
-                    singleClickEdit={true}
+                    onRowClicked={onRowClicked}
+                    singleClickEdit
                     localeText={localeText}
                     suppressSizeToFit={false}
                     onFirstDataRendered={(params) => {
@@ -105,12 +105,12 @@ const TaskAgGrid = ({ rowData, columnDefs, onCellValueChanged, onRowClicked ,hig
                         }, 50);
                     }}
                     rowClassRules={{
-                        'drawer-task': params => params.data.importance === 'מגירה'
+                        'drawer-task': params => params.data.importance === 'מגירה',
                     }}
                 />
             </motion.div>
         </div>
     );
-};
+});
 
 export default TaskAgGrid;

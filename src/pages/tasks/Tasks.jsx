@@ -99,21 +99,21 @@ const enrichTasksWithSearchText = (tasks) => {
 };
 
 const statusOptions = [
-  
+
     { status: "הושלם", color: 'green' },
-    { status: "בוטלה", color: 'red' },  
+    { status: "בוטלה", color: 'red' },
     { status: "בטיפול", color: 'purple' },
     { status: "לביצוע", color: 'yellow' },
- 
+
 ];
 
 const Tasks = () => {
     const navigate = useNavigate();
     const { taskId } = useParams();
-    const [highlightedTaskId, setHighlightedTaskId] = useState(null);
-
     const suppressedChangeNodesRef = useRef(new Set());
     const { user } = useContext(AuthContext);
+    const gridRef = useRef(null);
+
 
     const tabs = [
         { key: 'today', label: 'משימות להיום' },
@@ -302,7 +302,6 @@ const Tasks = () => {
 
                 setActiveTab(foundTab);           // עדכון הטאב הנכון
                 setTimeout(() => {
-                    setHighlightedTaskId(taskId); // מחכה ש־rowData נטען
                     MoreDetails(taskId);
                 }, 200);
             } else {
@@ -342,6 +341,37 @@ const Tasks = () => {
         fetchTasks(activeTab, activeType);
     }, [activeTab, activeType, user, version, fetchTasks]);
 
+    useEffect(() => {
+        const highlightedId = sessionStorage.getItem("highlightedTaskId");
+        if (highlightedId) {
+            const found = allTasks.find(t => t._id === highlightedId);
+            if (found) {
+                setTimeout(() => {
+                    MoreDetails(highlightedId);
+                    highlightRow(highlightedId);
+                }, 500);
+            }
+            sessionStorage.removeItem("highlightedTaskId");
+        }
+    }, [allTasks]); // יופעל ברגע שהטבלת משימות נטענה
+
+ 
+    const highlightRow = (taskId) => {
+        if (!gridRef.current?.api) return;
+    
+        const node = gridRef.current.api.getRowNode(taskId);
+        if (node) {
+            node.setSelected(true); // סמן את השורה
+            gridRef.current.api.ensureNodeVisible(node, 'middle'); // גלול למרכז
+    
+            const rowElement = document.querySelector(`[row-index="${node.rowIndex}"]`);
+            if (rowElement) {
+                rowElement.classList.add("highlighted-row");
+                setTimeout(() => rowElement.classList.remove("highlighted-row"), 3000); // הסר אחרי 3 שניות
+            }
+        }
+    };
+    
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
         if (userObj.role === 'מנהל') return true;
@@ -917,6 +947,7 @@ const Tasks = () => {
                 <div className='task-grid-container'>
 
                     <TaskAgGrid
+                        ref={gridRef}
                         rowData={filteredTasks}
                         columnDefs={getColumnDefs()}
                         onRowClicked={(params) => {
@@ -945,13 +976,10 @@ const Tasks = () => {
                             const selection = window.getSelection();
                             if (selection && selection.toString().length > 0) return;
 
-                            setHighlightedTaskId(params.data._id);
                             // פתיחת פרטים
                             MoreDetails(params.data._id);
                         }}
-                        getRowClass={(params) =>
-                            params.data._id === highlightedTaskId ? 'highlighted-row' : ''
-                        }
+
                         onCellValueChanged={onCellValueChanged}
                     />
                 </div>

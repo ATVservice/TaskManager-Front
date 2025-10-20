@@ -19,13 +19,15 @@ const RecyclingBin = () => {
     const [data, setData] = useState([]);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
+    const gridRef = useRef(null);
+
     const statusOptions = [
-  
+
         { status: "הושלם", color: 'green' },
-        { status: "בוטלה", color: 'red' },  
+        { status: "בוטלה", color: 'red' },
         { status: "בטיפול", color: 'purple' },
         { status: "לביצוע", color: 'yellow' },
-     
+
     ];
 
     const [columnDefs] = useState([
@@ -164,12 +166,43 @@ const RecyclingBin = () => {
             try {
                 const deletedTasks = await fetchGetDeletedTasks(user.token);
                 setData(deletedTasks);
+                const highlightedId = sessionStorage.getItem("highlightedTaskId");
+                if (highlightedId) {
+                    const found = deletedTasks.find(t => t._id === highlightedId);
+                    if (found) {
+                        setTimeout(() => {
+                            MoreDetails(highlightedId);
+                            highlightRow(highlightedId);
+                        }, 500);
+                    }
+                    sessionStorage.removeItem("highlightedTaskId");
+                }
+
             } catch (err) {
                 console.error('שגיאה בטעינת משימות מחוקות', err);
             }
         };
         GetDeletedTasks();
     }, [user]);
+    const highlightRow = (taskId) => {
+        if (!gridRef.current) return;
+        const api = gridRef.current.api;
+        if (!api) return;
+
+        api.forEachNode((node) => {
+            if (node.data._id === taskId) {
+                const rowElement = node.gridCellRenderer?.eGridRow ||
+                    document.querySelector(`[row-index="${node.rowIndex}"]`);
+                if (rowElement) {
+                    rowElement.classList.add("highlighted-row");
+                    rowElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                    setTimeout(() => rowElement.classList.remove("highlighted-row"), 3000);
+                }
+            }
+        });
+    };
+
+
 
     return (
         <>
@@ -183,6 +216,7 @@ const RecyclingBin = () => {
                 <div className="RecyclingBin-grid-container">
 
                     <TaskAgGrid
+                        ref={gridRef}
                         rowData={data}
                         columnDefs={columnDefs}
                         // onRowClicked={(params) => MoreDetails(params.data._id)}

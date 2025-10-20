@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { Title } from 'react-head';
 import { useNavigate } from 'react-router-dom';
 import { AlertContext } from '../../context/AlertContext';
+import { getMoreDetails } from '../../services/taskService';
+import { fetchGetDeletedTasks } from '../../services/restoreService';
 
 
 const AlertsPage = () => {
@@ -54,9 +56,50 @@ const AlertsPage = () => {
         }
     };
 
-    const handleTaskClick = (taskId) => {
-        console.log("🔵 Navigating to task:", taskId);
-        navigate(`/taskRedirect/${taskId}`);
+    const handleTaskClick = async (taskId) => {
+      try {
+        const task = await getMoreDetails(taskId, user?.token);
+        if (!task) {
+            toast.error("לא ניתן לטעון את המשימה");
+            return;
+          }
+        // אם המשימה קיימת ולא נמחקה
+        if (!task.isDeleted) {
+            let tab = '';
+
+            if (task.dueDate && new Date(task.dueDate) > new Date()) {
+                tab = 'future';
+              } else {
+                tab =
+                  task.status === 'הושלם' ? 'completed' :
+                  task.status === 'בוטלה' ? 'cancelled' :
+                  task.importance === 'מגירה' ? 'drawer' :
+                  task.frequencyType ? 'recurring' :
+                  'today';
+              }
+            sessionStorage.setItem("highlightedTaskId", taskId);
+          navigate(`/tasks/${taskId}?tab=${tab}`);
+          return;
+        }
+    
+        // אם המשימה נמחקה - נבדוק אם היא קיימת בסל המחזור
+        const deletedTasks = await fetchGetDeletedTasks(user?.token);
+    
+        if (Array.isArray(deletedTasks)) {
+          const found = deletedTasks.find(t => t._id === taskId);
+          if (found) {
+            sessionStorage.setItem("highlightedTaskId", taskId);
+            navigate("/recyclingBin");
+            return;
+          }
+        }
+    
+        // אם לא נמצאה גם שם
+        toast.error("המשימה נמחקה לצמיתות");
+      } catch (err) {
+        console.error("שגיאה בטעינת משימה מההתראה:", err);
+        toast.error("לא ניתן לטעון את המשימה");
+      }
     };
 
     // חישוב דפים
