@@ -69,53 +69,78 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
 
 
     const handleTaskClick = async (taskId) => {
-      onClose();
-      try {
-        const task = await getMoreDetails(taskId, token);
-        if (!task) {
-            toast.error("לא ניתן לטעון את המשימה");
-            return;
-          }
-        // אם המשימה קיימת ולא נמחקה
-        if (!task.isDeleted) {
-            let tab = '';
+        onClose();
 
-            if (task.dueDate && new Date(task.dueDate) > new Date()) {
-                tab = 'future';
-              } else {
-                tab =
-                  task.status === 'הושלם' ? 'completed' :
-                  task.status === 'בוטלה' ? 'cancelled' :
-                  task.importance === 'מגירה' ? 'drawer' :
-                  task.frequencyType ? 'recurring' :
-                  'today';
-              }
-            sessionStorage.setItem("highlightedTaskId", taskId);
-          navigate(`/tasks/${taskId}?tab=${tab}`);
-          return;
+        try {
+            const task = await getMoreDetails(taskId, token);
+            if (!task) {
+                toast.error("לא ניתן לטעון את המשימה");
+                return;
+            }
+
+            // אם המשימה קיימת ולא נמחקה
+            if (!task.isDeleted) {
+                let tab = '';
+                let subType = null; // ← חדש: שמירת סוג המשימה להיום
+
+                if (task.dueDate && new Date(task.dueDate) > new Date()) {
+                    tab = 'future';
+                } else {
+                    // המשימה היא להיום או בעבר
+                    if (task.status === 'הושלם') {
+                        tab = 'completed';
+                    } else if (task.status === 'בוטלה') {
+                        tab = 'cancelled';
+                    } else if (task.importance === 'מגירה') {
+                        tab = 'drawer';
+                    } else if (task.frequencyType) {
+                        // משימה קבועה - יכול להיות recurring או today
+                        // בדוק אם יש לה מופע להיום
+                        if (task.taskModel === 'TodayTask' || task.isRecurringInstance) {
+                            tab = 'today';
+                            subType = 'today-recurring';
+                        } else {
+                            tab = 'recurring';
+                        }
+                    } else {
+                        tab = 'today';
+                        subType = 'today-single';
+                    }
+                }
+
+                // שמור את מידע ההדגשה
+                sessionStorage.setItem("highlightedTaskId", taskId);
+                sessionStorage.setItem("highlightedTaskTab", tab);
+
+                // שמור גם את הסוג אם זה טאב היום
+                if (subType) {
+                    sessionStorage.setItem("highlightedTaskType", subType);
+                }
+
+                // נווט
+                navigate(`/tasks/${taskId}`);
+                return;
+            }
+
+            // אם נמחקה - בדוק בסל המחזור
+            const deletedTasks = await fetchGetDeletedTasks(token);
+
+            if (Array.isArray(deletedTasks)) {
+                const found = deletedTasks.find(t => t._id === taskId);
+                if (found) {
+                    sessionStorage.setItem("highlightedTaskId", taskId);
+                    navigate("/recyclingBin");
+                    return;
+                }
+            }
+
+            toast.error("המשימה נמחקה לצמיתות");
+        } catch (err) {
+            console.error("שגיאה בטעינת משימה:", err);
+            toast.error("לא ניתן לטעון את המשימה");
         }
-    
-        // אם המשימה נמחקה - נבדוק אם היא קיימת בסל המחזור
-        const deletedTasks = await fetchGetDeletedTasks(token);
-    
-        if (Array.isArray(deletedTasks)) {
-          const found = deletedTasks.find(t => t._id === taskId);
-          if (found) {
-            sessionStorage.setItem("highlightedTaskId", taskId);
-            navigate("/recyclingBin");
-            return;
-          }
-        }
-    
-        // אם לא נמצאה גם שם
-        toast.error("המשימה נמחקה לצמיתות");
-      } catch (err) {
-        console.error("שגיאה בטעינת משימה מההתראה:", err);
-        toast.error("לא ניתן לטעון את המשימה");
-      }
     };
-    
-      
+
 
     return (
         <div className={`alerts-drawer ${open ? 'open' : ''}`} role="dialog" aria-hidden={!open}>

@@ -120,6 +120,7 @@ const Tasks = () => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
@@ -196,20 +197,45 @@ const Tasks = () => {
     }, [activeTab, activeType, user, fetchTasks]);
 
     useEffect(() => {
-        if (!taskId || !user?.token || taskHandledRef.current) return;
+        // אפס את ה-ref כשה-taskId משתנה (כולל כשהוא נעלם)
+        if (!taskId) {
+            taskHandledRef.current = false;
+            return;
+        }
+
+        if (!user?.token || taskHandledRef.current) return;
 
         const handleTaskRedirect = async () => {
+            // הצג loading overlay
+            setIsNavigating(true);
+            
             try {
                 const storedTab = sessionStorage.getItem("highlightedTaskTab");
                 const storedTaskId = sessionStorage.getItem("highlightedTaskId");
+                const storedType = sessionStorage.getItem("highlightedTaskType");
 
                 if (storedTab && storedTaskId === taskId) {
+                    // יש לנו מידע מדויק מההתראה - השתמש בו!
                     taskHandledRef.current = true;
+                    
+                    // עדכן את הטאב
                     setActiveTab(storedTab);
+                    
+                    // אם זה טאב היום, עדכן גם את הסוג
+                    if (storedTab === 'today' && storedType) {
+                        setActiveType(storedType);
+                    }
+                    
+                    // נקה את sessionStorage
                     sessionStorage.removeItem("highlightedTaskTab");
+                    sessionStorage.removeItem("highlightedTaskType");
+                    
+                    // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
+                    setTimeout(() => setIsNavigating(false), 400);
                     return;
                 }
 
+                // אם אין מידע מההתראה, חפש בכל הטאבים (נדיר)
                 const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
                 let foundTask = null;
                 let foundTab = '';
@@ -227,11 +253,16 @@ const Tasks = () => {
                     taskHandledRef.current = true;
                     setActiveTab(foundTab);
                     sessionStorage.setItem("highlightedTaskId", taskId);
+                    
+                    // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
+                    setTimeout(() => setIsNavigating(false), 400);
                 } else {
+                    setIsNavigating(false);
                     navigate(`/taskRedirect/${taskId}`);
                 }
             } catch (error) {
                 console.error('Error handling task redirect:', error);
+                setIsNavigating(false);
             }
         };
 
@@ -243,12 +274,21 @@ const Tasks = () => {
         if (!highlightedId || allTasks.length === 0) return;
 
         const found = allTasks.find(t => t._id === highlightedId);
-        if (!found) return;
+        if (!found) {
+            // אם לא נמצא בטאב הנוכחי, נקה את sessionStorage
+            sessionStorage.removeItem("highlightedTaskId");
+            return;
+        }
 
         const timer = setTimeout(() => {
             highlightRow(highlightedId);
             MoreDetails(highlightedId);
+            
+            // נקי את sessionStorage
             sessionStorage.removeItem("highlightedTaskId");
+            
+            // אפס את ה-ref כדי לאפשר ניווט נוסף
+            taskHandledRef.current = false;
         }, 300);
 
         return () => clearTimeout(timer);

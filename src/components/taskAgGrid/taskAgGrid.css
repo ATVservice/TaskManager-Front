@@ -63,9 +63,9 @@
   overflow: hidden;
 }
 /* סגנון בסיסי של משימות מגירה */
-.ag-theme-alpine .drawer-task {
+/* .ag-theme-alpine .drawer-task {
     background-color: rgba(255, 235, 59, 0.15) !important;
-}
+} */
 
 /* אנימציית הדגשה - תיקום חיוני */
 .ag-theme-alpine [role="row"].highlight-animation {
