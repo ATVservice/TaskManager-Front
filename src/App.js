@@ -8,10 +8,6 @@ import React, { useEffect, useState } from "react";
 import useVersionChecker from "./hooks/useVersionChecker";
 import UpdateBanner from "./components/UpdateBanner";
 
-
-
-
-
 const App = () => {
   useSessionManager()
   useSession()
