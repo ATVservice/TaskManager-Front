@@ -69,7 +69,7 @@
 
 /* אנימציית הדגשה - תיקום חיוני */
 .ag-theme-alpine [role="row"].highlight-animation {
-    animation: highlightPulse 4s ease-in-out !important;
+    animation: highlightPulse 20s ease-in-out !important;
 }
 
 @keyframes highlightPulse {

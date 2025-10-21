@@ -120,6 +120,7 @@ const Tasks = () => {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const [taskType, setTaskType] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
@@ -127,6 +128,14 @@ const Tasks = () => {
         return index !== -1 ? index : 0;
     });
     const wrapperRef = useRef(null);
+
+    // סנכרן את activeIndex עם activeTab
+    useEffect(() => {
+        const index = tabs.findIndex(tab => tab.key === activeTab);
+        if (index !== -1 && index !== activeIndex) {
+            setActiveIndex(index);
+        }
+    }, [activeTab, tabs]);
 
     useEffect(() => sessionStorage.setItem('activeTaskTab', activeTab), [activeTab]);
     useEffect(() => sessionStorage.setItem('activeTaskType', activeType), [activeType]);
@@ -205,17 +214,36 @@ const Tasks = () => {
         if (!user?.token || taskHandledRef.current) return;
 
         const handleTaskRedirect = async () => {
+            // הצג loading overlay
+            setIsNavigating(true);
+            
             try {
                 const storedTab = sessionStorage.getItem("highlightedTaskTab");
                 const storedTaskId = sessionStorage.getItem("highlightedTaskId");
+                const storedType = sessionStorage.getItem("highlightedTaskType");
 
                 if (storedTab && storedTaskId === taskId) {
+                    // יש לנו מידע מדויק מההתראה - השתמש בו!
                     taskHandledRef.current = true;
+                    
+                    // עדכן את הטאב
                     setActiveTab(storedTab);
+                    
+                    // אם זה טאב היום, עדכן גם את הסוג
+                    if (storedTab === 'today' && storedType) {
+                        setActiveType(storedType);
+                    }
+                    
+                    // נקה את sessionStorage
                     sessionStorage.removeItem("highlightedTaskTab");
+                    sessionStorage.removeItem("highlightedTaskType");
+                    
+                    // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
+                    setTimeout(() => setIsNavigating(false), 400);
                     return;
                 }
 
+                // אם אין מידע מההתראה, חפש בכל הטאבים (נדיר)
                 const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
                 let foundTask = null;
                 let foundTab = '';
@@ -233,11 +261,16 @@ const Tasks = () => {
                     taskHandledRef.current = true;
                     setActiveTab(foundTab);
                     sessionStorage.setItem("highlightedTaskId", taskId);
+                    
+                    // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
+                    setTimeout(() => setIsNavigating(false), 400);
                 } else {
+                    setIsNavigating(false);
                     navigate(`/taskRedirect/${taskId}`);
                 }
             } catch (error) {
                 console.error('Error handling task redirect:', error);
+                setIsNavigating(false);
             }
         };
 
@@ -283,7 +316,8 @@ const Tasks = () => {
                 const rowElement = document.querySelector(`[row-index="${node.rowIndex}"]`);
                 if (rowElement) {
                     rowElement.classList.add("highlighted-row");
-                    setTimeout(() => rowElement.classList.remove("highlighted-row"), 3000);
+                    // הגדל ל-6 שניות
+                    setTimeout(() => rowElement.classList.remove("highlighted-row"), 6000);
                 }
             }, 50);
         } catch (error) {
@@ -544,6 +578,7 @@ const Tasks = () => {
             toast.error(err.response?.data?.message || 'לא ניתן להוסיף פרויקט כרגע', { duration: 3000 });
         }
     };
+
 
     return (
         <>
