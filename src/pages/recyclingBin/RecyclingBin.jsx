@@ -124,6 +124,7 @@ const RecyclingBin = () => {
         }
 
         try {
+            // navigate('/a');
             navigate(`/history/${task._id}/${model}`, { target: '_blank' });
         }
         catch (error) {

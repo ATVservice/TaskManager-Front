@@ -6,6 +6,8 @@ import { AuthProvider } from './context/AuthContext';
 import { FilterProvider } from './context/FilterContext';
 import {AlertProvider} from './context/AlertContext'
 import { LoadingProvider } from './context/LoadingContext'
+import { HashRouter } from 'react-router-dom';
+
 import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
