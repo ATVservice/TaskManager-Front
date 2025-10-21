@@ -18,6 +18,7 @@ import Report from '../pages/report/report/Report';
 import AlertsPage from '../pages/alertsPage/AlertsPage';
 import ResetEmailForm from '../pages/resetEmailForm/resetEmailForm';
 import TaskRedirect from '../pages/taskRedirect/TaskRedirect';
+import A from '../pages/aaa/A'
 
 const AppRoutes = () => {
   const { user, loading } = useContext(AuthContext);
@@ -46,6 +47,7 @@ const AppRoutes = () => {
           <Route path='/tasks' element={<PageWrapper><Tasks /></PageWrapper>} />
           <Route path='/recyclingBin' element={<PageWrapper><RecyclingBin /></PageWrapper>} />
           <Route path="/history/:taskId/:model" element={<PageWrapper><History /></PageWrapper>} />
+          <Route path="/a" element={<PageWrapper><A /></PageWrapper>} />
           <Route path="/allAlerts" element={<PageWrapper><AlertsPage /></PageWrapper>} />
           
           {user.role === 'מנהל' && (

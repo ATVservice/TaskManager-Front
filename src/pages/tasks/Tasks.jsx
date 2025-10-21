@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
 import { getMoreDetails, getTasks } from '../../services/taskService';
-import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer } from '../../services/filterTasksService.js';
+import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer, fetchOverdueTasks } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
 import { duplicateTask } from '../../services/taskService';
@@ -100,6 +100,8 @@ const Tasks = () => {
         { key: 'completed', label: 'משימות שבוצעו' },
         { key: 'cancelled', label: 'משימות שבוטלו' },
         { key: 'drawer', label: 'משימות מגירה' },
+        { key: 'open', label: 'פתוחות- מתעכבות' },
+
     ];
 
     const [allTasks, setAllTasks] = useState([]);
@@ -186,6 +188,7 @@ const Tasks = () => {
                     case 'completed': data = await fetchCompleteds(token); break;
                     case 'cancelled': data = await fetchCancelled(token); break;
                     case 'drawer': data = await fetchDrawer(token); break;
+                    case 'open': data = await fetchOverdueTasks(token); break;
                 }
             }
             const enriched = enrichTasksWithSearchText(data);
@@ -244,7 +247,7 @@ const Tasks = () => {
                 }
 
                 // אם אין מידע מההתראה, חפש בכל הטאבים (נדיר)
-                const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer'];
+                const tabsToCheck = ['today', 'future', 'recurring', 'completed', 'cancelled', 'drawer', 'open'];
                 let foundTask = null;
                 let foundTab = '';
 
@@ -477,38 +480,54 @@ const Tasks = () => {
 
         return baseColumns;
     };
-
     const onCellValueChanged = async (params) => {
         if (suppressedChangeNodesRef.current.has(params.node.id)) {
             suppressedChangeNodesRef.current.delete(params.node.id);
             return;
         }
         const token = user?.token;
-
+    
         if (params.colDef.field === 'status') {
             const taskId = params.data._id;
             const newStatus = params.newValue;
             const oldStatus = params.oldValue;
-
+    
+            // שלב 1 – אישור שינוי סטטוס
+            const confirmResult = await Swal.fire({
+                title: 'האם לעדכן את הסטטוס?',
+                text: `הסטטוס ישתנה מ-${oldStatus} ל-${newStatus}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'כן, עדכן',
+                cancelButtonText: 'לא',
+            });
+    
+            if (!confirmResult.isConfirmed) {
+                suppressedChangeNodesRef.current.add(params.node.id);
+                params.node.setDataValue(params.colDef.field, oldStatus);
+                return;
+            }
+    
+            // אם מדובר במשימות היומיות
             if (activeTab === 'today-recurring') {
                 try {
                     const { value: content, isConfirmed } = await Swal.fire({
                         title: 'הוספת הערה',
                         input: 'text',
-                        inputLabel: 'הקלד/י את תוכן ההערה',
+                        inputLabel: 'הקלד/י את תוכן ההערה (לא חובה)',
                         showCancelButton: true,
                         confirmButtonText: 'הוסף',
-                        cancelButtonText: 'בטל',
+                        cancelButtonText: 'דלג',
                     });
-
-                    if (isConfirmed) {
-                        await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content);
-                        params.node.setDataValue(params.colDef.field, newStatus);
-                        toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
-                    } else {
-                        suppressedChangeNodesRef.current.add(params.node.id);
-                        params.node.setDataValue(params.colDef.field, oldStatus);
+    
+                    await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content || undefined);
+                    params.node.setDataValue(params.colDef.field, newStatus);
+    
+                    if (isConfirmed && content?.trim()) {
+                        await addComment(params.data._id, "recurring", content, user?.token);
                     }
+    
+                    toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
                 } catch (error) {
                     toast.error(error.response?.data?.message || 'עדכון המשימה נכשל', { duration: 3000 });
                     suppressedChangeNodesRef.current.add(params.node.id);
@@ -516,7 +535,7 @@ const Tasks = () => {
                 }
                 return;
             }
-
+    
             if (newStatus === 'בוטלה') {
                 const allowed = canCancelTask(user, params.data);
                 if (!allowed) {
@@ -526,23 +545,34 @@ const Tasks = () => {
                     return;
                 }
             }
-
+    
+            // שלב 2 – הערה אופציונלית
             try {
                 const { value: content, isConfirmed } = await Swal.fire({
-                    title: 'האם להוסיף הערה ?',
+                    title: 'האם להוסיף הערה?',
                     input: 'text',
                     inputLabel: 'הערה למשימה (לא חובה)',
                     showCancelButton: true,
-                    confirmButtonText: 'עדכן',
-                    cancelButtonText: 'בטל',
+                    confirmButtonText: 'הוסף',
+                    cancelButtonText: 'דלג',
                 });
-
-                let currentModel = params.data.frequencyType ? "recurring" : params.data.taskModel === "RecurringTask" ? "recurring" : "task";
-
-                if (currentModel === "task") await updateTaskStatus(taskId, newStatus, token);
-                else await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
-
-                if (isConfirmed) await addComment(params.data._id, currentModel, content, user?.token);
+    
+                let currentModel =
+                    params.data.frequencyType
+                        ? "recurring"
+                        : params.data.taskModel === "RecurringTask"
+                        ? "recurring"
+                        : "task";
+    
+                if (currentModel === "task")
+                    await updateTaskStatus(taskId, newStatus, token);
+                else
+                    await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
+    
+                if (isConfirmed && content?.trim()) {
+                    await addComment(params.data._id, currentModel, content, user?.token);
+                }
+    
                 toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
@@ -551,6 +581,81 @@ const Tasks = () => {
             }
         }
     };
+    
+
+    // const onCellValueChanged = async (params) => {
+    //     if (suppressedChangeNodesRef.current.has(params.node.id)) {
+    //         suppressedChangeNodesRef.current.delete(params.node.id);
+    //         return;
+    //     }
+    //     const token = user?.token;
+
+    //     if (params.colDef.field === 'status') {
+    //         const taskId = params.data._id;
+    //         const newStatus = params.newValue;
+    //         const oldStatus = params.oldValue;
+
+    //         if (activeTab === 'today-recurring') {
+    //             try {
+    //                 const { value: content, isConfirmed } = await Swal.fire({
+    //                     title: 'הוספת הערה',
+    //                     input: 'text',
+    //                     inputLabel: 'הקלד/י את תוכן ההערה',
+    //                     showCancelButton: true,
+    //                     confirmButtonText: 'הוסף',
+    //                     cancelButtonText: 'בטל',
+    //                 });
+
+    //                 if (isConfirmed) {
+    //                     await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content);
+    //                     params.node.setDataValue(params.colDef.field, newStatus);
+    //                     toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
+    //                 } else {
+    //                     suppressedChangeNodesRef.current.add(params.node.id);
+    //                     params.node.setDataValue(params.colDef.field, oldStatus);
+    //                 }
+    //             } catch (error) {
+    //                 toast.error(error.response?.data?.message || 'עדכון המשימה נכשל', { duration: 3000 });
+    //                 suppressedChangeNodesRef.current.add(params.node.id);
+    //                 params.node.setDataValue(params.colDef.field, oldStatus);
+    //             }
+    //             return;
+    //         }
+
+    //         if (newStatus === 'בוטלה') {
+    //             const allowed = canCancelTask(user, params.data);
+    //             if (!allowed) {
+    //                 suppressedChangeNodesRef.current.add(params.node.id);
+    //                 params.node.setDataValue(params.colDef.field, oldStatus);
+    //                 toast.error('רק האחראי הראשי, מקים המשימה או המנהל יכולים לבטל משימה.', { duration: 3000 });
+    //                 return;
+    //             }
+    //         }
+
+    //         try {
+    //             const { value: content, isConfirmed } = await Swal.fire({
+    //                 title: 'האם להוסיף הערה ?',
+    //                 input: 'text',
+    //                 inputLabel: 'הערה למשימה (לא חובה)',
+    //                 showCancelButton: true,
+    //                 confirmButtonText: 'עדכן',
+    //                 cancelButtonText: 'בטל',
+    //             });
+
+    //             let currentModel = params.data.frequencyType ? "recurring" : params.data.taskModel === "RecurringTask" ? "recurring" : "task";
+
+    //             if (currentModel === "task") await updateTaskStatus(taskId, newStatus, token);
+    //             else await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
+
+    //             if (isConfirmed) await addComment(params.data._id, currentModel, content, user?.token);
+    //             toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
+    //         } catch (error) {
+    //             toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
+    //             suppressedChangeNodesRef.current.add(params.node.id);
+    //             params.node.setDataValue(params.colDef.field, oldStatus);
+    //         }
+    //     }
+    // };
 
     const createProject = async () => {
         const token = user?.token;
