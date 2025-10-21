@@ -220,7 +220,7 @@ const Tasks = () => {
         const handleTaskRedirect = async () => {
             // הצג loading overlay
             setIsNavigating(true);
-            
+
             try {
                 const storedTab = sessionStorage.getItem("highlightedTaskTab");
                 const storedTaskId = sessionStorage.getItem("highlightedTaskId");
@@ -229,19 +229,19 @@ const Tasks = () => {
                 if (storedTab && storedTaskId === taskId) {
                     // יש לנו מידע מדויק מההתראה - השתמש בו!
                     taskHandledRef.current = true;
-                    
+
                     // עדכן את הטאב
                     setActiveTab(storedTab);
-                    
+
                     // אם זה טאב היום, עדכן גם את הסוג
                     if (storedTab === 'today' && storedType) {
                         setActiveType(storedType);
                     }
-                    
+
                     // נקה את sessionStorage
                     sessionStorage.removeItem("highlightedTaskTab");
                     sessionStorage.removeItem("highlightedTaskType");
-                    
+
                     // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
                     setTimeout(() => setIsNavigating(false), 400);
                     return;
@@ -265,7 +265,7 @@ const Tasks = () => {
                     taskHandledRef.current = true;
                     setActiveTab(foundTab);
                     sessionStorage.setItem("highlightedTaskId", taskId);
-                    
+
                     // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
                     setTimeout(() => setIsNavigating(false), 400);
                 } else {
@@ -295,10 +295,10 @@ const Tasks = () => {
         const timer = setTimeout(() => {
             highlightRow(highlightedId);
             MoreDetails(highlightedId);
-            
+
             // נקי את sessionStorage
             sessionStorage.removeItem("highlightedTaskId");
-            
+
             // אפס את ה-ref כדי לאפשר ניווט נוסף
             taskHandledRef.current = false;
         }, 300);
@@ -335,7 +335,13 @@ const Tasks = () => {
     );
 
     const [version, setVersion] = useState(0);
-    const refreshTasks = () => setVersion(v => v + 1);
+    // const refreshTasks = () => setVersion(v => v + 1);
+    const refreshTasks = () => {
+        fetchTasks(activeTab, activeType).then(() => {
+            gridRef.current?.api?.refreshCells();
+        });
+    };
+
 
     const canCancelTask = (userObj, taskData) => {
         if (!userObj || !taskData) return false;
@@ -479,35 +485,35 @@ const Tasks = () => {
                 cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black" onClick={() => toEdit(params.data, false)} /></div>
             });
         }
-        else{
+        else {
             baseColumns.push({
                 headerName: "", field: "edit", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false,
-                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black"  onClick={() => loadOriginalTask(params.data._id, user?.token)} /></div>
+                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black" onClick={() => loadOriginalTask(params.data._id, user?.token)} /></div>
             });
         }
         return baseColumns;
     };
     const loadOriginalTask = async (taskId, token) => {
         try {
-          const task = await getTaskById(taskId, token);
-          toEdit(task, true); 
+            const task = await getTaskById(taskId, token);
+            toEdit(task, true);
         } catch (err) {
-          console.error("לא ניתן לטעון את המשימה המקורית:", err);
+            console.error("לא ניתן לטעון את המשימה המקורית:", err);
         }
-      };
-      
+    };
+
     const onCellValueChanged = async (params) => {
         if (suppressedChangeNodesRef.current.has(params.node.id)) {
             suppressedChangeNodesRef.current.delete(params.node.id);
             return;
         }
         const token = user?.token;
-    
+
         if (params.colDef.field === 'status') {
             const taskId = params.data._id;
             const newStatus = params.newValue;
             const oldStatus = params.oldValue;
-    
+
             // שלב 1 – אישור שינוי סטטוס
             const confirmResult = await Swal.fire({
                 title: 'האם לעדכן את הסטטוס?',
@@ -517,13 +523,13 @@ const Tasks = () => {
                 confirmButtonText: 'כן, עדכן',
                 cancelButtonText: 'לא',
             });
-    
+
             if (!confirmResult.isConfirmed) {
                 suppressedChangeNodesRef.current.add(params.node.id);
                 params.node.setDataValue(params.colDef.field, oldStatus);
                 return;
             }
-    
+
             // אם מדובר במשימות היומיות
             if (activeTab === 'today-recurring') {
                 try {
@@ -535,14 +541,14 @@ const Tasks = () => {
                         confirmButtonText: 'הוסף',
                         cancelButtonText: 'דלג',
                     });
-    
+
                     await updateRecurringStatus(params.data.sourceTaskId, newStatus, token, content || undefined);
                     params.node.setDataValue(params.colDef.field, newStatus);
-    
+
                     if (isConfirmed && content?.trim()) {
                         await addComment(params.data._id, "recurring", content, user?.token);
                     }
-    
+
                     toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
                 } catch (error) {
                     toast.error(error.response?.data?.message || 'עדכון המשימה נכשל', { duration: 3000 });
@@ -551,7 +557,7 @@ const Tasks = () => {
                 }
                 return;
             }
-    
+
             if (newStatus === 'בוטלה') {
                 const allowed = canCancelTask(user, params.data);
                 if (!allowed) {
@@ -561,7 +567,7 @@ const Tasks = () => {
                     return;
                 }
             }
-    
+
             // שלב 2 – הערה אופציונלית
             try {
                 const { value: content, isConfirmed } = await Swal.fire({
@@ -572,23 +578,23 @@ const Tasks = () => {
                     confirmButtonText: 'הוסף',
                     cancelButtonText: 'דלג',
                 });
-    
+
                 let currentModel =
                     params.data.frequencyType
                         ? "recurring"
                         : params.data.taskModel === "RecurringTask"
-                        ? "recurring"
-                        : "task";
-    
+                            ? "recurring"
+                            : "task";
+
                 if (currentModel === "task")
                     await updateTaskStatus(taskId, newStatus, token);
                 else
                     await updateRecurringStatus(params.data.sourceTaskId, newStatus, token);
-    
+
                 if (isConfirmed && content?.trim()) {
                     await addComment(params.data._id, currentModel, content, user?.token);
                 }
-    
+
                 toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
@@ -597,7 +603,7 @@ const Tasks = () => {
             }
         }
     };
-    
+
 
     // const onCellValueChanged = async (params) => {
     //     if (suppressedChangeNodesRef.current.has(params.node.id)) {
@@ -701,6 +707,7 @@ const Tasks = () => {
     };
 
 
+
     return (
         <>
             <Title>משימות</Title>
@@ -791,7 +798,7 @@ const Tasks = () => {
                     <div className="popup-overlay">
                         <div className="popup-content">
                             <button onClick={handleClosePopup} className="close-btn">×</button>
-                            <CreateTask onClose={handleClosePopup} onTaskCreated={() => fetchTasks(activeTab)} />
+                            <CreateTask onClose={handleClosePopup} onTaskCreated={() => refreshTasks()} />
                         </div>
                     </div>,
                     document.body
@@ -807,7 +814,9 @@ const Tasks = () => {
                                 dailyUpdate={dailyUpdate}
                                 taskType={taskType}
                                 onClose={() => setShowEditModal(false)}
-                                onTaskUpdated={refreshTasks}
+                                onTaskUpdated={() => {
+                                    refreshTasks()
+                                }}
                             />
                         </div>
                     </div>
