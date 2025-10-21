@@ -24,13 +24,13 @@ const NavBar = () => {
   const [data, setData] = useState([]);
   const [showOverduePopup, setShowOverduePopup] = useState(false);
 
-useEffect(() => {
-  if (data.length > 0) {
-    setShowOverduePopup(true);
-  } else {
-    setShowOverduePopup(false);
-  }
-}, [data]);
+  useEffect(() => {
+    if (data.length > 0) {
+      setShowOverduePopup(true);
+    } else {
+      setShowOverduePopup(false);
+    }
+  }, [data]);
 
 
 
@@ -150,6 +150,7 @@ useEffect(() => {
           {/* <div>
               <button onClick={toOverOpen}>מתעכבות</button>
             </div> */}
+          <p>בדיקה</p>
           <div>
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
@@ -159,6 +160,7 @@ useEffect(() => {
               {unreadCount > 0 && <span className="bell-badge">{unreadCount}</span>}
             </button>
           </div>
+
 
         </div>
       </nav>
@@ -199,7 +201,7 @@ useEffect(() => {
           </div>
         )} */}
 
-      {showOverduePopup  && (
+      {showOverduePopup && (
         <div className="overdue-overlay">
           <div className="overdue-popup">
             <OverdueTasks
