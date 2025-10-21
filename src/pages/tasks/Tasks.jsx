@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext.jsx';
-import { getMoreDetails, getTasks } from '../../services/taskService';
+import { getMoreDetails, getTaskById, getTasks } from '../../services/taskService';
 import { fetchTodayTasks, fetchRecurringTasks, fetchCompleteds, fetchCancelled, fetchDrawer, fetchOverdueTasks } from '../../services/filterTasksService.js';
 import { Copy, Pencil, Trash, History, Plus, Search, ChevronRight, ChevronLeft } from 'lucide-react';
 import CreateTask from '../../components/createTask/CreateTask';
@@ -108,6 +108,7 @@ const Tasks = () => {
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
     const [showCreatePopup, setShowCreatePopup] = useState(false);
+    const [dailyUpdate, setDailyUpdate] = useState(false);
     const [activeTab, setActiveTab] = useState(() => {
         const savedTab = sessionStorage.getItem('activeTaskTab');
         return savedTab && tabs.some(tab => tab.key === savedTab) ? savedTab : tabs[0].key;
@@ -425,11 +426,12 @@ const Tasks = () => {
         }
     };
 
-    const toEdit = (task) => {
+    const toEdit = (task, isDailyUpdate) => {
         const canEditTask = user.id === task.creator || user.id === task.mainAssignee._id || user.role === 'מנהל';
         if (canEditTask) {
             setShowEditModal(true);
             setSelectedTask(task);
+            setDailyUpdate(isDailyUpdate)
             setTaskType(task.frequencyType || task.isRecurringInstance ? "recurring" : "single");
         } else {
             toast.error("אין לך הרשאה לערוך משימה זו!", { duration: 3000 });
@@ -474,12 +476,26 @@ const Tasks = () => {
         if (activeTab !== 'today' && activeTab !== 'today-single' && activeTab !== 'today-recurring') {
             baseColumns.push({
                 headerName: "", field: "edit", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false,
-                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black" onClick={() => toEdit(params.data)} /></div>
+                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black" onClick={() => toEdit(params.data, false)} /></div>
             });
         }
-
+        else{
+            baseColumns.push({
+                headerName: "", field: "edit", width: 50, flex: 0, maxWidth: 50, suppressSizeToFit: true, sortable: false, filter: false, resizable: false,
+                cellRenderer: (params) => <div className='pencil iconButton' title='ערוך משימה'><Pencil size={17} color="black"  onClick={() => loadOriginalTask(params.data._id, user?.token)} /></div>
+            });
+        }
         return baseColumns;
     };
+    const loadOriginalTask = async (taskId, token) => {
+        try {
+          const task = await getTaskById(taskId, token);
+          toEdit(task, true); 
+        } catch (err) {
+          console.error("לא ניתן לטעון את המשימה המקורית:", err);
+        }
+      };
+      
     const onCellValueChanged = async (params) => {
         if (suppressedChangeNodesRef.current.has(params.node.id)) {
             suppressedChangeNodesRef.current.delete(params.node.id);
@@ -788,6 +804,7 @@ const Tasks = () => {
                             <button onClick={handleClosePopupEdit} className="close-btn close-edit">×</button>
                             <EditTask
                                 taskToEdit={selectedTask}
+                                dailyUpdate={dailyUpdate}
                                 taskType={taskType}
                                 onClose={() => setShowEditModal(false)}
                                 onTaskUpdated={refreshTasks}

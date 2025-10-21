@@ -12,9 +12,13 @@ export const updateTaskStatus = async (taskId, status, token) => {
 
     return response.data;
 };
-export const updateTask = async (taskId, preparedForm, token) => {
+export const updateTask = async (taskId, preparedForm,dailyUpdate, token) => {
+    const body = {
+        preparedForm,
+        isDailyUpdate: dailyUpdate  // <-- כאן
+    };
     console.log("preparedForm" ,preparedForm)
-    const response = await api.put(`${API_URL}/api/update/updateTask/${taskId}`, {preparedForm},{
+    const response = await api.put(`${API_URL}/api/update/updateTask/${taskId}`, body,{
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -33,10 +37,13 @@ export const updateRecurringStatus = async (taskId, status, token ) => {
 
     return response.data;
 };
-
-export const updateRecurringTask = async (taskId, preparedForm, token) => {
+export const updateRecurringTask = async (taskId, preparedForm,dailyUpdate, token) => {
+    const body = {
+        preparedForm,
+        isDailyUpdate: dailyUpdate  // <-- כאן
+    };
     console.log("preparedForm" ,preparedForm)
-    const response = await api.put(`${API_URL}/api/update/updateRecurringTask/${taskId}`, {preparedForm},{
+    const response = await api.put(`${API_URL}/api/update/updateRecurringTask/${taskId}`,body ,{
         headers: {
             Authorization: `Bearer ${token}`,
         },

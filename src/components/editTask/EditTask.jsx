@@ -9,7 +9,8 @@ import { fetchGetAllProjectNames } from "../../services/projectService";
 import Swal from "sweetalert2";
 import toast from "react-hot-toast";
 
-const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
+const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate }) => {
+  console.log("taskToEdit in EditTask:", taskToEdit);
   const { user } = useContext(AuthContext);
   const [allUsers, setAllUsers] = useState([]);
   const [associations, setAssociations] = useState([]);
@@ -52,6 +53,39 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
     };
     loadProjects();
   }, []);
+  // ברירת מחדל אחראי ראשי
+  useEffect(() => {
+    if (!form) return; // הגנה נוספת למקרה שעדיין null
+
+    setForm((prev) => {
+      if (!prev.assignees || prev.assignees.length === 0) {
+        return { ...prev, mainAssignee: "" };
+      }
+
+      // אם אין עדיין ראשי — נגדיר את הראשון
+      if (!prev.mainAssignee) {
+        return { ...prev, mainAssignee: prev.assignees[0]._id };
+      }
+
+      // אם הראשי כבר לא ברשימת האחראיים (נמחק מה-MultiSelect)
+      const stillExists = prev.assignees.some(a => a._id === prev.mainAssignee);
+      if (!stillExists) {
+        return { ...prev, mainAssignee: prev.assignees[0]._id };
+      }
+
+      return prev;
+    });
+  }, [form?.assignees]);
+  // ברירת מחדל תאריל
+  // useEffect(() => {
+  //   if (form.dueDate && !form.finalDeadline) {
+  //     setForm((prev) => ({
+  //       ...prev,
+  //       finalDeadline: form.dueDate,
+  //     }));
+  //   }
+  // }, [form.dueDate]);
+
 
   const formatDate = (d) => {
     if (!d) return "";
@@ -186,9 +220,9 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
           showCancelButton: true,
           confirmButtonText: 'אישור',
           cancelButtonText: 'ביטול',
-          target: document.body, 
+          target: document.body,
           backdrop: true,
-          zIndex: 99999 
+          zIndex: 99999
         });
 
 
@@ -302,9 +336,9 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType }) => {
       console.log("Prepared payload for updateTask:", preparedForm);
 
       if (taskType === "recurring") {
-        await updateRecurringTask(taskToEdit._id, preparedForm, token);
+        await updateRecurringTask(taskToEdit._id, preparedForm, dailyUpdate, token);
       } else {
-        await updateTask(taskToEdit._id, preparedForm, token);
+        await updateTask(taskToEdit._id, preparedForm, dailyUpdate, token);
       }
 
       toast.success("המשימה עודכנה בהצלחה", { duration: 2000 });

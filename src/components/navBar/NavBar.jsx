@@ -150,7 +150,6 @@ const NavBar = () => {
           {/* <div>
               <button onClick={toOverOpen}>מתעכבות</button>
             </div> */}
-          <p>בדיקה! </p>
           <div>
             <button className="logout-btn" onClick={logout}>התנתק</button>
           </div>
