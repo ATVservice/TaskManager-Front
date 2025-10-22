@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { getMoreDetails } from '../../services/taskService';
 import { fetchGetDeletedTasks } from '../../services/restoreService';
+import { startOfDay } from 'date-fns';
+
 
 const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
     const [alerts, setAlerts] = useState([]);
@@ -69,32 +71,32 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
 
     const handleTaskClick = async (taskId) => {
         onClose();
-    
+
         try {
             const task = await getMoreDetails(taskId, token);
             if (!task) {
                 toast.error("לא ניתן לטעון את המשימה");
                 return;
             }
-    
+
             if (!task.isDeleted) {
                 let tab = '';
                 let subType = null;
-    
-                // --- 💡 הוספה: חישוב הזמן הנוכחי בישראל ---
+
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+
                 const israelNow = new Date(
                     new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })
                 );
-    
-                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-    
-                // --- 💡 אם עבר התאריך => משימה פתוחה־מתעכבת ---
-                if (dueDate && dueDate < israelNow && task.status !== 'הושלם' && task.status !== 'בוטלה') {
+                const todayStart = startOfDay(israelNow);
+
+                if (dueDate && dueDate < todayStart && task.status !== 'הושלם' && task.status !== 'בוטלה') {
                     tab = 'open';
                 }
+
                 else if (dueDate && dueDate > israelNow) {
                     tab = 'future';
-                } 
+                }
                 else {
                     if (task.status === 'הושלם') {
                         tab = 'completed';
@@ -114,21 +116,21 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                         subType = 'today-single';
                     }
                 }
-    
+
                 // שמירת הדגשה
                 sessionStorage.setItem("highlightedTaskId", taskId);
                 sessionStorage.setItem("highlightedTaskTab", tab);
-    
+
                 if (subType) {
                     sessionStorage.setItem("highlightedTaskType", subType);
                 }
-    
+
                 navigate(`/tasks/${taskId}`);
                 return;
             }
-    
+
             const deletedTasks = await fetchGetDeletedTasks(token);
-    
+
             if (Array.isArray(deletedTasks)) {
                 const found = deletedTasks.find(t => t._id === taskId);
                 if (found) {
@@ -137,14 +139,14 @@ const AlertsDrawer = ({ open, onClose, token, onMarkedRead }) => {
                     return;
                 }
             }
-    
+
             toast.error("המשימה נמחקה לצמיתות");
         } catch (err) {
             console.error("שגיאה בטעינת משימה:", err);
             toast.error("לא ניתן לטעון את המשימה");
         }
     };
-    
+
     // const handleTaskClick = async (taskId) => {
     //     onClose();
 

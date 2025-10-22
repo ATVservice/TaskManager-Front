@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertContext } from '../../context/AlertContext';
 import { getMoreDetails } from '../../services/taskService';
 import { fetchGetDeletedTasks } from '../../services/restoreService';
+import { startOfDay } from 'date-fns';
 
 
 const AlertsPage = () => {
@@ -67,18 +68,18 @@ const AlertsPage = () => {
             if (!task.isDeleted) {
                 let tab = '';
                 let subType = null;
-    
-                // --- 💡 הוספה: חישוב הזמן הנוכחי בישראל ---
-                const israelNow = new Date(
-                    new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })
-                );
-    
+
                 const dueDate = task.dueDate ? new Date(task.dueDate) : null;
     
-                // --- 💡 אם עבר התאריך => משימה פתוחה־מתעכבת ---
-                if (dueDate && dueDate < israelNow && task.status !== 'הושלם' && task.status !== 'בוטלה') {
+                const israelNow = new Date(
+                  new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })
+                );
+                const todayStart = startOfDay(israelNow);
+                
+                if (dueDate && dueDate < todayStart && task.status !== 'הושלם' && task.status !== 'בוטלה') {
                     tab = 'open';
                 }
+                
                 else if (dueDate && dueDate > israelNow) {
                     tab = 'future';
                 } 
