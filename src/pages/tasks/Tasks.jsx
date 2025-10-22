@@ -433,7 +433,8 @@ const Tasks = () => {
     };
 
     const toEdit = (task, isDailyUpdate) => {
-        const canEditTask = user.id === task.creator || user.id === task.mainAssignee._id || user.role === 'מנהל';
+        console.log('toEdit called with task:', task, 'isDailyUpdate:', isDailyUpdate);
+        const canEditTask = user.id === task.creator || user.id === task.mainAssignee._id || user.id === task.mainAssignee || user.role === 'מנהל';
         if (canEditTask) {
             setShowEditModal(true);
             setSelectedTask(task);

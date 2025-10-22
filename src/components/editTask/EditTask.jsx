@@ -16,6 +16,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
   const [associations, setAssociations] = useState([]);
   const [form, setForm] = useState(null);
   const [allProjects, setAllProjects] = useState([]);
+  const [delayReasonAsked, setDelayReasonAsked] = useState(false);
 
   const allImportanceOptions = ["עקביות", "כללי", "תאריך", "מגירה", "מיידי"];
   const allSubImportanceOptions = ["לפי תאריך", "בהקדם האפשרי", "ממוספר", "דחוף"];
@@ -76,15 +77,6 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
       return prev;
     });
   }, [form?.assignees]);
-  // ברירת מחדל תאריל
-  // useEffect(() => {
-  //   if (form.dueDate && !form.finalDeadline) {
-  //     setForm((prev) => ({
-  //       ...prev,
-  //       finalDeadline: form.dueDate,
-  //     }));
-  //   }
-  // }, [form.dueDate]);
 
 
   const formatDate = (d) => {
@@ -168,17 +160,17 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
 
     setForm(prev => ({ ...prev, [name]: value }));
   };
+
   const handleDateChange = async (e) => {
     const { name, value } = e.target;
 
     if ((name === "dueDate" || name === "finalDeadline") && value !== form[name]) {
-      // בדיקה אם התאריך נדחה (התאריך החדש מאוחר יותר)
       const currentDate = form[name] ? new Date(form[name]) : null;
       const newDate = new Date(value);
       const isDelayed = currentDate && newDate > currentDate;
 
-      // הצג את החלון רק אם התאריך נדחה
-      if (isDelayed) {
+      if (isDelayed && !delayReasonAsked) {
+
         const { value: result, isConfirmed } = await Swal.fire({
           title: 'סיבת דחיית התאריך (לא חובה)',
           html: `
@@ -227,19 +219,109 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
 
 
 
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
           [name]: value,
-          failureReason: result || undefined // שמור רק אם יש סיבה
+          failureReason: result || prev.failureReason, // שמור את הסיבה אם נכתבה
         }));
+
+        // מסמן שכבר שאלנו
+        setDelayReasonAsked(true);
       } else {
-        // אם התאריך לא נדחה, פשוט עדכן ללא סיבה
-        setForm(prev => ({ ...prev, [name]: value }));
+        // אם כבר שאלנו או שזה לא דחייה
+        setForm((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+
+      // אם שינו תאריך משימה – תאריך יעד יתעדכן אוטומטית
+      if (name === "dueDate") {
+        setForm((prev) => ({
+          ...prev,
+          finalDeadline: value,
+        }));
       }
     } else {
-      setForm(prev => ({ ...prev, [name]: value }));
+      setForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
   };
+
+  // const handleDateChange = async (e) => {
+  //   const { name, value } = e.target;
+
+  //   if ((name === "dueDate" || name === "finalDeadline") && value !== form[name]) {
+  //     // בדיקה אם התאריך נדחה (התאריך החדש מאוחר יותר)
+  //     const currentDate = form[name] ? new Date(form[name]) : null;
+  //     const newDate = new Date(value);
+  //     const isDelayed = currentDate && newDate > currentDate;
+
+  //     // הצג את החלון רק אם התאריך נדחה
+  //     if (isDelayed) {
+  //       const { value: result, isConfirmed } = await Swal.fire({
+  //         title: 'סיבת דחיית התאריך (לא חובה)',
+  //         html: `
+  //           <select id="reasonSelect" class="swal2-input">
+  //             <option value="">ללא סיבה</option>
+  //             <option value="חוסר זמן">חוסר זמן</option>
+  //             <option value="חופשה">חופשה</option>
+  //             <option value="בעיה טכנית">בעיה טכנית</option>
+  //             <option value="תלות בגורם חיצוני">תלות בגורם חיצוני</option>
+  //             <option value="לא דחוף">לא דחוף</option>
+  //             <option value="אחר">אחר</option>
+  //           </select>
+  //           <input id="customReason" class="swal2-input" placeholder="פירוט..." style="display:none" />
+  //         `,
+  //         focusConfirm: false,
+  //         preConfirm: () => {
+  //           const reason = document.getElementById('reasonSelect').value;
+  //           const custom = document.getElementById('customReason').value;
+
+  //           // רק אם בחר "אחר" ולא מילא פירוט - תן התראה
+  //           if (reason === "אחר" && !custom.trim()) {
+  //             Swal.showValidationMessage('אנא מלא פירוט כאשר בוחר "אחר"');
+  //             return false;
+  //           }
+
+  //           return reason ? { option: reason, customText: custom } : null;
+  //         },
+  //         didOpen: () => {
+  //           const select = document.getElementById('reasonSelect');
+  //           const customInput = document.getElementById('customReason');
+  //           select.addEventListener('change', (e) => {
+  //             if (e.target.value === "אחר") {
+  //               customInput.style.display = "block";
+  //             } else {
+  //               customInput.style.display = "none";
+  //             }
+  //           });
+  //         },
+  //         showCancelButton: true,
+  //         confirmButtonText: 'אישור',
+  //         cancelButtonText: 'ביטול',
+  //         target: document.body,
+  //         backdrop: true,
+  //         zIndex: 99999
+  //       });
+
+
+
+  //       setForm(prev => ({
+  //         ...prev,
+  //         [name]: value,
+  //         failureReason: result || undefined // שמור רק אם יש סיבה
+  //       }));
+  //     } else {
+  //       // אם התאריך לא נדחה, פשוט עדכן ללא סיבה
+  //       setForm(prev => ({ ...prev, [name]: value }));
+  //     }
+  //   } else {
+  //     setForm(prev => ({ ...prev, [name]: value }));
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = user?.token;
@@ -340,6 +422,8 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
       } else {
         await updateTask(taskToEdit._id, preparedForm, dailyUpdate, token);
       }
+
+      setDelayReasonAsked(false);
 
       toast.success("המשימה עודכנה בהצלחה", { duration: 2000 });
       onTaskUpdated();
