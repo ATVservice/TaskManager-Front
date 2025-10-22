@@ -7,7 +7,7 @@ import './taskAgGrid.css';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-const TaskAgGrid = forwardRef(({ rowData, columnDefs, onCellValueChanged, onRowClicked }, ref) => {
+const TaskAgGrid = forwardRef(({ highlightedId, rowData, columnDefs, onCellValueChanged, onRowClicked }, ref) => {
 
     const gridRef = useRef();
 
@@ -104,9 +104,14 @@ const TaskAgGrid = forwardRef(({ rowData, columnDefs, onCellValueChanged, onRowC
                             params.api.sizeColumnsToFit();
                         }, 50);
                     }}
+
                     rowClassRules={{
+                        'highlight-animation': params => params.data._id === highlightedId,
                         'drawer-task': params => params.data.importance === 'מגירה',
                     }}
+
+
+
                 />
             </motion.div>
         </div>

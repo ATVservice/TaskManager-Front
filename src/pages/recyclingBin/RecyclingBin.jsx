@@ -161,23 +161,27 @@ const RecyclingBin = () => {
         }
     }
 
+    const [highlightedId, setHighlightedId] = useState(null);
+
+
     useEffect(() => {
         if (!user?.token) return;
         const GetDeletedTasks = async () => {
             try {
                 const deletedTasks = await fetchGetDeletedTasks(user.token);
                 setData(deletedTasks);
-                const highlightedId = sessionStorage.getItem("highlightedTaskId");
-                if (highlightedId) {
-                    const found = deletedTasks.find(t => t._id === highlightedId);
+                const idFromStorage = sessionStorage.getItem("highlightedTaskId");
+                if (idFromStorage) {
+                    setHighlightedId(idFromStorage); 
+                    const found = deletedTasks.find(t => t._id === idFromStorage);
                     if (found) {
                         setTimeout(() => {
-                            MoreDetails(highlightedId);
-                            highlightRow(highlightedId);
+                            MoreDetails(idFromStorage);
                         }, 500);
                     }
                     sessionStorage.removeItem("highlightedTaskId");
                 }
+
 
             } catch (err) {
                 console.error('שגיאה בטעינת משימות מחוקות', err);
@@ -220,6 +224,7 @@ const RecyclingBin = () => {
                         ref={gridRef}
                         rowData={data}
                         columnDefs={columnDefs}
+                        highlightedId={highlightedId}
                         // onRowClicked={(params) => MoreDetails(params.data._id)}
                         onRowClicked={(params) => {
                             const tagName = params.event.target.tagName.toLowerCase();
@@ -238,6 +243,7 @@ const RecyclingBin = () => {
                         details={details}
                         isOpen={openDetails}
                         onClose={closeDetailsDiv}
+
                     />
                 }
             </div>

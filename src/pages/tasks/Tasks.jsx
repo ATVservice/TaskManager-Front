@@ -100,7 +100,7 @@ const Tasks = () => {
         { key: 'completed', label: 'משימות שבוצעו' },
         { key: 'cancelled', label: 'משימות שבוטלו' },
         { key: 'drawer', label: 'משימות מגירה' },
-        { key: 'open', label: 'פתוחות- מתעכבות' },
+        ...(user?.role === 'מנהל' ? [{ key: 'open', label: 'פתוחות- מתעכבות' }] : []),
 
     ];
 
@@ -209,6 +209,7 @@ const Tasks = () => {
         fetchTasks(activeTab, activeType);
     }, [activeTab, activeType, user, fetchTasks]);
 
+    //  :  המלא של טיפול בניווט
     useEffect(() => {
         // אפס את ה-ref כשה-taskId משתנה (כולל כשהוא נעלם)
         if (!taskId) {
@@ -216,7 +217,9 @@ const Tasks = () => {
             return;
         }
 
-        if (!user?.token || taskHandledRef.current) return;
+        //  אפשר לטפל במשימה חדשה גם אם כבר טיפלנו במשימה אחרת
+        // רק בודק שלא מטפלים באותה משימה פעמיים
+        if (!user?.token) return;
 
         const handleTaskRedirect = async () => {
             // הצג loading overlay
@@ -239,12 +242,16 @@ const Tasks = () => {
                         setActiveType(storedType);
                     }
 
-                    // נקה את sessionStorage
+                    // נקה את sessionStorage (אבל לא highlightedTaskId!)
                     sessionStorage.removeItem("highlightedTaskTab");
                     sessionStorage.removeItem("highlightedTaskType");
 
                     // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
-                    setTimeout(() => setIsNavigating(false), 400);
+                    setTimeout(() => {
+                        setIsNavigating(false);
+                        // אפס את ה-ref כדי לאפשר ניווט נוסף
+                        taskHandledRef.current = false;
+                    }, 400);
                     return;
                 }
 
@@ -268,19 +275,32 @@ const Tasks = () => {
                     sessionStorage.setItem("highlightedTaskId", taskId);
 
                     // המתן קצת כדי שהטאב יעודכן לפני שמסירים את ה-loading
-                    setTimeout(() => setIsNavigating(false), 400);
+                    setTimeout(() => {
+                        setIsNavigating(false);
+                        //  אפס את ה-ref כדי לאפשר ניווט נוסף
+                        taskHandledRef.current = false;
+                    }, 400);
                 } else {
                     setIsNavigating(false);
+                    taskHandledRef.current = false;
                     navigate(`/taskRedirect/${taskId}`);
                 }
             } catch (error) {
                 console.error('Error handling task redirect:', error);
                 setIsNavigating(false);
+                taskHandledRef.current = false;
             }
         };
 
         handleTaskRedirect();
     }, [taskId, user?.token, activeType, fetchTasks, navigate]);
+
+    const [highlightedId, setHighlightedId] = useState(null);
+
+    useEffect(() => {
+        // כל פעם שמשנים טאב - אפשר ניווט חדש
+        taskHandledRef.current = false;
+    }, [activeTab, activeType]);
 
     useEffect(() => {
         const highlightedId = sessionStorage.getItem("highlightedTaskId");
@@ -288,24 +308,27 @@ const Tasks = () => {
 
         const found = allTasks.find(t => t._id === highlightedId);
         if (!found) {
-            // אם לא נמצא בטאב הנוכחי, נקה את sessionStorage
             sessionStorage.removeItem("highlightedTaskId");
             return;
         }
+
+        // שמור ב-state (ללא ניקוי!)
+        setHighlightedId(highlightedId);
 
         const timer = setTimeout(() => {
             highlightRow(highlightedId);
             MoreDetails(highlightedId);
 
-            // נקי את sessionStorage
+            //  נקה רק את sessionStorage - אל תנקה את ההדגשה!
             sessionStorage.removeItem("highlightedTaskId");
-
-            // אפס את ה-ref כדי לאפשר ניווט נוסף
-            taskHandledRef.current = false;
         }, 300);
 
         return () => clearTimeout(timer);
     }, [allTasks]);
+
+    useEffect(() => {
+        setHighlightedId(null);
+    }, [activeTab, activeType]);
 
     const highlightRow = (taskId) => {
         if (!gridRef.current?.api) return;
@@ -314,22 +337,24 @@ const Tasks = () => {
             const node = gridRef.current.api.getRowNode(taskId);
             if (!node) return;
 
+            // בחר את השורה
             node.setSelected(true);
+
+            // גלול אליה
             gridRef.current.api.ensureNodeVisible(node, 'middle');
 
+            // הוסף את הקלאס של ההדגשה (ללא הסרה!)
             setTimeout(() => {
                 const rowElement = document.querySelector(`[row-index="${node.rowIndex}"]`);
                 if (rowElement) {
                     rowElement.classList.add("highlighted-row");
-                    // הגדל ל-6 שניות
-                    setTimeout(() => rowElement.classList.remove("highlighted-row"), 6000);
+                    //  לא מסירים את הקלאס!
                 }
             }, 50);
         } catch (error) {
             console.error('Error highlighting row:', error);
         }
     };
-
     const filteredTasks = useMemo(() =>
         allTasks.filter(task => task.combinedSearchText.includes(debouncedSearchTerm.toLowerCase())),
         [allTasks, debouncedSearchTerm]
@@ -857,6 +882,7 @@ const Tasks = () => {
                         ref={gridRef}
                         rowData={filteredTasks}
                         columnDefs={getColumnDefs()}
+                        highlightedId={highlightedId}
                         onRowClicked={(params) => {
                             const target = params.event.target;
                             const tagName = target.tagName.toLowerCase();

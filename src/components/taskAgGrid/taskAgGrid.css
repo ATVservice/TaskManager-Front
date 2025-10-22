@@ -66,41 +66,25 @@
 /* .ag-theme-alpine .drawer-task {
     background-color: rgba(255, 235, 59, 0.15) !important;
 } */
-
-/* אנימציית הדגשה - תיקום חיוני */
+/* הדגשה קבועה בצבע מרקר צהוב זוהר */
 .ag-theme-alpine [role="row"].highlight-animation {
-    animation: highlightPulse 30s ease-in-out !important;
+  background-color: #ffff00 !important;
+  box-shadow: 0 0 30px rgba(255, 255, 0, 0.9) inset, 0 0 10px #ff0 !important;
+  transition: background-color 0.5s ease;
 }
 
-@keyframes highlightPulse {
-    0% {
-        background-color: #FFD700 !important;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) inset !important;
-    }
-    25% {
-        background-color: #FFC700 !important;
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.9) inset !important;
-    }
-    50% {
-        background-color: #FFD700 !important;
-        box-shadow: 0 0 25px rgba(255, 215, 0, 1) inset !important;
-    }
-    75% {
-        background-color: #FFC700 !important;
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.9) inset !important;
-    }
-    100% {
-        background-color: #FFD700 !important;
-        box-shadow: 0 0 15px rgba(255, 215, 0, 0.6) inset !important;
-    }
+/* אם אתה רוצה אנימציה שחוזרת על עצמה לנצח */
+.ag-theme-alpine [role="row"].highlight-pulse {
+  animation: highlightGlow 3s ease-in-out infinite;
 }
 
-/* סגנון ברירה (שורה שנבחרה) */
-.ag-theme-alpine .ag-row-selected {
-    background-color: #E8F4F8 !important;
-}
-
-/* וודא שבעת hover לא מכסה את ההדגשה */
-.ag-theme-alpine [role="row"].highlight-animation:hover {
-    background-color: #FFD700 !important;
+@keyframes highlightGlow {
+  0%, 100% {
+    background-color: #fff700;
+    box-shadow: 0 0 15px rgba(255, 255, 0, 0.8) inset;
+  }
+  50% {
+    background-color: #ffff00;
+    box-shadow: 0 0 30px rgba(255, 255, 0, 1) inset;
+  }
 }

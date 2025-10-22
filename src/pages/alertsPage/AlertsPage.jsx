@@ -56,23 +56,33 @@ const AlertsPage = () => {
         }
     };
 
-    const handleTaskClick = async (taskId) => {
+    const handleTaskClick = async (taskId) => {    
         try {
             const task = await getMoreDetails(taskId, user?.token);
             if (!task) {
                 toast.error("לא ניתן לטעון את המשימה");
                 return;
             }
-
-            // אם המשימה קיימת ולא נמחקה
+    
             if (!task.isDeleted) {
                 let tab = '';
-                let subType = null; // ← חדש: שמירת סוג המשימה להיום
-
-                if (task.dueDate && new Date(task.dueDate) > new Date()) {
+                let subType = null;
+    
+                // --- 💡 הוספה: חישוב הזמן הנוכחי בישראל ---
+                const israelNow = new Date(
+                    new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" })
+                );
+    
+                const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+    
+                // --- 💡 אם עבר התאריך => משימה פתוחה־מתעכבת ---
+                if (dueDate && dueDate < israelNow && task.status !== 'הושלם' && task.status !== 'בוטלה') {
+                    tab = 'open';
+                }
+                else if (dueDate && dueDate > israelNow) {
                     tab = 'future';
-                } else {
-                    // המשימה היא להיום או בעבר
+                } 
+                else {
                     if (task.status === 'הושלם') {
                         tab = 'completed';
                     } else if (task.status === 'בוטלה') {
@@ -80,8 +90,6 @@ const AlertsPage = () => {
                     } else if (task.importance === 'מגירה') {
                         tab = 'drawer';
                     } else if (task.frequencyType) {
-                        // משימה קבועה - יכול להיות recurring או today
-                        // בדוק אם יש לה מופע להיום
                         if (task.taskModel === 'TodayTask' || task.isRecurringInstance) {
                             tab = 'today';
                             subType = 'today-recurring';
@@ -93,24 +101,21 @@ const AlertsPage = () => {
                         subType = 'today-single';
                     }
                 }
-
-                // שמור את מידע ההדגשה
+    
+                // שמירת הדגשה
                 sessionStorage.setItem("highlightedTaskId", taskId);
                 sessionStorage.setItem("highlightedTaskTab", tab);
-
-                // שמור גם את הסוג אם זה טאב היום
+    
                 if (subType) {
                     sessionStorage.setItem("highlightedTaskType", subType);
                 }
-
-                // נווט
+    
                 navigate(`/tasks/${taskId}`);
                 return;
             }
-
-            // אם נמחקה - בדוק בסל המחזור
+    
             const deletedTasks = await fetchGetDeletedTasks(user?.token);
-
+    
             if (Array.isArray(deletedTasks)) {
                 const found = deletedTasks.find(t => t._id === taskId);
                 if (found) {
@@ -119,7 +124,7 @@ const AlertsPage = () => {
                     return;
                 }
             }
-
+    
             toast.error("המשימה נמחקה לצמיתות");
         } catch (err) {
             console.error("שגיאה בטעינת משימה:", err);
