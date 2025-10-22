@@ -2,19 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { useContext } from "react";
 import './TaskDetails.css';
 import { addComment, getComments } from '../../services/commentService';
+import { getMoreDetails } from '../../services/taskService';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../../context/AuthContext';
 import Swal from 'sweetalert2';
 import SimpleAgGrid from '../simpleAgGrid/SimpleAgGrid';
+import EditTask from '../editTask/EditTask';
+import { Pencil } from 'lucide-react';
 
 const daysOfWeek = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
 const months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
 
-const TaskDetails = ({ details, isOpen, onClose }) => {
+const TaskDetails = ({ details: initialDetails, isOpen, onClose, onTaskUpdated }) => {
     const { user } = useContext(AuthContext);
+    const [details, setDetails] = useState(initialDetails);
     const [data, setData] = useState([]);
     const [model, setModel] = useState("");
+    const [ShowEditModal, setShowEditModal] = useState(false);
 
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [taskType, setTaskType] = useState("single");
+    const [dailyUpdate, setDailyUpdate] = useState(null);
+
+    const handleClosePopupEdit = () => setShowEditModal(false);
 
     const [columns] = useState([
         {
@@ -45,20 +55,24 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                 });
             }
         },
-
     ]);
+
+    // עדכון ה-details כש-initialDetails משתנה
+    useEffect(() => {
+        setDetails(initialDetails);
+    }, [initialDetails]);
 
     useEffect(() => {
         const getAllComments = async () => {
             const token = user?.token;
-            if (!token) return;
+            if (!token || !details?._id) return;
 
             const currentModel = details.frequencyType ? "recurring" : "task";
 
             try {
                 const comments = await getComments(details._id, currentModel, token);
                 setData(comments.comments);
-                setModel(currentModel); // אם עדיין רוצים לשמור ב-state
+                setModel(currentModel);
             } catch (err) {
                 toast.error(err.response?.data?.message || "שגיאה, נסה מאוחר יותר", { duration: 3000 });
                 console.log(err);
@@ -74,6 +88,37 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
         if (!dateString) return '';
         return new Date(dateString).toLocaleDateString('he-IL');
     };
+
+    const toEdit = () => {
+        console.log('toEdit called with task:', details);
+        const canEditTask = user.id === details.creator || user.id === details.creator?._id || user.id === details.mainAssignee?._id || user.id === details.mainAssignee || user.role === 'מנהל';
+        if (canEditTask) {
+            setShowEditModal(true);
+            setSelectedTask(details);
+            setTaskType(details.frequencyType || details.isRecurringInstance ? "recurring" : "single");
+        } else {
+            toast.error("אין לך הרשאה לערוך משימה זו!", { duration: 3000 });
+        }
+    };
+
+    const handleTaskUpdated = async () => {
+        setShowEditModal(false);
+        
+        // טען מחדש את הפרטים המעודכנים של המשימה
+        const token = user?.token;
+        try {
+            const updatedDetails = await getMoreDetails(details._id, token);
+            setDetails(updatedDetails);
+        } catch (error) {
+            console.error('שגיאה בטעינת פרטים מעודכנים:', error);
+        }
+        
+        // קריאה ל-callback מהרכיב האב כדי לרענן את המשימות
+        if (onTaskUpdated) {
+            onTaskUpdated();
+        }
+    };
+
     const creatComment = async () => {
         const { value: content, isConfirmed } = await Swal.fire({
             title: 'הוספת הערה',
@@ -100,7 +145,6 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
             console.error(err);
             toast.error(err.response?.data?.message || "לא ניתן להוסיף הערה כרגע", { duration: 3000 });
         }
-
     }
 
     const renderFrequencyDetails = () => {
@@ -116,7 +160,6 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                     </p>
                 );
 
-
             case 'יומי פרטני':
                 return (
                     <div className="frequency-tags">
@@ -130,7 +173,6 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                         </div>
                     </div>
                 );
-
 
             case 'חודשי':
                 return (
@@ -153,14 +195,10 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
     };
 
     return (
-        // <div className={`side-popup ${!isOpen ? 'hidden' : ''}`}>
         <div className="side-popup" style={{ width: '80vw', maxWidth: '900px' }}>
-
             <button className="close-btn" onClick={onClose}>X</button>
             <h3>פרטים נוספים</h3>
 
-
-            {/* פרטים נוספים ב-Grid */}
             <div className="task-details-grid">
                 {details.details && <p><strong>פרטי משימה: </strong>{details.details}</p>}
                 {details.project && <p><strong>פרויקט: </strong>{details.project.name}</p>}
@@ -174,10 +212,10 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
                 {details.daysOpen !== undefined && <p><strong>ימים מאז פתיחה: </strong>{details.daysOpen}</p>}
                 {details.dueDate && <p><strong> תאריך משימה: </strong>{formatDate(details.dueDate)}</p>}
                 {details.finalDeadline && <p><strong>תאריך יעד סופי: </strong>{formatDate(details.finalDeadline)}</p>}
-                {details.failureReason?.option && details.failureReason.option != "אחר" && (
+                {details.failureReason?.option && details.failureReason.option !== "אחר" && (
                     <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.option}</p>
                 )}
-                {details.failureReason?.option == "אחר" && (
+                {details.failureReason?.option === "אחר" && (
                     <p><strong>סיבת אי ביצוע: </strong>{details.failureReason.customText}</p>
                 )}
 
@@ -194,13 +232,35 @@ const TaskDetails = ({ details, isOpen, onClose }) => {
             </div>
 
             <div className="comment-section">
-                <button className="add-comment-btn" onClick={creatComment}>הוסף הערה</button>
-                <SimpleAgGrid rowData={data} columnDefs={columns} />
-            </div>
+                <div className="action-buttons">
+                    <button className="add-comment-btn" onClick={creatComment}>
+                        הוסף הערה
+                    </button>
+                    <button className="add-comment-btn" onClick={toEdit}>
+                        <Pencil size={16} />
+                        <span>ערוך משימה</span>
+                    </button>
+                </div>
 
+                <SimpleAgGrid rowData={data} columnDefs={columns} />
+
+                {ShowEditModal && (
+                    <div className="popup-overlay">
+                        <div className="popup-content">
+                            <button onClick={handleClosePopupEdit} className="close-btn close-edit">×</button>
+                            <EditTask
+                                taskToEdit={selectedTask}
+                                dailyUpdate={dailyUpdate}
+                                taskType={taskType}
+                                onClose={handleClosePopupEdit}
+                                onTaskUpdated={handleTaskUpdated}
+                            />
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
-
 };
 
 export default TaskDetails;

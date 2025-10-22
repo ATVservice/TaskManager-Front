@@ -59,41 +59,30 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             day: ""
         },
     });
-        // ברירת מחדל: האחראי הראשי הוא הראשון שסומן
-        useEffect(() => {
-            setForm((prev) => {
-              // אם אין אחראיים — ננקה ראשי
-              if (form.assignees.length === 0) {
+    
+    // ברירת מחדל: האחראי הראשי הוא הראשון שסומן
+    useEffect(() => {
+        setForm((prev) => {
+            // אם אין אחראיים — ננקה ראשי
+            if (form.assignees.length === 0) {
                 return { ...prev, mainAssignee: "" };
-              }
-          
-              // אם אין עדיין ראשי — נגדיר את הראשון
-              if (!prev.mainAssignee) {
-                return { ...prev, mainAssignee: form.assignees[0]._id };
-              }
-          
-              // אם הראשי כבר לא ברשימת האחראיים (נמחק מה-MultiSelect)
-              const stillExists = form.assignees.some(a => a._id === prev.mainAssignee);
-              if (!stillExists) {
-                return { ...prev, mainAssignee: form.assignees[0]._id };
-              }
-          
-              // אחרת – לא משנים כלום
-              return prev;
-            });
-          }, [form.assignees]);
-          
-    
-        // ברירת מחדל: תאריך סופי = תאריך משימה
-        useEffect(() => {
-            if (form.dueDate && !form.finalDeadline) {
-                setForm((prev) => ({
-                    ...prev,
-                    finalDeadline: form.dueDate,
-                }));
             }
-        }, [form.dueDate]);
-    
+
+            // אם אין עדיין ראשי — נגדיר את הראשון
+            if (!prev.mainAssignee) {
+                return { ...prev, mainAssignee: form.assignees[0]._id };
+            }
+
+            // אם הראשי כבר לא ברשימת האחראיים (נמחק מה-MultiSelect)
+            const stillExists = form.assignees.some(a => a._id === prev.mainAssignee);
+            if (!stillExists) {
+                return { ...prev, mainAssignee: form.assignees[0]._id };
+            }
+
+            // אחרת – לא משנים כלום
+            return prev;
+        });
+    }, [form.assignees]);
 
     useEffect(() => {
         const token = user?.token;
@@ -106,7 +95,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                 console.error("שגיאה בשליפת משתמשים:", err);
                 if (err.response?.status === 401) {
                     toast.error("הגישה נדחתה. אנא התחבר שוב.", { duration: 3000 });
-
                 } else {
                     toast.error(err.response?.data?.message, { duration: 3000 });
                     console.error("שגיאה בלתי צפויה:", err);
@@ -116,6 +104,7 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
 
         fetchUsers();
     }, []);
+    
     useEffect(() => {
         const token = user?.token;
         const getAssociations = async () => {
@@ -146,21 +135,28 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
     }, []);
 
     const handleChange = (e) => {
-
         const { name, value, type, checked } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
+        
+        // טיפול מיוחד בתאריך משימה - עדכון אוטומטי של תאריך יעד
+        if (name === "dueDate") {
+            setForm((prev) => ({
+                ...prev,
+                dueDate: value,
+                finalDeadline: value, // תמיד מעדכן את תאריך היעד
+            }));
+        } else {
+            setForm((prev) => ({
+                ...prev,
+                [name]: type === "checkbox" ? checked : value,
+            }));
+        }
     };
-
 
     const handleSubmit = async (e) => {
         const token = user?.token;
 
         e.preventDefault();
         try {
-
             const preparedForm = {
                 ...form,
                 assignees: form.assignees.map((u) => u._id),
@@ -179,7 +175,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             toast.error(error.response?.data?.message || 'שגיאה ביצירת המשימה', { duration: 3000 });
             console.error('Error adding task:', error);
         }
-
     };
 
     return (
@@ -187,16 +182,13 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
             <h4 className="title-h4">צור משימה</h4>
             <form onSubmit={handleSubmit}>
                 <div className="form-row">
-
                     <div className="form-group">
                         <label>כותרת</label>
-
                         <input name="title" value={form.title} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
                         <label>פרטים</label>
-
                         <input name="details" value={form.details} onChange={handleChange} />
                     </div>
 
@@ -207,7 +199,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             name="project"
                             value={form.project}
                             onChange={handleChange}
-
                         >
                             <option value="">בחר פרויקט</option>
                             {allProjects.map((project) => (
@@ -217,8 +208,8 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             ))}
                         </select>
                     </div>
-
                 </div>
+                
                 <div className="form-row">
                     <div className="form-group">
                         <label>אחראיים</label>
@@ -229,10 +220,10 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             selected={form.assignees}
                             onChange={(newSelected) =>
                                 setForm((prev) => ({ ...prev, assignees: newSelected }))
-                                
                             }
                         />
                     </div>
+                    
                     <div className="form-group">
                         <label>עמותה</label>
                         <select name="organization" value={form.organization} onChange={handleChange} required>
@@ -242,16 +233,22 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             ))}
                         </select>
                     </div>
+                    
                     <div className="form-group">
                         <label>תאריך משימה</label>
-
-                        <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange}
-                            min={new Date().toISOString().split("T")[0]} />
+                        <input 
+                            type="date" 
+                            name="dueDate" 
+                            value={form.dueDate} 
+                            onChange={handleChange}
+                            onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                            min={new Date().toISOString().split("T")[0]}
+                            className="clickable-date-input"
+                        />
                     </div>
-
                 </div>
+                
                 <div className="form-row">
-
                     <div className="form-group">
                         <label>אחראי ראשי</label>
                         <select name="mainAssignee" value={form.mainAssignee} onChange={handleChange} required>
@@ -271,18 +268,24 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                             ))}
                         </select>
                     </div>
+                    
                     {form.dueDate &&
                         <div className="form-group">
                             <label>תאריך סופי</label>
-
-                            <input type="date" name="finalDeadline" value={form.finalDeadline} onChange={handleChange}
-                                min={form.dueDate} />
-                        </div>}
-
-
+                            <input 
+                                type="date" 
+                                name="finalDeadline" 
+                                value={form.finalDeadline} 
+                                onChange={handleChange}
+                                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                                min={form.dueDate}
+                                className="clickable-date-input"
+                            />
+                        </div>
+                    }
                 </div>
+                
                 <div className="form-row">
-
                     {form.importance === "מיידי" &&
                         <div className="form-group">
                             <label>תת דירוג</label>
@@ -295,8 +298,8 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         </div>
                     }
                 </div>
+                
                 <div className="form-row">
-
                     <div className="form-group">
                         <label htmlFor="isRecurring">משימה קבועה?</label>
                         <input
@@ -308,7 +311,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                         />
                     </div>
                     <div className="form-group"></div>
-
                 </div>
 
                 <div className="form-row">
@@ -343,7 +345,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                                 }
                                             />
                                         </label>
-
                                     )}
                                     {form.frequencyType === "יומי פרטני" && (
                                         <div className="form-group">
@@ -377,7 +378,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                     )}
                                     {form.frequencyType === 'חודשי' && (
                                         <div className="form-group">
-
                                             <select
                                                 value={form.frequencyDetails.dayOfMonth}
                                                 onChange={(e) =>
@@ -421,7 +421,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                                 ))}
                                             </select>
 
-
                                             <select
                                                 value={form.frequencyDetails.day}
                                                 onChange={(e) =>
@@ -441,7 +440,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                                                     </option>
                                                 ))}
                                             </select>
-
                                         </div>
                                     )}
                                 </div>
@@ -453,7 +451,6 @@ const CreateTask = ({ onClose, onTaskCreated }) => {
                     <div className="form-group">
                         <button type="submit">הוסף</button>
                     </div>
-
                 </div>
             </form>
         </div>

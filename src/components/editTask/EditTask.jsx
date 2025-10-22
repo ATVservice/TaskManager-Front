@@ -506,7 +506,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
             </select>
           </div>
 
-          {(taskType === "single") && (
+          {/* {(taskType === "single") && (
             <>
               <div className="form-group">
                 <label>תאריך משימה</label>
@@ -517,6 +517,22 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
                   // onChange={handleChange}
                   onChange={handleDateChange}
                   min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+            </>
+          )} */}
+           {(taskType === "single") && (
+            <>
+              <div className="form-group">
+                <label>תאריך משימה</label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={form.dueDate}
+                  onChange={handleDateChange}
+                  onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="clickable-date-input"
                 />
               </div>
             </>
@@ -569,8 +585,23 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
               {allImportanceOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
           </div>
-
           {form.dueDate && (
+            <div className="form-group">
+              <label>תאריך סופי</label>
+              <input
+                type="date"
+                name="finalDeadline"
+                value={form.finalDeadline}
+                onChange={handleDateChange}
+                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                min={form.dueDate}
+                className="clickable-date-input"
+              />
+            </div>
+
+          )}
+
+          {/* {form.dueDate && (
             <div className="form-group">
               <label>תאריך סופי</label>
               <input
@@ -582,7 +613,7 @@ const EditTask = ({ onClose, onTaskUpdated, taskToEdit, taskType, dailyUpdate })
                 min={form.dueDate} />
             </div>
 
-          )}
+          )} */}
           {form.frequencyType && (
             <div className="form-group">
               <label>פרטי תדירות</label>

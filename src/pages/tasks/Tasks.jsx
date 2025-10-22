@@ -104,6 +104,7 @@ const Tasks = () => {
 
     ];
 
+
     const [allTasks, setAllTasks] = useState([]);
     const [details, setDetails] = useState({});
     const [openDetails, setOpenDetails] = useState(false);
@@ -393,6 +394,20 @@ const Tasks = () => {
         setOpenDetails(false);
         setDetails({});
     };
+    // עדכון אחרי שינוי משימה
+    const handleTaskUpdatedFromDetails = async () => {
+        await refreshTasks();
+        // טען מחדש את הפרטים אם הם פתוחים
+        if (openDetails && details._id) {
+            try {
+                const updatedDetails = await getMoreDetails(details._id, user?.token);
+                setDetails(updatedDetails);
+            } catch (error) {
+                console.error('שגיאה בטעינת פרטים מעודכנים:', error);
+            }
+        }
+    };
+
 
     const handleClosePopup = () => setShowCreatePopup(false);
     const handleClosePopupEdit = () => setShowEditModal(false);
@@ -828,9 +843,14 @@ const Tasks = () => {
                         details={details}
                         isOpen={openDetails}
                         onClose={closeDetailsDiv}
+                        onTaskUpdated={handleTaskUpdatedFromDetails}
+                    // onTaskUpdated={() => {
+                    //     refreshTasks();
+                    // }}
                     />,
                     document.body
                 )}
+
                 <div className='task-grid-container'>
 
                     <TaskAgGrid
