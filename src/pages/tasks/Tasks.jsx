@@ -176,6 +176,7 @@ const Tasks = () => {
     };
 
     const fetchTasks = useCallback(async (tab, type) => {
+        console.time('⏱️ Frontend fetchTasks');
         setIsLoading(true);
         const token = user?.token;
         let data = [];
@@ -195,6 +196,7 @@ const Tasks = () => {
             }
             const enriched = enrichTasksWithSearchText(data);
             setAllTasks(enriched);
+            console.timeEnd('⏱️ Frontend fetchTasks');
             return enriched;
         } catch (error) {
             toast.error(error.response?.data?.message || 'שגיאה בהתחברות');
@@ -303,6 +305,10 @@ const Tasks = () => {
     }, [activeTab, activeType]);
 
     useEffect(() => {
+        setHighlightedId(null);
+    }, [activeTab, activeType]);
+
+    useEffect(() => {
         const highlightedId = sessionStorage.getItem("highlightedTaskId");
         if (!highlightedId || allTasks.length === 0) return;
 
@@ -326,9 +332,7 @@ const Tasks = () => {
         return () => clearTimeout(timer);
     }, [allTasks]);
 
-    useEffect(() => {
-        setHighlightedId(null);
-    }, [activeTab, activeType]);
+
 
     const highlightRow = (taskId) => {
         if (!gridRef.current?.api) return;
