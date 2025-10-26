@@ -296,7 +296,7 @@ const Tasks = () => {
         };
 
         handleTaskRedirect();
-    }, [taskId, user?.token, activeType, fetchTasks, navigate]);
+    }, [taskId, user?.token, activeType, navigate]);
 
     const [highlightedId, setHighlightedId] = useState(null);
 
