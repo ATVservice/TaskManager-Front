@@ -159,7 +159,7 @@ const Reports = () => {
     // עיבוד דוח משימות פתוחות לפי עובד
 
     const processOpenTasksByEmployee = (data) => {
-        const headers = ["שם משתמש", "שם עובד", "כמות משימות", "באיחור", "בטיפול", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
+        const headers = ["שם משתמש", "שם עובד", "כמות משימות","לביצוע", "בטיפול", "באיחור", "ממוצע ימים פתוחים", "המשימה הכי ישנה בימים"];
         const rows = [];
 
         const employees = Array.isArray(data) ? data : data?.employees || [];
@@ -171,8 +171,9 @@ const Reports = () => {
                 employee.userName ?? '---',
                 employee.name ?? '---',
                 summary.total ?? 0,
-                summary.overdue ?? 0,
+                summary.byStatus?.['לביצוע'] ?? 0,
                 summary.byStatus?.['בטיפול'] ?? 0,
+                summary.overdue ?? 0,
                 summary.avgDaysOpen ?? 0,
                 summary.oldestOpenDays ?? 0
             ]);
@@ -183,7 +184,7 @@ const Reports = () => {
 
     // עיבוד דוח משימות לפי אחריות
     const processTasksByResponsibility = (data) => {
-        const headers = ["שם משתמש", "שם עובד", "סוג אחריות", "כמות משימות", "הושלמו", "לביצוע"];
+        const headers = ["שם משתמש", "שם עובד", "סוג אחריות", "", "הושלמו", "לביצוע"];
         const rows = [];
 
         // אחראים ראשיים

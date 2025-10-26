@@ -172,9 +172,9 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons,
           </select>
         </div>
       )}
-   {/* סיבת אי־ביצוע */}
+   {/* סיבת א-־ביצוע
    <div className="filter-group">
-        <label>סיבת אי־ביצוע</label>
+        <label>סיבת אי-ביצוע</label>
         <select
           value={filters.reasonId || ""}
           onChange={(e) =>
@@ -202,7 +202,7 @@ const ReportsFilters = ({ filters, setFilters, employees, associations, reasons,
             onChange={(e) => setFilters({ ...filters, reasonText: e.target.value })}
           />
         )}
-      </div>
+      </div> */}
     </div>
   );
 };

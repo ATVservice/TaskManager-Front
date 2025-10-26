@@ -640,6 +640,7 @@ const Tasks = () => {
                     await addComment(params.data._id, currentModel, content, user?.token);
                 }
 
+                refreshTasks();
                 toast.success('משימה עודכנה בהצלחה', { duration: 2000 });
             } catch (error) {
                 toast.error(error.response?.data?.message || error.message || 'עדכון המשימה נכשל', { duration: 3000 });
