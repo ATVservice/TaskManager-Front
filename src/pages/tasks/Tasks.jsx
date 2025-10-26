@@ -209,7 +209,8 @@ const Tasks = () => {
     useEffect(() => {
         if (!user?.token) return;
         fetchTasks(activeTab, activeType);
-    }, [activeTab, activeType, user, fetchTasks]);
+    }, [activeTab, activeType, user?.token]);
+
 
     //  :  המלא של טיפול בניווט
     useEffect(() => {
