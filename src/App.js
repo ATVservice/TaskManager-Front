@@ -26,8 +26,19 @@ const App = () => {
       {showBanner && <UpdateBanner onRefresh={() => window.location.reload()} />}
 
       <HeadProvider>
-        <Toaster position="top-center" />
-        <NavBar />
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            zIndex: 99999,
+          },
+        }}
+        containerStyle={{
+          zIndex: 99999,
+          top: 20,
+        }}
+      />        <NavBar />
         <AppRoutes />
       </HeadProvider>
     </>
