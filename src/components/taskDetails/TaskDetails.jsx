@@ -31,19 +31,38 @@ const TaskDetails = ({ details: initialDetails, isOpen, onClose, onTaskUpdated }
             headerName: 'שם משתמש',
             field: 'userName',
             minWidth: 120,
-            flex: 1,
+            width: 150,  // רוחב קבוע במקום flex
             valueGetter: (params) => params.data.createdBy?.userName || ''
         },
         {
             headerName: 'תוכן ההערה',
             field: 'content',
-            minWidth: 150,
-            flex: 1
+            minWidth: 200,
+            width: 400,  // רוחב קבוע
+            cellRenderer: (params) => {
+                return (
+                    <div style={{ 
+                        whiteSpace: 'normal', 
+                        lineHeight: '1.5',
+                        padding: '8px 0',
+                        wordWrap: 'break-word',
+                        overflowWrap: 'break-word'
+                    }}>
+                        {linkifyText(params.value)}
+                    </div>
+                );
+            },
+            wrapText: true,
+            autoHeight: true,
+            cellStyle: { 
+                whiteSpace: 'normal',
+                lineHeight: '1.5'
+            }
         },
         {
             headerName: "תאריך",
             field: 'createdAt',
-            width: 180,
+            width: 150,  // רוחב קבוע במקום 180
             valueFormatter: (params) => {
                 if (!params.value) return '';
                 return new Date(params.value).toLocaleString('he-IL', {
@@ -56,6 +75,35 @@ const TaskDetails = ({ details: initialDetails, isOpen, onClose, onTaskUpdated }
             }
         },
     ]);
+
+    const linkifyText = (text) => {
+        if (!text) return '';
+
+        // ביטוי רגולרי לזיהוי URLs
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+        // פיצול הטקסט לפי URLs
+        const parts = text.split(urlRegex);
+
+        return parts.map((part, index) => {
+            // אם זה URL, החזר אותו כקישור
+            if (part.match(urlRegex)) {
+                return (
+                    <a
+                        key={index}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#0066cc', textDecoration: 'underline' }}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+            // אחרת, החזר טקסט רגיל
+            return <span key={index}>{part}</span>;
+        });
+    };
 
     // עדכון ה-details כש-initialDetails משתנה
     useEffect(() => {
@@ -103,7 +151,7 @@ const TaskDetails = ({ details: initialDetails, isOpen, onClose, onTaskUpdated }
 
     const handleTaskUpdated = async () => {
         setShowEditModal(false);
-        
+
         // טען מחדש את הפרטים המעודכנים של המשימה
         const token = user?.token;
         try {
@@ -112,7 +160,7 @@ const TaskDetails = ({ details: initialDetails, isOpen, onClose, onTaskUpdated }
         } catch (error) {
             console.error('שגיאה בטעינת פרטים מעודכנים:', error);
         }
-        
+
         // קריאה ל-callback מהרכיב האב כדי לרענן את המשימות
         if (onTaskUpdated) {
             onTaskUpdated();

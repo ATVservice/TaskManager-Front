@@ -131,3 +131,15 @@ button.add-comment-btn:hover {
       justify-content: center;
   }
 }
+/* הוסיפי לקובץ TaskDetails.css */
+.ag-cell a {
+  color: #0066cc;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.ag-cell a:hover {
+  color: #004499;
+  text-decoration: none;
+}
+
